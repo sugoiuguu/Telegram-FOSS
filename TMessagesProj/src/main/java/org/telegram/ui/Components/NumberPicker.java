@@ -22,6 +22,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Paint.Align;
+import android.graphics.PorterDuff;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.SparseArray;
@@ -123,7 +124,9 @@ public class NumberPicker extends LinearLayout {
         mSolidColor = 0;
         mSelectionDivider = new Paint();
         mSelectionDivider.setColor(Theme.getColor(Theme.key_dialogButton));
-
+        //plus
+        if(Theme.usePlusTheme)mSelectionDivider.setColor(Theme.defColor);
+        //
         mSelectionDividerHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, UNSCALED_DEFAULT_SELECTION_DIVIDER_HEIGHT, getResources().getDisplayMetrics());
         mSelectionDividersDistance = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, UNSCALED_DEFAULT_SELECTION_DIVIDERS_DISTANCE, getResources().getDisplayMetrics());
 

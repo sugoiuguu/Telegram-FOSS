@@ -13,12 +13,15 @@ import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 
+import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.FileLog;
 import org.telegram.messenger.LocaleController;
@@ -89,14 +92,14 @@ public class Browser {
                 public void onServiceConnected(CustomTabsClient client) {
                     customTabsClient = client;
                     if (MediaController.getInstance().canCustomTabs()) {
-                        if (customTabsClient != null) {
-                            try {
-                                customTabsClient.warmup(0);
-                            } catch (Exception e) {
+                    if (customTabsClient != null) {
+                        try {
+                        customTabsClient.warmup(0);
+                        } catch (Exception e) {
                                 FileLog.e(e);
-                            }
                         }
                     }
+                }
                 }
 
                 @Override
@@ -158,15 +161,25 @@ public class Browser {
         if (context == null || uri == null) {
             return;
         }
-        boolean internalUri = isInternalUri(uri);
-        try {
+
+            //plus to open themes in themes app
+            if(uri.toString().contains("plusmessenger.org/theme/")){
+                allowCustom = false;
+            }//
             String scheme = uri.getScheme() != null ? uri.getScheme().toLowerCase() : "";
+            boolean internalUri = isInternalUri(uri);
+        try {
+            //String scheme = uri.getScheme() != null ? uri.getScheme().toLowerCase() : "";
             if (Build.VERSION.SDK_INT >= 15 && allowCustom && MediaController.getInstance().canCustomTabs() && !internalUri && !scheme.equals("tel")) {
                 Intent share = new Intent(ApplicationLoader.applicationContext, ShareBroadcastReceiver.class);
                 share.setAction(Intent.ACTION_SEND);
 
                 CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder(getSession());
-                builder.setToolbarColor(Theme.getColor(Theme.key_actionBarDefault));
+                //builder.setToolbarColor(Theme.getColor(Theme.key_actionBarDefault));
+                SharedPreferences themePrefs = ApplicationLoader.applicationContext.getSharedPreferences(AndroidUtilities.THEME_PREFS, AndroidUtilities.THEME_PREFS_MODE);
+                int color = Theme.chatHeaderColor; //themePrefs.getInt("chatHeaderColor", themePrefs.getInt("themeColor", AndroidUtilities.defColor));
+                color = color == 0xffffffff ? AndroidUtilities.setDarkColor(color, 0x20) : color;
+                builder.setToolbarColor(color);
                 builder.setShowTitle(true);
                 builder.setActionButton(BitmapFactory.decodeResource(context.getResources(), R.drawable.abc_ic_menu_share_mtrl_alpha), LocaleController.getString("ShareFile", R.string.ShareFile), PendingIntent.getBroadcast(ApplicationLoader.applicationContext, 0, share, 0), false);
                 CustomTabsIntent intent = builder.build();
@@ -177,13 +190,13 @@ public class Browser {
             FileLog.e(e);
         }
         try {
-            Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-            if (internalUri) {
-                ComponentName componentName = new ComponentName(context.getPackageName(), LaunchActivity.class.getName());
-                intent.setComponent(componentName);
-            }
-            intent.putExtra(android.provider.Browser.EXTRA_APPLICATION_ID, context.getPackageName());
-            context.startActivity(intent);
+                Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+                if (internalUri) {
+                    ComponentName componentName = new ComponentName(context.getPackageName(), LaunchActivity.class.getName());
+                    intent.setComponent(componentName);
+                }
+                intent.putExtra(android.provider.Browser.EXTRA_APPLICATION_ID, context.getPackageName());
+                context.startActivity(intent);
         } catch (Exception e) {
             FileLog.e(e);
         }

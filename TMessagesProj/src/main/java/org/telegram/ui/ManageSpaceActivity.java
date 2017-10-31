@@ -243,9 +243,9 @@ public class ManageSpaceActivity extends Activity implements ActionBarLayout.Act
             public void onGlobalLayout() {
                 needLayout();
                 if (actionBarLayout != null) {
-                    actionBarLayout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                        actionBarLayout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                    }
                 }
-            }
         });
     }
 
@@ -358,6 +358,6 @@ public class ManageSpaceActivity extends Activity implements ActionBarLayout.Act
             if (layout == layersActionBarLayout) {
                 actionBarLayout.rebuildAllFragmentViews(true, true);
             }
+            }
         }
     }
-}

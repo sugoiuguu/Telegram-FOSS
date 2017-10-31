@@ -9,6 +9,7 @@
 package org.telegram.ui.Cells;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.util.TypedValue;
@@ -18,6 +19,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.telegram.messenger.AndroidUtilities;
+import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.R;
 import org.telegram.ui.Components.LayoutHelper;
 import org.telegram.ui.ActionBar.Theme;
@@ -30,23 +32,29 @@ public class ChatUnreadCell extends FrameLayout {
 
     public ChatUnreadCell(Context context) {
         super(context);
-
+        SharedPreferences themePrefs = ApplicationLoader.applicationContext.getSharedPreferences(AndroidUtilities.THEME_PREFS, AndroidUtilities.THEME_PREFS_MODE);
+        int bgColor = themePrefs.getInt("chatDateBubbleColor", 0xffffffff);
+        int textColor = themePrefs.getInt("chatDateColor", Theme.defColor);
+        //int textColor = themePrefs.getInt("chatDateColor", 0xff4a7297);
         backgroundLayout = new FrameLayout(context);
         backgroundLayout.setBackgroundResource(R.drawable.newmsg_divider);
-        backgroundLayout.getBackground().setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_chat_unreadMessagesStartBackground), PorterDuff.Mode.MULTIPLY));
+        backgroundLayout.getBackground().setColorFilter(new PorterDuffColorFilter(Theme.usePlusTheme ? bgColor : Theme.getColor(Theme.key_chat_unreadMessagesStartBackground), PorterDuff.Mode.MULTIPLY));
+
         addView(backgroundLayout, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 27, Gravity.LEFT | Gravity.TOP, 0, 7, 0, 0));
 
         imageView = new ImageView(context);
         imageView.setImageResource(R.drawable.ic_ab_new);
-        imageView.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_chat_unreadMessagesStartArrowIcon), PorterDuff.Mode.MULTIPLY));
+        imageView.setColorFilter(new PorterDuffColorFilter(Theme.usePlusTheme ? textColor : Theme.getColor(Theme.key_chat_unreadMessagesStartArrowIcon), PorterDuff.Mode.MULTIPLY));
+
         imageView.setPadding(0, AndroidUtilities.dp(2), 0, 0);
         backgroundLayout.addView(imageView, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.RIGHT | Gravity.CENTER_VERTICAL, 0, 0, 10, 0));
 
         textView = new TextView(context);
         textView.setPadding(0, 0, 0, AndroidUtilities.dp(1));
         textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
-        textView.setTextColor(Theme.getColor(Theme.key_chat_unreadMessagesStartText));
+        textView.setTextColor(Theme.usePlusTheme ? textColor : Theme.getColor(Theme.key_chat_unreadMessagesStartText));
         textView.setTypeface(AndroidUtilities.getTypeface("fonts/rmedium.ttf"));
+
         addView(textView, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER));
     }
 

@@ -255,7 +255,7 @@ public class ChannelRightsEditActivity extends BaseFragment {
         }
 
         fragmentView = new FrameLayout(context);
-        fragmentView.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundGray));
+        fragmentView.setBackgroundColor(Theme.usePlusTheme ? Theme.prefBGColor : Theme.getColor(Theme.key_windowBackgroundGray));
         FrameLayout frameLayout = (FrameLayout) fragmentView;
 
         listView = new RecyclerListView(context);
@@ -543,7 +543,7 @@ public class ChannelRightsEditActivity extends BaseFragment {
             switch (viewType) {
                 case 0:
                     view = new UserCell(mContext, 1, 0, false);
-                    view.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
+                    view.setBackgroundColor(Theme.usePlusTheme ? Theme.prefBGColor : Theme.getColor(Theme.key_windowBackgroundWhite));
                     break;
                 case 1:
                     view = new TextInfoPrivacyCell(mContext);
@@ -551,15 +551,15 @@ public class ChannelRightsEditActivity extends BaseFragment {
                     break;
                 case 2:
                     view = new TextSettingsCell(mContext);
-                    view.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
+                    view.setBackgroundColor(Theme.usePlusTheme ? Theme.prefBGColor : Theme.getColor(Theme.key_windowBackgroundWhite));
                     break;
                 case 3:
                     view = new HeaderCell(mContext);
-                    view.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
+                    view.setBackgroundColor(Theme.usePlusTheme ? Theme.prefBGColor : Theme.getColor(Theme.key_windowBackgroundWhite));
                     break;
                 case 4:
                     view = new TextCheckCell2(mContext);
-                    view.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
+                    view.setBackgroundColor(Theme.usePlusTheme ? Theme.prefBGColor : Theme.getColor(Theme.key_windowBackgroundWhite));
                     break;
                 case 5:
                 default:
@@ -593,7 +593,7 @@ public class ChannelRightsEditActivity extends BaseFragment {
                             actionCell.setText(LocaleController.getString("UserRestrictionsBlock", R.string.UserRestrictionsBlock), false);
                         }
                     } else if (position == untilDateRow) {
-                        actionCell.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
+                        actionCell.setTextColor(Theme.usePlusTheme ? Theme.prefTitleColor : Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
                         actionCell.setTag(Theme.key_windowBackgroundWhiteBlackText);
                         String value;
                         if (bannedRights.until_date == 0 || Math.abs(bannedRights.until_date - System.currentTimeMillis() / 1000) > 10 * 365 * 24 * 60 * 60) {

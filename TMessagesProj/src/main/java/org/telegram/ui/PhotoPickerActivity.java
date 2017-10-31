@@ -295,24 +295,24 @@ public class PhotoPickerActivity extends BaseFragment implements NotificationCen
         listView.setOnItemClickListener(new RecyclerListView.OnItemClickListener() {
             @Override
             public void onItemClick(View view, int position) {
-                ArrayList<Object> arrayList;
-                if (selectedAlbum != null) {
-                    arrayList = (ArrayList) selectedAlbum.photos;
-                } else {
-                    if (searchResult.isEmpty() && lastSearchString == null) {
-                        arrayList = (ArrayList) recentImages;
+                    ArrayList<Object> arrayList;
+                    if (selectedAlbum != null) {
+                        arrayList = (ArrayList) selectedAlbum.photos;
                     } else {
-                        arrayList = (ArrayList) searchResult;
+                        if (searchResult.isEmpty() && lastSearchString == null) {
+                            arrayList = (ArrayList) recentImages;
+                        } else {
+                            arrayList = (ArrayList) searchResult;
+                        }
                     }
-                }
-                if (position < 0 || position >= arrayList.size()) {
-                    return;
-                }
-                if (searchItem != null) {
-                    AndroidUtilities.hideKeyboard(searchItem.getSearchField());
-                }
-                PhotoViewer.getInstance().setParentActivity(getParentActivity());
-                PhotoViewer.getInstance().openPhotoForSelect(arrayList, position, singlePhoto ? 1 : 0, PhotoPickerActivity.this, chatActivity);
+                    if (position < 0 || position >= arrayList.size()) {
+                        return;
+                    }
+                    if (searchItem != null) {
+                        AndroidUtilities.hideKeyboard(searchItem.getSearchField());
+                    }
+                    PhotoViewer.getInstance().setParentActivity(getParentActivity());
+                    PhotoViewer.getInstance().openPhotoForSelect(arrayList, position, singlePhoto ? 1 : 0, PhotoPickerActivity.this, chatActivity);
             }
         });
 

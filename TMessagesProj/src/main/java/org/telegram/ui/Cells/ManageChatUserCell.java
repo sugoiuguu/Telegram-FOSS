@@ -9,14 +9,17 @@
 package org.telegram.ui.Cells;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
+import android.graphics.drawable.Drawable;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 
 import org.telegram.messenger.AndroidUtilities;
+import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MessagesController;
 import org.telegram.messenger.R;
@@ -59,8 +62,8 @@ public class ManageChatUserCell extends FrameLayout {
     public ManageChatUserCell(Context context, int padding, boolean needOption) {
         super(context);
 
-        statusColor = Theme.getColor(Theme.key_windowBackgroundWhiteGrayText);
-        statusOnlineColor = Theme.getColor(Theme.key_windowBackgroundWhiteBlueText);
+        statusColor = Theme.usePlusTheme ?  Theme.profileRowStatusColor : Theme.getColor(Theme.key_windowBackgroundWhiteGrayText);
+        statusOnlineColor = Theme.usePlusTheme ?  Theme.profileRowOnlineColor : Theme.getColor(Theme.key_windowBackgroundWhiteBlueText);
 
         avatarDrawable = new AvatarDrawable();
 
@@ -69,7 +72,7 @@ public class ManageChatUserCell extends FrameLayout {
         addView(avatarImageView, LayoutHelper.createFrame(48, 48, (LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.TOP, LocaleController.isRTL ? 0 : 7 + padding, 8, LocaleController.isRTL ? 7 + padding : 0, 0));
 
         nameTextView = new SimpleTextView(context);
-        nameTextView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
+        nameTextView.setTextColor(Theme.usePlusTheme ?  Theme.profileRowTitleColor : Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
         nameTextView.setTextSize(17);
         nameTextView.setTypeface(AndroidUtilities.getTypeface("fonts/rmedium.ttf"));
         nameTextView.setGravity((LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.TOP);
@@ -85,7 +88,7 @@ public class ManageChatUserCell extends FrameLayout {
             optionsButton.setFocusable(false);
             optionsButton.setBackgroundDrawable(Theme.createSelectorDrawable(Theme.getColor(Theme.key_stickers_menuSelector)));
             optionsButton.setImageResource(R.drawable.ic_ab_other);
-            optionsButton.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_stickers_menu), PorterDuff.Mode.MULTIPLY));
+            optionsButton.setColorFilter(new PorterDuffColorFilter(Theme.usePlusTheme ?  Theme.profileRowIconsColor : Theme.getColor(Theme.key_stickers_menu), PorterDuff.Mode.MULTIPLY));
             optionsButton.setScaleType(ImageView.ScaleType.CENTER);
             addView(optionsButton, LayoutHelper.createFrame(48, 64, (LocaleController.isRTL ? Gravity.LEFT : Gravity.RIGHT) | Gravity.TOP));
             optionsButton.setOnClickListener(new OnClickListener() {
@@ -135,7 +138,7 @@ public class ManageChatUserCell extends FrameLayout {
         if (currentUser.photo != null) {
             photo = currentUser.photo.photo_small;
         }
-
+        if(Theme.usePlusTheme)updateTheme();
         if (mask != 0) {
             boolean continueUpdate = false;
             if ((mask & MessagesController.UPDATE_MASK_AVATAR) != 0) {
@@ -213,4 +216,61 @@ public class ManageChatUserCell extends FrameLayout {
     public boolean hasOverlappingRendering() {
         return false;
     }
+    //plus
+    private void updateTheme(){
+        SharedPreferences themePrefs = ApplicationLoader.applicationContext.getSharedPreferences(AndroidUtilities.THEME_PREFS, AndroidUtilities.THEME_PREFS_MODE);
+        String tag = getTag() != null ? getTag().toString() : "";
+        int nameColor;
+        if(tag.contains("Contacts")){
+            setStatusColors(themePrefs.getInt("contactsStatusColor", 0xffa8a8a8), themePrefs.getInt("contactsOnlineColor", Theme.darkColor));
+            nameColor = themePrefs.getInt("contactsNameColor", 0xff212121);
+            nameTextView.setTextColor(nameColor);
+            nameTextView.setTextSize(themePrefs.getInt("contactsNameSize", 17));
+            setStatusSize(themePrefs.getInt("contactsStatusSize", 14));
+            //setAvatarRadius(themePrefs.getInt("contactsAvatarRadius", 32));
+        } else if(tag.contains("Profile")){
+
+            nameColor = themePrefs.getInt("profileTitleColor", 0xff212121);
+            nameTextView.setTextColor(nameColor);
+            nameTextView.setTextSize(17);
+            setStatusSize(14);
+
+            /*setAvatarRadius(Theme.profileRowAvatarRadius);
+            if(currentDrawable != 0) {
+                Drawable d = getResources().getDrawable(currentDrawable);
+                d.setColorFilter(Theme.profileRowIconsColor, PorterDuff.Mode.SRC_IN);
+            }*/
+
+        } else if(tag.contains("Pref")){
+            setStatusColors(Theme.prefSummaryColor, Theme.lightColor);
+            nameColor = Theme.prefTitleColor;
+            nameTextView.setTextColor(nameColor);
+        }
+    }
+
+    public void setNameColor(int color) {
+        //nameColor = color;
+        nameTextView.setTextColor(color);
+    }
+
+    public void setNameSize(int size) {
+        nameTextView.setTextSize(size);
+    }
+
+    public void setStatusColor(int color) {
+        statusColor = color;
+    }
+
+    public void setStatusSize(int size) {
+        statusTextView.setTextSize(size);
+    }
+
+    /*public void setImageDrawable(Drawable drawable){
+        curDrawable = drawable;
+    }
+
+    public void setAvatarRadius(int value){
+        radius = value;
+    }*/
+    //
 }

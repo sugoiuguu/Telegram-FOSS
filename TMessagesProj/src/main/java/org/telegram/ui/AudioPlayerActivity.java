@@ -9,10 +9,13 @@
 package org.telegram.ui;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.StateListDrawable;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -22,6 +25,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.telegram.messenger.AndroidUtilities;
+import org.telegram.messenger.ApplicationLoader;
+import org.telegram.messenger.FileLoader;
 import org.telegram.messenger.ImageLoader;
 import org.telegram.messenger.MediaController;
 import org.telegram.messenger.MessageObject;
@@ -78,6 +83,7 @@ public class AudioPlayerActivity extends BaseFragment implements NotificationCen
 
             outerPaint1 = new Paint(Paint.ANTI_ALIAS_FLAG);
             outerPaint1.setColor(Theme.getColor(Theme.key_player_progress));
+            outerPaint1.setColor(/*0xff23afef*/ Theme.lightColor);//plus
 
             thumbWidth = AndroidUtilities.dp(24);
             thumbHeight = AndroidUtilities.dp(24);
@@ -191,6 +197,7 @@ public class AudioPlayerActivity extends BaseFragment implements NotificationCen
         actionBar.setItemsBackgroundColor(Theme.getColor(Theme.key_player_actionBarSelector), false);
         actionBar.setTitleColor(Theme.getColor(Theme.key_player_actionBarTitle));
         actionBar.setSubtitleColor(Theme.getColor(Theme.key_player_actionBarSubtitle));
+        int tColor = Theme.defColor != 0xffffffff ? 0xffffffff : 0xff212121;
 
         if (!AndroidUtilities.isTablet()) {
             actionBar.showActionModeTop();
@@ -219,6 +226,7 @@ public class AudioPlayerActivity extends BaseFragment implements NotificationCen
         timeTextView = new TextView(context);
         timeTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 12);
         timeTextView.setTextColor(Theme.getColor(Theme.key_player_time));
+        timeTextView.setTextColor(/*0xff19a7e8*/ Theme.lightColor);
         timeTextView.setGravity(Gravity.CENTER);
         timeTextView.setText("0:00");
         seekBarContainer.addView(timeTextView, LayoutHelper.createFrame(44, LayoutHelper.MATCH_PARENT, Gravity.TOP | Gravity.LEFT));
@@ -226,6 +234,7 @@ public class AudioPlayerActivity extends BaseFragment implements NotificationCen
         durationTextView = new TextView(context);
         durationTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 12);
         durationTextView.setTextColor(Theme.getColor(Theme.key_player_duration));
+        durationTextView.setTextColor(0xff8a8a8a);
         durationTextView.setGravity(Gravity.CENTER);
         durationTextView.setText("3:00");
         seekBarContainer.addView(durationTextView, LayoutHelper.createFrame(44, LayoutHelper.MATCH_PARENT, Gravity.TOP | Gravity.RIGHT));
@@ -237,6 +246,7 @@ public class AudioPlayerActivity extends BaseFragment implements NotificationCen
         progressView.setVisibility(View.INVISIBLE);
         progressView.setBackgroundColor(Theme.getColor(Theme.key_player_progressBackground));
         progressView.setProgressColor(Theme.getColor(Theme.key_player_progress));
+        progressView.setProgressColor(/*0xff23afef*/ Theme.lightColor);
         seekBarContainer.addView(progressView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 2, Gravity.CENTER_VERTICAL | Gravity.LEFT, 44, 0, 44, 0));
 
         bottomView = new FrameLayout(context) {
@@ -368,6 +378,7 @@ public class AudioPlayerActivity extends BaseFragment implements NotificationCen
         if (MediaController.getInstance().isShuffleMusic()) {
             shuffleButton.setTag(Theme.key_player_buttonActive);
             shuffleButton.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_player_buttonActive), PorterDuff.Mode.MULTIPLY));
+            if(Theme.usePlusTheme)shuffleButton.setColorFilter(Theme.lightColor, PorterDuff.Mode.SRC_IN);
         } else {
             shuffleButton.setTag(Theme.key_player_button);
             shuffleButton.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_player_button), PorterDuff.Mode.MULTIPLY));
@@ -384,10 +395,12 @@ public class AudioPlayerActivity extends BaseFragment implements NotificationCen
             repeatButton.setImageResource(R.drawable.pl_repeat);
             repeatButton.setTag(Theme.key_player_buttonActive);
             repeatButton.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_player_buttonActive), PorterDuff.Mode.MULTIPLY));
+            if(Theme.usePlusTheme)repeatButton.setColorFilter(Theme.lightColor, PorterDuff.Mode.SRC_IN);
         } else if (mode == 2) {
             repeatButton.setImageResource(R.drawable.pl_repeat1);
             repeatButton.setTag(Theme.key_player_buttonActive);
             repeatButton.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_player_buttonActive), PorterDuff.Mode.MULTIPLY));
+            if(Theme.usePlusTheme)repeatButton.setColorFilter(Theme.lightColor, PorterDuff.Mode.SRC_IN);
         }
     }
 
@@ -452,7 +465,9 @@ public class AudioPlayerActivity extends BaseFragment implements NotificationCen
                 playButton.setImageDrawable(Theme.createSimpleSelectorDrawable(playButton.getContext(), R.drawable.pl_pause, Theme.getColor(Theme.key_player_button), Theme.getColor(Theme.key_player_buttonActive)));
             }
             if (actionBar != null) {
+                int tColor = Theme.defColor != 0xffffffff ? 0xffffffff : 0xff212121;
                 actionBar.setTitle(messageObject.getMusicTitle());
+                if(Theme.usePlusTheme)actionBar.getTitleTextView().setTextColor(tColor);
                 actionBar.setSubtitle(messageObject.getMusicAuthor());
             }
             AudioInfo audioInfo = MediaController.getInstance().getAudioInfo();
@@ -476,11 +491,11 @@ public class AudioPlayerActivity extends BaseFragment implements NotificationCen
                 if (document != null) {
                     for (int a = 0; a < document.attributes.size(); a++) {
                         TLRPC.DocumentAttribute attribute = document.attributes.get(a);
-                        if (attribute instanceof TLRPC.TL_documentAttributeAudio) {
-                            duration = attribute.duration;
-                            break;
-                        }
+                    if (attribute instanceof TLRPC.TL_documentAttributeAudio) {
+                        duration = attribute.duration;
+                        break;
                     }
+                }
                 }
                 durationTextView.setText(duration != 0 ? String.format("%d:%02d", duration / 60, duration % 60) : "-:--");
             }

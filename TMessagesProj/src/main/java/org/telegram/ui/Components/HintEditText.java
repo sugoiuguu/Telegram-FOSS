@@ -28,7 +28,7 @@ public class HintEditText extends EditText {
 
     public HintEditText(Context context) {
         super(context);
-        paint.setColor(Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
+        paint.setColor(Theme.usePlusTheme ? Theme.prefSummaryColor : Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
     }
 
     public String getHintText() {

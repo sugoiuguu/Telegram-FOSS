@@ -14,6 +14,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build;
 import android.text.Layout;
 import android.text.StaticLayout;
 import android.text.TextPaint;
@@ -85,7 +86,7 @@ public class SharedLinkCell extends FrameLayout {
 
         titleTextPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
         titleTextPaint.setTypeface(AndroidUtilities.getTypeface("fonts/rmedium.ttf"));
-        titleTextPaint.setColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
+        titleTextPaint.setColor(Theme.usePlusTheme ? Theme.prefTitleColor : Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
 
         descriptionTextPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
 
@@ -98,7 +99,7 @@ public class SharedLinkCell extends FrameLayout {
 
         checkBox = new CheckBox(context, R.drawable.round_check2);
         checkBox.setVisibility(INVISIBLE);
-        checkBox.setColor(Theme.getColor(Theme.key_checkbox), Theme.getColor(Theme.key_checkboxCheck));
+        checkBox.setColor(Theme.usePlusTheme ? Theme.defColor : Theme.getColor(Theme.key_checkbox), Theme.getColor(Theme.key_checkboxCheck));
         addView(checkBox, LayoutHelper.createFrame(22, 22, (LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.TOP, LocaleController.isRTL ? 0 : 44, 44, LocaleController.isRTL ? 44 : 0, 0));
     }
 
@@ -435,7 +436,7 @@ public class SharedLinkCell extends FrameLayout {
         }
 
         if (descriptionLayout != null) {
-            descriptionTextPaint.setColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
+            descriptionTextPaint.setColor(Theme.usePlusTheme ? Theme.prefSummaryColor : Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
             canvas.save();
             canvas.translate(AndroidUtilities.dp(LocaleController.isRTL ? 8 : AndroidUtilities.leftBaseline), descriptionY);
             descriptionLayout.draw(canvas);
@@ -443,7 +444,7 @@ public class SharedLinkCell extends FrameLayout {
         }
 
         if (descriptionLayout2 != null) {
-            descriptionTextPaint.setColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
+            descriptionTextPaint.setColor(Theme.usePlusTheme ? Theme.prefSummaryColor : Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
             canvas.save();
             canvas.translate(AndroidUtilities.dp(LocaleController.isRTL ? 8 : AndroidUtilities.leftBaseline), description2Y);
             descriptionLayout2.draw(canvas);
@@ -451,7 +452,7 @@ public class SharedLinkCell extends FrameLayout {
         }
 
         if (!linkLayout.isEmpty()) {
-            descriptionTextPaint.setColor(Theme.getColor(Theme.key_windowBackgroundWhiteLinkText));
+            descriptionTextPaint.setColor(Theme.usePlusTheme ? Theme.prefSummaryColor : Theme.getColor(Theme.key_windowBackgroundWhiteLinkText));
             int offset = 0;
             for (int a = 0; a < linkLayout.size(); a++) {
                 StaticLayout layout = linkLayout.get(a);

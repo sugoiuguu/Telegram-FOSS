@@ -64,4 +64,9 @@ public class DrawerActionCell extends FrameLayout {
             FileLog.e(e);
         }
     }
+    //plus
+    public void setTextSize(int size){
+        textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, size);
+    }
+    //
 }

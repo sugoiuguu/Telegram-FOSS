@@ -47,9 +47,9 @@ public class URLSpanMono extends MetricAffectingSpan {
         ds.setTypeface(Typeface.MONOSPACE);
         ds.setUnderlineText(false);
         if (isOut) {
-            ds.setColor(Theme.getColor(Theme.key_chat_messageTextOut));
+            ds.setColor(Theme.usePlusTheme ? Theme.chatRTextColor : Theme.getColor(Theme.key_chat_messageTextOut));
         } else {
-            ds.setColor(Theme.getColor(Theme.key_chat_messageTextIn));
+            ds.setColor(Theme.usePlusTheme ? Theme.chatLTextColor : Theme.getColor(Theme.key_chat_messageTextIn));
         }
     }
 }

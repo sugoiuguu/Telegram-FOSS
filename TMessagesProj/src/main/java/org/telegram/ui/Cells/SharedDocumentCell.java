@@ -94,7 +94,7 @@ public class SharedDocumentCell extends FrameLayout implements MediaController.F
         });
 
         nameTextView = new TextView(context);
-        nameTextView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
+        nameTextView.setTextColor(Theme.usePlusTheme ? Theme.prefTitleColor : Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
         nameTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);
         nameTextView.setTypeface(AndroidUtilities.getTypeface("fonts/rmedium.ttf"));
         nameTextView.setLines(1);
@@ -106,11 +106,11 @@ public class SharedDocumentCell extends FrameLayout implements MediaController.F
 
         statusImageView = new ImageView(context);
         statusImageView.setVisibility(INVISIBLE);
-        statusImageView.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_sharedMedia_startStopLoadIcon), PorterDuff.Mode.MULTIPLY));
+        statusImageView.setColorFilter(new PorterDuffColorFilter(Theme.usePlusTheme ? Theme.prefSummaryColor : Theme.getColor(Theme.key_sharedMedia_startStopLoadIcon), PorterDuff.Mode.MULTIPLY));
         addView(statusImageView, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, (LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.TOP, LocaleController.isRTL ? 8 : 72, 35, LocaleController.isRTL ? 72 : 8, 0));
 
         dateTextView = new TextView(context);
-        dateTextView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText3));
+        dateTextView.setTextColor(Theme.usePlusTheme ? Theme.prefSummaryColor : Theme.getColor(Theme.key_windowBackgroundWhiteGrayText3));
         dateTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
         dateTextView.setLines(1);
         dateTextView.setMaxLines(1);
@@ -125,7 +125,7 @@ public class SharedDocumentCell extends FrameLayout implements MediaController.F
 
         checkBox = new CheckBox(context, R.drawable.round_check2);
         checkBox.setVisibility(INVISIBLE);
-        checkBox.setColor(Theme.getColor(Theme.key_checkbox), Theme.getColor(Theme.key_checkboxCheck));
+        checkBox.setColor(Theme.usePlusTheme ? Theme.defColor : Theme.getColor(Theme.key_checkbox), Theme.getColor(Theme.key_checkboxCheck));
         addView(checkBox, LayoutHelper.createFrame(22, 22, (LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.TOP, LocaleController.isRTL ? 0 : 34, 30, LocaleController.isRTL ? 34 : 0, 0));
     }
 

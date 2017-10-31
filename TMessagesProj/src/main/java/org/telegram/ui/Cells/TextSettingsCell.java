@@ -11,9 +11,12 @@ package org.telegram.ui.Cells;
 import android.animation.Animator;
 import android.animation.ObjectAnimator;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Canvas;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
+import android.graphics.drawable.Drawable;
+import android.support.annotation.ColorInt;
 import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -22,11 +25,14 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.telegram.messenger.AndroidUtilities;
+import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.LocaleController;
 import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.Components.LayoutHelper;
 
 import java.util.ArrayList;
+
+import static org.telegram.ui.Components.LetterDrawable.paint;
 
 public class TextSettingsCell extends FrameLayout {
 
@@ -46,7 +52,7 @@ public class TextSettingsCell extends FrameLayout {
         textView.setSingleLine(true);
         textView.setEllipsize(TextUtils.TruncateAt.END);
         textView.setGravity((LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.CENTER_VERTICAL);
-        addView(textView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT, (LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.TOP, 17, 0, 17, 0));
+        addView(textView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT, (LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.TOP, 17, 0, /*17*/45, 0));
 
         valueTextView = new TextView(context);
         valueTextView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteValueText));
@@ -67,6 +73,7 @@ public class TextSettingsCell extends FrameLayout {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        if(Theme.usePlusTheme)setTheme();
         setMeasuredDimension(MeasureSpec.getSize(widthMeasureSpec), AndroidUtilities.dp(48) + (needDivider ? 1 : 0));
 
         int availableWidth = getMeasuredWidth() - getPaddingLeft() - getPaddingRight() - AndroidUtilities.dp(34);
@@ -98,7 +105,45 @@ public class TextSettingsCell extends FrameLayout {
     public void setTextValueColor(int color) {
         valueTextView.setTextColor(color);
     }
+    //plus
+    public void setDividerColor(int color) {
+        paint.setColor(color);
+    }
 
+    private void setTheme(){
+        int bgColor = Theme.prefBGColor;
+        int divColor = Theme.prefDividerColor;
+        int titleColor = Theme.prefTitleColor;
+        int sColor = Theme.prefSectionColor;
+        String tag = getTag() != null ? getTag().toString() : "";
+        if(tag.contains("Profile")){
+            setBackgroundColor(Theme.profileRowColor);
+            if(Theme.profileRowColor != 0xffffffff)paint.setColor(Theme.profileRowColor);
+            SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences(AndroidUtilities.THEME_PREFS, AndroidUtilities.THEME_PREFS_MODE);
+            titleColor = preferences.getInt("profileTitleColor", 0xff212121);
+            textView.setTextColor(titleColor);
+            if(bgColor != 0xffffffff)valueTextView.setTextColor(0x00000000);
+        }else{
+            setBackgroundColor(bgColor);
+            textView.setTextColor(titleColor);
+            paint.setColor(divColor);
+            valueTextView.setTextColor(sColor);
+        }
+    }
+
+    public void setTextAndIcon(String text, Drawable resDr, boolean divider) {
+        textView.setText(text);
+        valueTextView.setVisibility(INVISIBLE);
+        if (resDr != null) {
+            valueImageView.setVisibility(VISIBLE);
+            valueImageView.setImageDrawable(resDr);
+        } else {
+            valueImageView.setVisibility(INVISIBLE);
+        }
+        needDivider = divider;
+        setWillNotDraw(!divider);
+    }
+    //
     public void setText(String text, boolean divider) {
         textView.setText(text);
         valueTextView.setVisibility(INVISIBLE);
@@ -162,3 +207,4 @@ public class TextSettingsCell extends FrameLayout {
         }
     }
 }
+    

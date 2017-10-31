@@ -13,6 +13,7 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Rect;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -25,8 +26,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.telegram.messenger.AndroidUtilities;
+import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.MediaController;
 import org.telegram.messenger.R;
+import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.Components.BackupImageView;
 import org.telegram.ui.Components.CheckBox;
 import org.telegram.ui.Components.LayoutHelper;
@@ -58,7 +61,7 @@ public class PhotoAttachPhotoCell extends FrameLayout {
         addView(imageView, LayoutHelper.createFrame(80, 80));
         checkFrame = new FrameLayout(context);
         addView(checkFrame, LayoutHelper.createFrame(42, 42, Gravity.LEFT | Gravity.TOP, 38, 0, 0, 0));
-
+        SharedPreferences themePrefs = ApplicationLoader.applicationContext.getSharedPreferences(AndroidUtilities.THEME_PREFS, AndroidUtilities.THEME_PREFS_MODE);
         videoInfoContainer = new FrameLayout(context);
         videoInfoContainer.setBackgroundResource(R.drawable.phototime);
         videoInfoContainer.setPadding(AndroidUtilities.dp(3), 0, AndroidUtilities.dp(3), 0);
@@ -77,7 +80,8 @@ public class PhotoAttachPhotoCell extends FrameLayout {
         checkBox.setSize(30);
         checkBox.setCheckOffset(AndroidUtilities.dp(1));
         checkBox.setDrawBackground(true);
-        checkBox.setColor(0xff3ccaef, 0xffffffff);
+        checkBox.setColor(Theme.usePlusTheme ? Theme.defColor : 0xff3ccaef, Theme.usePlusTheme ? Theme.chatAttachBGColor : 0xffffffff);
+        //checkBox.setColor(themePrefs.getInt("themeColor", AndroidUtilities.defColor));
         addView(checkBox, LayoutHelper.createFrame(30, 30, Gravity.LEFT | Gravity.TOP, 46, 4, 0, 0));
         checkBox.setVisibility(VISIBLE);
     }
@@ -117,7 +121,7 @@ public class PhotoAttachPhotoCell extends FrameLayout {
                 int seconds = photoEntry.duration - minutes * 60;
                 videoTextView.setText(String.format("%d:%02d", minutes, seconds));
                 imageView.setImage("vthumb://" + photoEntry.imageId + ":" + photoEntry.path, null, getResources().getDrawable(R.drawable.nophotos));
-            } else {
+        } else {
                 videoInfoContainer.setVisibility(INVISIBLE);
                 imageView.setOrientation(photoEntry.orientation, true);
                 imageView.setImage("thumb://" + photoEntry.imageId + ":" + photoEntry.path, null, getResources().getDrawable(R.drawable.nophotos));

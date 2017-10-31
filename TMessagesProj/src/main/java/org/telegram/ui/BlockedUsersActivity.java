@@ -10,6 +10,8 @@ package org.telegram.ui;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.View;
@@ -17,21 +19,23 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import org.telegram.PhoneFormat.PhoneFormat;
+import org.telegram.messenger.AndroidUtilities;
+import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.LocaleController;
-import org.telegram.messenger.support.widget.LinearLayoutManager;
-import org.telegram.messenger.support.widget.RecyclerView;
-import org.telegram.tgnet.TLRPC;
 import org.telegram.messenger.MessagesController;
 import org.telegram.messenger.NotificationCenter;
 import org.telegram.messenger.R;
+import org.telegram.messenger.support.widget.LinearLayoutManager;
+import org.telegram.messenger.support.widget.RecyclerView;
+import org.telegram.tgnet.TLRPC;
+import org.telegram.ui.ActionBar.ActionBar;
+import org.telegram.ui.ActionBar.ActionBarMenu;
 import org.telegram.ui.ActionBar.AlertDialog;
+import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.ActionBar.ThemeDescription;
 import org.telegram.ui.Cells.TextInfoCell;
 import org.telegram.ui.Cells.UserCell;
-import org.telegram.ui.ActionBar.ActionBar;
-import org.telegram.ui.ActionBar.ActionBarMenu;
-import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.Components.EmptyTextProgressView;
 import org.telegram.ui.Components.LayoutHelper;
 import org.telegram.ui.Components.RecyclerListView;
@@ -84,7 +88,12 @@ public class BlockedUsersActivity extends BaseFragment implements NotificationCe
         });
 
         ActionBarMenu menu = actionBar.createMenu();
-        menu.addItem(block_user, R.drawable.plus);
+        //menu.addItem(block_user, R.drawable.plus);
+
+        SharedPreferences themePrefs = ApplicationLoader.applicationContext.getSharedPreferences(AndroidUtilities.THEME_PREFS, AndroidUtilities.THEME_PREFS_MODE);
+        Drawable plus = getParentActivity().getResources().getDrawable(R.drawable.plus);
+        plus.setColorFilter(Theme.prefActionbarIconsColor, PorterDuff.Mode.SRC_IN);
+        menu.addItem(block_user, plus);
 
         fragmentView = new FrameLayout(context);
         FrameLayout frameLayout = (FrameLayout) fragmentView;
@@ -107,10 +116,10 @@ public class BlockedUsersActivity extends BaseFragment implements NotificationCe
                 if (position >= MessagesController.getInstance().blockedUsers.size()) {
                     return;
                 }
-                Bundle args = new Bundle();
+                    Bundle args = new Bundle();
                 args.putInt("user_id", MessagesController.getInstance().blockedUsers.get(position));
-                presentFragment(new ProfileActivity(args));
-            }
+                    presentFragment(new ProfileActivity(args));
+                }
         });
 
         listView.setOnItemLongClickListener(new RecyclerListView.OnItemLongClickListener() {
@@ -179,6 +188,16 @@ public class BlockedUsersActivity extends BaseFragment implements NotificationCe
         if (listViewAdapter != null) {
             listViewAdapter.notifyDataSetChanged();
         }
+        if(Theme.usePlusTheme)updateTheme();
+    }
+
+    private void updateTheme(){
+        actionBar.setBackgroundColor(Theme.prefActionbarColor);
+        actionBar.setTitleColor(Theme.prefActionbarTitleColor);
+        Drawable back = getParentActivity().getResources().getDrawable(R.drawable.ic_ab_back);
+        back.setColorFilter(Theme.prefActionbarIconsColor, PorterDuff.Mode.MULTIPLY);
+        actionBar.setBackButtonDrawable(back);
+        actionBar.setItemsColor(Theme.prefActionbarIconsColor, false);
     }
 
     @Override
@@ -240,6 +259,10 @@ public class BlockedUsersActivity extends BaseFragment implements NotificationCe
                         number = LocaleController.getString("NumberUnknown", R.string.NumberUnknown);
                     }
                     ((UserCell) holder.itemView).setData(user, null, number, 0);
+                    holder.itemView.setTag("Pref");
+                    SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences(AndroidUtilities.THEME_PREFS, AndroidUtilities.THEME_PREFS_MODE);
+                    ((UserCell) holder.itemView).setNameColor(preferences.getInt("prefTitleColor", 0xff212121));
+                    ((UserCell) holder.itemView).setStatusColor(preferences.getInt("prefSummaryColor", 0xff8a8a8a));
                 }
             }
         }
@@ -255,7 +278,7 @@ public class BlockedUsersActivity extends BaseFragment implements NotificationCe
 
     @Override
     public ThemeDescription[] getThemeDescriptions() {
-        ThemeDescription.ThemeDescriptionDelegate сellDelegate = new ThemeDescription.ThemeDescriptionDelegate() {
+        ThemeDescription.ThemeDescriptionDelegate cellDelegate = new ThemeDescription.ThemeDescriptionDelegate() {
             @Override
             public void didSetColor(int color) {
                 int count = listView.getChildCount();
@@ -284,16 +307,16 @@ public class BlockedUsersActivity extends BaseFragment implements NotificationCe
 
                 new ThemeDescription(listView, 0, new Class[]{TextInfoCell.class}, new String[]{"textView"}, null, null, null, Theme.key_windowBackgroundWhiteGrayText5),
                 new ThemeDescription(listView, 0, new Class[]{UserCell.class}, new String[]{"nameTextView"}, null, null, null, Theme.key_windowBackgroundWhiteBlackText),
-                new ThemeDescription(listView, 0, new Class[]{UserCell.class}, new String[]{"statusColor"}, null, null, сellDelegate, Theme.key_windowBackgroundWhiteGrayText),
+                new ThemeDescription(listView, 0, new Class[]{UserCell.class}, new String[]{"statusColor"}, null, null, cellDelegate, Theme.key_windowBackgroundWhiteGrayText),
 
                 new ThemeDescription(listView, 0, new Class[]{UserCell.class}, null, new Drawable[]{Theme.avatar_photoDrawable, Theme.avatar_broadcastDrawable}, null, Theme.key_avatar_text),
-                new ThemeDescription(null, 0, null, null, null, сellDelegate, Theme.key_avatar_backgroundRed),
-                new ThemeDescription(null, 0, null, null, null, сellDelegate, Theme.key_avatar_backgroundOrange),
-                new ThemeDescription(null, 0, null, null, null, сellDelegate, Theme.key_avatar_backgroundViolet),
-                new ThemeDescription(null, 0, null, null, null, сellDelegate, Theme.key_avatar_backgroundGreen),
-                new ThemeDescription(null, 0, null, null, null, сellDelegate, Theme.key_avatar_backgroundCyan),
-                new ThemeDescription(null, 0, null, null, null, сellDelegate, Theme.key_avatar_backgroundBlue),
-                new ThemeDescription(null, 0, null, null, null, сellDelegate, Theme.key_avatar_backgroundPink),
+                new ThemeDescription(null, 0, null, null, null, cellDelegate, Theme.key_avatar_backgroundRed),
+                new ThemeDescription(null, 0, null, null, null, cellDelegate, Theme.key_avatar_backgroundOrange),
+                new ThemeDescription(null, 0, null, null, null, cellDelegate, Theme.key_avatar_backgroundViolet),
+                new ThemeDescription(null, 0, null, null, null, cellDelegate, Theme.key_avatar_backgroundGreen),
+                new ThemeDescription(null, 0, null, null, null, cellDelegate, Theme.key_avatar_backgroundCyan),
+                new ThemeDescription(null, 0, null, null, null, cellDelegate, Theme.key_avatar_backgroundBlue),
+                new ThemeDescription(null, 0, null, null, null, cellDelegate, Theme.key_avatar_backgroundPink),
         };
     }
 }

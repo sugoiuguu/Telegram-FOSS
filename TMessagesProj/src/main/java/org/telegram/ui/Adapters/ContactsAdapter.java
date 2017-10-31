@@ -9,16 +9,20 @@
 package org.telegram.ui.Adapters;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.graphics.drawable.GradientDrawable;
 import android.view.View;
 import android.view.ViewGroup;
 
 import org.telegram.messenger.AndroidUtilities;
+import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.support.widget.RecyclerView;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.messenger.ContactsController;
 import org.telegram.messenger.MessagesController;
 import org.telegram.messenger.R;
+import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.Cells.DividerCell;
 import org.telegram.ui.Cells.GraySectionCell;
 import org.telegram.ui.Cells.LetterSectionCell;
@@ -190,32 +194,120 @@ public class ContactsAdapter extends RecyclerListView.SectionsAdapter {
                 cell.setLetter("");
             }
         }
+		if(Theme.usePlusTheme)cell.setLetterColor(AndroidUtilities.getIntDef("contactsNameColor", 0xff808080)); //Plus
         return view;
     }
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+		//plus
+		SharedPreferences themePrefs = ApplicationLoader.applicationContext.getSharedPreferences(AndroidUtilities.THEME_PREFS, AndroidUtilities.THEME_PREFS_MODE);
+        int cColorGrey = themePrefs.getInt("contactsNameColor", 0xff737373);
+        int cColorBlack = themePrefs.getInt("contactsNameColor", 0xff000000);
+        int iconsColor = themePrefs.getInt("contactsIconsColor", 0xff737373);
+		//
         View view;
         switch (viewType) {
             case 0:
                 view = new UserCell(mContext, 58, 1, false);
+                if(Theme.usePlusTheme) {
+                    view.setTag("Contacts");
+                    updateViewColor(view);
+                }
                 break;
             case 1:
                 view = new TextCell(mContext);
+                if(Theme.usePlusTheme) {
+                    ((TextCell) view).setTextColor(cColorBlack);
+                    ((TextCell) view).setTextSize(themePrefs.getInt("contactsNameSize", 16));
+                    ((TextCell) view).setIconColor(iconsColor);
+                    updateViewColor(view);
+                }
                 break;
             case 2:
                 view = new GraySectionCell(mContext);
                 ((GraySectionCell) view).setText(LocaleController.getString("Contacts", R.string.Contacts).toUpperCase());
+                if(Theme.usePlusTheme) {
+                    ((GraySectionCell) view).setBackgroundColor(themePrefs.getInt("contactsRowColor", 0xffffffff));
+                    ((GraySectionCell) view).setTextColor(cColorGrey);
+                    updateViewColor(view);
+                }
                 break;
             case 3:
             default:
                 view = new DividerCell(mContext);
                 view.setPadding(AndroidUtilities.dp(LocaleController.isRTL ? 28 : 72), 0, AndroidUtilities.dp(LocaleController.isRTL ? 72 : 28), 0);
+                if(Theme.usePlusTheme) {
+                    view.setTag("contactsRowColor"); //Plus
+                    updateViewColor(view);
+                }
                 break;
         }
+        if(Theme.usePlusTheme)updateListBG(parent);
         return new RecyclerListView.Holder(view);
     }
+	//plus
+	private void updateListBG(ViewGroup vg){
+        SharedPreferences themePrefs = ApplicationLoader.applicationContext.getSharedPreferences(AndroidUtilities.THEME_PREFS, AndroidUtilities.THEME_PREFS_MODE);
+        int mainColor = themePrefs.getInt("contactsRowColor", 0xffffffff);
+        int value = themePrefs.getInt("contactsRowGradient", 0);
+        //boolean b = true;//themePrefs.getBoolean("contactsRowGradientListCheck", false);
+        if(value > 0) {
+            GradientDrawable.Orientation go;
+            switch(value) {
+                case 2:
+                    go = GradientDrawable.Orientation.LEFT_RIGHT;
+                    break;
+                case 3:
+                    go = GradientDrawable.Orientation.TL_BR;
+                    break;
+                case 4:
+                    go = GradientDrawable.Orientation.BL_TR;
+                    break;
+                default:
+                    go = GradientDrawable.Orientation.TOP_BOTTOM;
+            }
 
+            int gradColor = themePrefs.getInt("contactsRowGradientColor", 0xffffffff);
+            int[] colors = new int[]{mainColor, gradColor};
+            GradientDrawable gd = new GradientDrawable(go, colors);
+            vg.setBackgroundDrawable(gd);
+        }else{
+            vg.setBackgroundColor(mainColor);
+        }
+    }
+
+    private void updateViewColor(View v){
+        SharedPreferences themePrefs = ApplicationLoader.applicationContext.getSharedPreferences(AndroidUtilities.THEME_PREFS, AndroidUtilities.THEME_PREFS_MODE);
+        int mainColor = themePrefs.getInt("contactsRowColor", 0xffffffff);
+        int value = themePrefs.getInt("contactsRowGradient", 0);
+        boolean b = true;//themePrefs.getBoolean("contactsRowGradientListCheck", false);
+        if(value > 0 && !b) {
+            GradientDrawable.Orientation go;
+            switch(value) {
+                case 2:
+                    go = GradientDrawable.Orientation.LEFT_RIGHT;
+                    break;
+                case 3:
+                    go = GradientDrawable.Orientation.TL_BR;
+                    break;
+                case 4:
+                    go = GradientDrawable.Orientation.BL_TR;
+                    break;
+                default:
+                    go = GradientDrawable.Orientation.TOP_BOTTOM;
+            }
+
+            int gradColor = themePrefs.getInt("contactsRowGradientColor", 0xffffffff);
+            int[] colors = new int[]{mainColor, gradColor};
+            GradientDrawable gd = new GradientDrawable(go, colors);
+            v.setBackgroundDrawable(gd);
+        } else if(b){
+            v.setBackgroundColor(0x00000000);
+        }
+        if(value > 0)v.setTag("Contacts00");
+    }
+	//
     @Override
     public void onBindViewHolder(int section, int position, RecyclerView.ViewHolder holder) {
         switch (holder.getItemViewType()) {

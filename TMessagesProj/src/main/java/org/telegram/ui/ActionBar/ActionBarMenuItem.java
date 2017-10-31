@@ -12,6 +12,7 @@ import android.content.Context;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -204,32 +205,32 @@ public class ActionBarMenuItem extends FrameLayout {
         if (popupLayout != null) {
             return;
         }
-        rect = new Rect();
-        location = new int[2];
-        popupLayout = new ActionBarPopupWindow.ActionBarPopupWindowLayout(getContext());
-        popupLayout.setOnTouchListener(new OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
-                    if (popupWindow != null && popupWindow.isShowing()) {
-                        v.getHitRect(rect);
-                        if (!rect.contains((int) event.getX(), (int) event.getY())) {
-                            popupWindow.dismiss();
+            rect = new Rect();
+            location = new int[2];
+            popupLayout = new ActionBarPopupWindow.ActionBarPopupWindowLayout(getContext());
+            popupLayout.setOnTouchListener(new OnTouchListener() {
+                @Override
+                public boolean onTouch(View v, MotionEvent event) {
+                    if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+                        if (popupWindow != null && popupWindow.isShowing()) {
+                            v.getHitRect(rect);
+                            if (!rect.contains((int) event.getX(), (int) event.getY())) {
+                                popupWindow.dismiss();
+                            }
                         }
                     }
+                    return false;
                 }
-                return false;
-            }
-        });
-        popupLayout.setDispatchKeyEventListener(new ActionBarPopupWindow.OnDispatchKeyEventListener() {
-            @Override
-            public void onDispatchKeyEvent(KeyEvent keyEvent) {
-                if (keyEvent.getKeyCode() == KeyEvent.KEYCODE_BACK && keyEvent.getRepeatCount() == 0 && popupWindow != null && popupWindow.isShowing()) {
-                    popupWindow.dismiss();
+            });
+            popupLayout.setDispatchKeyEventListener(new ActionBarPopupWindow.OnDispatchKeyEventListener() {
+                @Override
+                public void onDispatchKeyEvent(KeyEvent keyEvent) {
+                    if (keyEvent.getKeyCode() == KeyEvent.KEYCODE_BACK && keyEvent.getRepeatCount() == 0 && popupWindow != null && popupWindow.isShowing()) {
+                        popupWindow.dismiss();
+                    }
                 }
-            }
-        });
-    }
+            });
+        }
 
     public void addSubItem(View view, int width, int height) {
         createPopupLayout();
@@ -415,7 +416,19 @@ public class ActionBarMenuItem extends FrameLayout {
     public ImageView getImageView() {
         return iconView;
     }
+    //Plus
+    public void setIcon(Drawable drawable) {
+        iconView.setImageDrawable(drawable);
+    }
 
+    /*public void setIconColor(int color){
+        iconView.setColorFilter(color, PorterDuff.Mode.SRC_IN);
+    }*/
+
+    public ImageView getClearButton(){
+        return clearButton;
+    }
+	//
     public EditText getSearchField() {
         return searchField;
     }
@@ -556,8 +569,8 @@ public class ActionBarMenuItem extends FrameLayout {
         int offsetY;
 
         if (parentMenu != null) {
-            offsetY = -parentMenu.parentActionBar.getMeasuredHeight() + parentMenu.getTop();
-        } else {
+                offsetY = -parentMenu.parentActionBar.getMeasuredHeight() + parentMenu.getTop();
+            } else {
             float scaleY = getScaleY();
             offsetY = -(int) (getMeasuredHeight() * scaleY - getTranslationY() / scaleY);
         }
@@ -568,13 +581,13 @@ public class ActionBarMenuItem extends FrameLayout {
 
         if (parentMenu != null) {
             View parent = parentMenu.parentActionBar;
-            if (subMenuOpenSide == 0) {
-                if (show) {
-                    popupWindow.showAsDropDown(parent, getLeft() + parentMenu.getLeft() + getMeasuredWidth() - popupLayout.getMeasuredWidth(), offsetY);
-                }
-                if (update) {
-                    popupWindow.update(parent, getLeft() + parentMenu.getLeft() + getMeasuredWidth() - popupLayout.getMeasuredWidth(), offsetY, -1, -1);
-                }
+        if (subMenuOpenSide == 0) {
+                    if (show) {
+                        popupWindow.showAsDropDown(parent, getLeft() + parentMenu.getLeft() + getMeasuredWidth() - popupLayout.getMeasuredWidth(), offsetY);
+                    }
+                    if (update) {
+                        popupWindow.update(parent, getLeft() + parentMenu.getLeft() + getMeasuredWidth() - popupLayout.getMeasuredWidth(), offsetY, -1, -1);
+                    }
             } else {
                 if (show) {
                     popupWindow.showAsDropDown(parent, getLeft() - AndroidUtilities.dp(8), offsetY);
@@ -592,17 +605,17 @@ public class ActionBarMenuItem extends FrameLayout {
                     }
                     if (update) {
                         popupWindow.update(parent, getLeft() + getMeasuredWidth() - popupLayout.getMeasuredWidth(), offsetY, -1, -1);
-                    }
-                }
-            } else {
-                if (show) {
-                    popupWindow.showAsDropDown(this, -AndroidUtilities.dp(8), offsetY);
-                }
-                if (update) {
-                    popupWindow.update(this, -AndroidUtilities.dp(8), offsetY, -1, -1);
                 }
             }
+        } else {
+            if (show) {
+                popupWindow.showAsDropDown(this, -AndroidUtilities.dp(8), offsetY);
+            }
+            if (update) {
+                popupWindow.update(this, -AndroidUtilities.dp(8), offsetY, -1, -1);
+            }
         }
+    }
     }
 
     public void hideSubItem(int id) {

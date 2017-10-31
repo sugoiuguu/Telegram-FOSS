@@ -486,7 +486,7 @@ public class CancelAccountDeletionActivity extends BaseFragment {
             codeField.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
             codeField.setHint(LocaleController.getString("Code", R.string.Code));
             AndroidUtilities.clearCursorDrawable(codeField);
-            codeField.setHintTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
+            codeField.setHintTextColor(Theme.usePlusTheme ? Theme.prefSummaryColor : Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
             codeField.setImeOptions(EditorInfo.IME_ACTION_NEXT | EditorInfo.IME_FLAG_NO_EXTRACT_UI);
             codeField.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 18);
             codeField.setInputType(InputType.TYPE_CLASS_PHONE);

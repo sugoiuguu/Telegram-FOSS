@@ -9,6 +9,7 @@
 package org.telegram.ui.Components;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
@@ -17,7 +18,9 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 import org.telegram.messenger.AndroidUtilities;
+import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.Emoji;
+import org.telegram.messenger.R;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.Theme;
 
@@ -87,7 +90,14 @@ public class BotKeyboardView extends LinearLayout {
         botButtons = buttons;
         container.removeAllViews();
         buttonViews.clear();
-
+        //plus
+        if(Theme.usePlusTheme) {
+            SharedPreferences themePrefs = ApplicationLoader.applicationContext.getSharedPreferences(AndroidUtilities.THEME_PREFS, AndroidUtilities.THEME_PREFS_MODE);
+            int bgColor = themePrefs.getInt("chatEmojiViewBGColor", 0xfff5f6f7);
+            setBackgroundColor(bgColor);
+            int tabColor = themePrefs.getInt("chatEmojiViewTabColor", AndroidUtilities.getIntDarkerColor("themeColor", -0x15));
+            //
+        }
         if (buttons != null && botButtons.rows.size() != 0) {
             isFullSize = !buttons.resize;
             buttonHeight = !isFullSize ? 42 : (int) Math.max(42, (panelHeight - AndroidUtilities.dp(30) - (botButtons.rows.size() - 1) * AndroidUtilities.dp(10)) / botButtons.rows.size() / AndroidUtilities.density);

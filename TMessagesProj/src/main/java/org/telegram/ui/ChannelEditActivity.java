@@ -20,6 +20,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.TextView;
 
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.ChatObject;
@@ -70,7 +71,9 @@ public class ChannelEditActivity extends BaseFragment implements NotificationCen
     private boolean loadingUsers;
     private HashMap<Integer, TLRPC.ChatParticipant> participantsMap = new HashMap<>();
     private boolean usersEndReached;
-
+    //plus
+    private TextView checkTextView;
+    //
     private TLRPC.ChatFull info;
     private ArrayList<Integer> sortedUsers;
 
@@ -203,7 +206,7 @@ public class ChannelEditActivity extends BaseFragment implements NotificationCen
 
         listViewAdapter = new ListAdapter(context);
         fragmentView = new FrameLayout(context);
-        fragmentView.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundGray));
+        fragmentView.setBackgroundColor(Theme.usePlusTheme ? Theme.profileRowColor : Theme.getColor(Theme.key_windowBackgroundGray));
         FrameLayout frameLayout = (FrameLayout) fragmentView;
 
         EmptyTextProgressView emptyView = new EmptyTextProgressView(context);
@@ -251,9 +254,9 @@ public class ChannelEditActivity extends BaseFragment implements NotificationCen
                         if (position == blockedUsersRow) {
                             args.putInt("type", 0);
                         } else if (position == managementRow) {
-                            args.putInt("type", 1);
+                    args.putInt("type", 1);
                         }
-                        presentFragment(new ChannelUsersActivity(args));
+                    presentFragment(new ChannelUsersActivity(args));
                     } else if (position == eventLogRow) {
                         presentFragment(new ChannelAdminLogActivity(currentChat));
                     } else if (position == infoRow) {
@@ -262,8 +265,8 @@ public class ChannelEditActivity extends BaseFragment implements NotificationCen
                         ChannelEditInfoActivity fragment = new ChannelEditInfoActivity(args);
                         fragment.setInfo(info);
                         presentFragment(fragment);
-                    }
-                }
+            }
+        }
             }
         });
 
@@ -311,7 +314,7 @@ public class ChannelEditActivity extends BaseFragment implements NotificationCen
                 TLRPC.Chat newChat = MessagesController.getInstance().getChat(chat_id);
                 if (newChat != null) {
                     currentChat = newChat;
-                }
+        }
                 if (loadChannelParticipants || !byChannelUsers) {
                     getChannelParticipants(true);
                 }
@@ -342,9 +345,9 @@ public class ChannelEditActivity extends BaseFragment implements NotificationCen
         int reqId = ConnectionsManager.getInstance().sendRequest(req, new RequestDelegate() {
             @Override
             public void run(final TLObject response, final TLRPC.TL_error error) {
-                AndroidUtilities.runOnUIThread(new Runnable() {
-                    @Override
-                    public void run() {
+        AndroidUtilities.runOnUIThread(new Runnable() {
+            @Override
+            public void run() {
                         if (error == null) {
                             TLRPC.TL_channels_channelParticipants res = (TLRPC.TL_channels_channelParticipants) response;
                             MessagesController.getInstance().putUsers(res.users, false);
@@ -356,7 +359,7 @@ public class ChannelEditActivity extends BaseFragment implements NotificationCen
                                 info.participants = new TLRPC.TL_chatParticipants();
                                 MessagesStorage.getInstance().putUsersAndChats(res.users, null, true, true);
                                 MessagesStorage.getInstance().updateChannelUsers(chat_id, res.participants);
-                            }
+                    }
                             for (int a = 0; a < res.participants.size(); a++) {
                                 TLRPC.TL_chatChannelParticipant participant = new TLRPC.TL_chatChannelParticipant();
                                 participant.channelParticipant = res.participants.get(a);
@@ -366,7 +369,7 @@ public class ChannelEditActivity extends BaseFragment implements NotificationCen
                                 if (!participantsMap.containsKey(participant.user_id)) {
                                     info.participants.participants.add(participant);
                                     participantsMap.put(participant.user_id, participant);
-                                }
+    }
                             }
                         }
                         loadingUsers = false;
@@ -422,7 +425,7 @@ public class ChannelEditActivity extends BaseFragment implements NotificationCen
             membersEndRow = -1;
             loadMoreMembersRow = -1;
             membersSection2Row = -1;
-        }
+    }
 
         /*
         if (!ChatObject.isNotInChat(currentChat) && !currentChat.megagroup && (currentChat.creator || currentChat.admin_rights != null && currentChat.admin_rights.add_admins)) {
@@ -527,7 +530,7 @@ public class ChannelEditActivity extends BaseFragment implements NotificationCen
                                         for (int a = 0; a < info.participants.participants.size(); a++) {
                                             TLRPC.ChannelParticipant p = ((TLRPC.TL_chatChannelParticipant) info.participants.participants.get(a)).channelParticipant;
                                             if (p.user_id == uid) {
-                                                if (info != null) {
+        if (info != null) {
                                                     info.participants_count--;
                                                 }
                                                 info.participants.participants.remove(a);
@@ -637,7 +640,7 @@ public class ChannelEditActivity extends BaseFragment implements NotificationCen
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             View view = new ManageChatUserCell(mContext, 8, true);
-            view.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
+            view.setBackgroundColor(Theme.usePlusTheme ? Theme.profileRowColor : Theme.getColor(Theme.key_windowBackgroundWhite));
             ((ManageChatUserCell) view).setDelegate(new ManageChatUserCell.ManageChatUserCellDelegate() {
                 @Override
                 public boolean onOptionsButtonCheck(ManageChatUserCell cell, boolean click) {
@@ -701,11 +704,16 @@ public class ChannelEditActivity extends BaseFragment implements NotificationCen
             switch (viewType) {
                 case 0:
                     view = new ManageChatTextCell(mContext);
-                    view.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
+                    view.setBackgroundColor(Theme.usePlusTheme ? Theme.profileRowColor : Theme.getColor(Theme.key_windowBackgroundWhite));
                     break;
                 case 1:
                     view = new ManageChatUserCell(mContext, 8, true);
-                    view.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
+                    view.setBackgroundColor(Theme.usePlusTheme ? Theme.profileRowColor : Theme.getColor(Theme.key_windowBackgroundWhite));
+                    view.setTag("Profile");
+                    if(Theme.usePlusTheme) {
+                        ((ManageChatUserCell)view).setNameColor(Theme.profileRowTitleColor);
+                        ((ManageChatUserCell)view).setStatusColor(Theme.profileRowStatusColor);
+                    }
                     ((ManageChatUserCell) view).setDelegate(new ManageChatUserCell.ManageChatUserCellDelegate() {
                         @Override
                         public boolean onOptionsButtonCheck(ManageChatUserCell cell, boolean click) {
@@ -744,7 +752,7 @@ public class ChannelEditActivity extends BaseFragment implements NotificationCen
             switch (holder.getItemViewType()) {
                 case 0:
                     ManageChatTextCell textCell = (ManageChatTextCell) holder.itemView;
-                    textCell.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
+                    textCell.setTextColor(Theme.usePlusTheme ?  Theme.profileRowTitleColor : Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
                     textCell.setTag(Theme.key_windowBackgroundWhiteBlackText);
 
                     if (i == managementRow) {

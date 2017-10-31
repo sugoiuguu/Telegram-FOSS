@@ -169,9 +169,11 @@ public class ProfileSearchCell extends BaseCell {
                 drawCheck = chat.verified;
                 if (!LocaleController.isRTL) {
                     nameLockLeft = AndroidUtilities.dp(AndroidUtilities.leftBaseline);
-                    nameLeft = AndroidUtilities.dp(AndroidUtilities.leftBaseline + 4) + (drawNameGroup ? Theme.dialogs_groupDrawable.getIntrinsicWidth() : Theme.dialogs_broadcastDrawable.getIntrinsicWidth());
+                    //nameLeft = AndroidUtilities.dp(AndroidUtilities.leftBaseline + 4) + (drawNameGroup ? Theme.dialogs_groupDrawable.getIntrinsicWidth() : Theme.dialogs_broadcastDrawable.getIntrinsicWidth());
+                    nameLeft = AndroidUtilities.dp(AndroidUtilities.leftBaseline + 4) + (drawNameGroup ? chat.megagroup ? Theme.dialogs_superGroupDrawable.getIntrinsicWidth() : Theme.dialogs_groupDrawable.getIntrinsicWidth() : Theme.dialogs_broadcastDrawable.getIntrinsicWidth());
                 } else {
-                    nameLockLeft = getMeasuredWidth() - AndroidUtilities.dp(AndroidUtilities.leftBaseline + 2) - (drawNameGroup ? Theme.dialogs_groupDrawable.getIntrinsicWidth() : Theme.dialogs_broadcastDrawable.getIntrinsicWidth());
+                    //nameLockLeft = getMeasuredWidth() - AndroidUtilities.dp(AndroidUtilities.leftBaseline + 2) - (drawNameGroup ? Theme.dialogs_groupDrawable.getIntrinsicWidth() : Theme.dialogs_broadcastDrawable.getIntrinsicWidth());
+                    nameLockLeft = getMeasuredWidth() - AndroidUtilities.dp(AndroidUtilities.leftBaseline + 2) - (drawNameGroup ? chat.megagroup ? Theme.dialogs_superGroupDrawable.getIntrinsicWidth() : Theme.dialogs_groupDrawable.getIntrinsicWidth() : Theme.dialogs_broadcastDrawable.getIntrinsicWidth());
                     nameLeft = AndroidUtilities.dp(11);
                 }
             } else {
@@ -234,7 +236,8 @@ public class ProfileSearchCell extends BaseCell {
         } else if (drawNameBroadcast) {
             nameWidth -= AndroidUtilities.dp(6) + Theme.dialogs_broadcastDrawable.getIntrinsicWidth();
         } else if (drawNameGroup) {
-            nameWidth -= AndroidUtilities.dp(6) + Theme.dialogs_groupDrawable.getIntrinsicWidth();
+            //nameWidth -= AndroidUtilities.dp(6) + Theme.dialogs_groupDrawable.getIntrinsicWidth();
+            nameWidth -= AndroidUtilities.dp(6) + (chat.megagroup ? Theme.dialogs_superGroupDrawable.getIntrinsicWidth() : Theme.dialogs_groupDrawable.getIntrinsicWidth());
         } else if (drawNameBot) {
             nameWidth -= AndroidUtilities.dp(6) + Theme.dialogs_botDrawable.getIntrinsicWidth();
         }
@@ -457,8 +460,15 @@ public class ProfileSearchCell extends BaseCell {
             setDrawableBounds(Theme.dialogs_lockDrawable, nameLockLeft, nameLockTop);
             Theme.dialogs_lockDrawable.draw(canvas);
         } else if (drawNameGroup) {
-            setDrawableBounds(Theme.dialogs_groupDrawable, nameLockLeft, nameLockTop);
-            Theme.dialogs_groupDrawable.draw(canvas);
+            //setDrawableBounds(Theme.dialogs_groupDrawable, nameLockLeft, nameLockTop);
+            //Theme.dialogs_groupDrawable.draw(canvas);
+            if(chat.megagroup){
+                setDrawableBounds(Theme.dialogs_superGroupDrawable, nameLockLeft, nameLockTop);
+                Theme.dialogs_superGroupDrawable.draw(canvas);
+            } else{
+                setDrawableBounds(Theme.dialogs_groupDrawable, nameLockLeft, nameLockTop);
+                Theme.dialogs_groupDrawable.draw(canvas);
+            }
         } else if (drawNameBroadcast) {
             setDrawableBounds(Theme.dialogs_broadcastDrawable, nameLockLeft, nameLockTop);
             Theme.dialogs_broadcastDrawable.draw(canvas);

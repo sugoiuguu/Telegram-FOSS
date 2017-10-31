@@ -197,7 +197,7 @@ public class CallLogActivity extends BaseFragment implements NotificationCenter.
 		});
 
 		fragmentView = new FrameLayout(context);
-		fragmentView.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundGray));
+		fragmentView.setBackgroundColor(Theme.usePlusTheme ? Theme.chatsRowColor : Theme.getColor(Theme.key_windowBackgroundGray));
 		FrameLayout frameLayout = (FrameLayout) fragmentView;
 
 		emptyView = new EmptyTextProgressView(context);
@@ -243,7 +243,7 @@ public class CallLogActivity extends BaseFragment implements NotificationCenter.
 							public void onClick(DialogInterface dialog, int which) {
 								switch(which){
 									case 0:
-										confirmAndDelete(row);
+								confirmAndDelete(row);
 										break;
 									case 1:
 										VoIPHelper.showRateAlert(getParentActivity(), (TLRPC.TL_messageActionPhoneCall) row.calls.get(0).action);
@@ -313,7 +313,7 @@ public class CallLogActivity extends BaseFragment implements NotificationCenter.
 			drawable = combinedDrawable;
 		}
 		floatingButton.setBackgroundDrawable(drawable);
-		floatingButton.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_chats_actionIcon), PorterDuff.Mode.MULTIPLY));
+		floatingButton.setColorFilter(new PorterDuffColorFilter(Theme.usePlusTheme ? Theme.chatsFloatingPencilColor : Theme.getColor(Theme.key_chats_actionIcon), PorterDuff.Mode.MULTIPLY));
 		floatingButton.setImageResource(R.drawable.ic_call_white_24dp);
 		if (Build.VERSION.SDK_INT >= 21) {
 			StateListAnimator animator = new StateListAnimator();

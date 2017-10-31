@@ -269,8 +269,8 @@ public class GroupCreateFinalActivity extends BaseFragment implements Notificati
         editText.setMaxLines(4);
         editText.setGravity(Gravity.CENTER_VERTICAL | (LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT));
         editText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 18);
-        editText.setHintTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
-        editText.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
+        editText.setHintTextColor(Theme.usePlusTheme ? Theme.prefSummaryColor : Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
+        editText.setTextColor(Theme.usePlusTheme ? Theme.prefTitleColor : Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
         editText.setBackgroundDrawable(Theme.createEditTextDrawable(context, false));
         editText.setImeOptions(EditorInfo.IME_FLAG_NO_EXTRACT_UI);
         editText.setInputType(InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);

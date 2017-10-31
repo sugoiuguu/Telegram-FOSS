@@ -13,7 +13,9 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Canvas;
+import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -38,6 +40,7 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 import org.telegram.messenger.AndroidUtilities;
+import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.ChatObject;
 import org.telegram.messenger.ContactsController;
 import org.telegram.messenger.FileLog;
@@ -375,7 +378,12 @@ public class GroupCreateActivity extends BaseFragment implements NotificationCen
         });
 
         ActionBarMenu menu = actionBar.createMenu();
-        doneButton = menu.addItemWithWidth(done_button, R.drawable.ic_done, AndroidUtilities.dp(56));
+        //doneButton = menu.addItemWithWidth(done_button, R.drawable.ic_done, AndroidUtilities.dp(56));
+        Drawable done = getParentActivity().getResources().getDrawable(R.drawable.ic_done);
+        SharedPreferences themePrefs = ApplicationLoader.applicationContext.getSharedPreferences(AndroidUtilities.THEME_PREFS, AndroidUtilities.THEME_PREFS_MODE);
+        done.setColorFilter(Theme.prefActionbarIconsColor, PorterDuff.Mode.SRC_IN);
+        doneButton = menu.addItemWithWidth(done_button, done, AndroidUtilities.dp(56));
+
         if (chatType != ChatObject.CHAT_TYPE_CHANNEL) {
             doneButton.setScaleX(0.0f);
             doneButton.setScaleY(0.0f);
@@ -449,9 +457,10 @@ public class GroupCreateActivity extends BaseFragment implements NotificationCen
             }
         };
         editText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 18);
-        editText.setHintColor(Theme.getColor(Theme.key_groupcreate_hintText));
-        editText.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
-        editText.setCursorColor(Theme.getColor(Theme.key_groupcreate_cursor));
+        editText.setHintColor(Theme.usePlusTheme ? Theme.prefSummaryColor : Theme.getColor(Theme.key_groupcreate_hintText));
+        editText.setTextColor(Theme.usePlusTheme ? Theme.prefTitleColor : Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
+        editText.setCursorColor(Theme.usePlusTheme ? Theme.prefSummaryColor : Theme.getColor(Theme.key_groupcreate_cursor));
+        if(Theme.usePlusTheme)editText.getBackground().setColorFilter(Theme.defColor, PorterDuff.Mode.SRC_IN);
         editText.setInputType(InputType.TYPE_TEXT_VARIATION_FILTER | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS | InputType.TYPE_TEXT_FLAG_MULTI_LINE);
         editText.setSingleLine(true);
         editText.setBackgroundDrawable(null);
@@ -618,7 +627,17 @@ public class GroupCreateActivity extends BaseFragment implements NotificationCen
         });
 
         updateHint();
+        if(Theme.usePlusTheme)updateTheme();
         return fragmentView;
+    }
+
+    private void updateTheme(){
+        actionBar.setBackgroundColor(Theme.prefActionbarColor);
+        actionBar.setTitleColor(Theme.prefActionbarTitleColor);
+        Drawable back = getParentActivity().getResources().getDrawable(R.drawable.ic_ab_back);
+        back.setColorFilter(Theme.prefActionbarIconsColor, PorterDuff.Mode.MULTIPLY);
+        actionBar.setBackButtonDrawable(back);
+        actionBar.setItemsColor(Theme.prefActionbarIconsColor, false);
     }
 
     @Override

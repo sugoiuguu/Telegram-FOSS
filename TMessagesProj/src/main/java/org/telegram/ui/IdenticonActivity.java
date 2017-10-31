@@ -124,7 +124,7 @@ public class IdenticonActivity extends BaseFragment implements NotificationCente
             }
         };
         FrameLayout parentFrameLayout = (FrameLayout) fragmentView;
-        fragmentView.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundGray));
+        fragmentView.setBackgroundColor(Theme.usePlusTheme ? Theme.prefBGColor : Theme.getColor(Theme.key_windowBackgroundGray));
         fragmentView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {

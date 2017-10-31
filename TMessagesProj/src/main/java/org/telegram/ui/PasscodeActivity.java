@@ -10,6 +10,7 @@ package org.telegram.ui;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
@@ -148,8 +149,10 @@ public class PasscodeActivity extends BaseFragment implements NotificationCenter
 
         if (type != 0) {
             ActionBarMenu menu = actionBar.createMenu();
-            menu.addItemWithWidth(done_button, R.drawable.ic_done, AndroidUtilities.dp(56));
-
+            //menu.addItemWithWidth(done_button, R.drawable.ic_done, AndroidUtilities.dp(56));
+            Drawable done = getParentActivity().getResources().getDrawable(R.drawable.ic_done);
+            done.setColorFilter(Theme.prefActionbarIconsColor, PorterDuff.Mode.SRC_IN);
+            menu.addItemWithWidth(done_button, done, AndroidUtilities.dp(56));
             titleTextView = new TextView(context);
             titleTextView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText6));
             if (type == 1) {
@@ -277,7 +280,7 @@ public class PasscodeActivity extends BaseFragment implements NotificationCenter
         } else {
             actionBar.setTitle(LocaleController.getString("Passcode", R.string.Passcode));
             frameLayout.setTag(Theme.key_windowBackgroundGray);
-            frameLayout.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundGray));
+            frameLayout.setBackgroundColor(Theme.usePlusTheme ? Theme.prefBGColor : Theme.getColor(Theme.key_windowBackgroundGray));
             listView = new RecyclerListView(context);
             listView.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false) {
                 @Override
@@ -411,6 +414,16 @@ public class PasscodeActivity extends BaseFragment implements NotificationCenter
             }, 200);
         }
         fixLayoutInternal();
+        if(Theme.usePlusTheme)updateTheme();
+    }
+
+    private void updateTheme(){
+        actionBar.setBackgroundColor(Theme.prefActionbarColor);
+        actionBar.setTitleColor(Theme.prefActionbarTitleColor);
+        Drawable back = getParentActivity().getResources().getDrawable(R.drawable.ic_ab_back);
+        back.setColorFilter(Theme.prefActionbarIconsColor, PorterDuff.Mode.MULTIPLY);
+        actionBar.setBackButtonDrawable(back);
+        actionBar.setItemsColor(Theme.prefActionbarIconsColor, false);
     }
 
     @Override

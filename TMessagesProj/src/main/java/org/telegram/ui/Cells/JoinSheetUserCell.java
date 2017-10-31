@@ -69,4 +69,9 @@ public class JoinSheetUserCell extends FrameLayout {
         avatarDrawable.setInfo(0, null, null, false, "+" + LocaleController.formatShortNumber(count, result));
         imageView.setImage((TLRPC.FileLocation) null, "50_50", avatarDrawable);
     }
+    // plus
+    public void setNameColor(int color) {
+        nameTextView.setTextColor(color);
+    }
+    //
 }

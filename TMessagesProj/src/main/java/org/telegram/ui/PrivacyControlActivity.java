@@ -8,16 +8,22 @@
 
 package org.telegram.ui;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.Spannable;
 import android.text.method.LinkMovementMethod;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
+import android.widget.EdgeEffect;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
@@ -48,6 +54,7 @@ import org.telegram.ui.Cells.TextSettingsCell;
 import org.telegram.ui.Components.LayoutHelper;
 import org.telegram.ui.Components.RecyclerListView;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 
 public class PrivacyControlActivity extends BaseFragment implements NotificationCenter.NotificationCenterDelegate {
@@ -77,6 +84,7 @@ public class PrivacyControlActivity extends BaseFragment implements Notification
     private int rowCount;
 
     private final static int done_button = 1;
+    private int bgColor;
 
     private static class LinkMovementMethodMy extends LinkMovementMethod {
         @Override
@@ -164,12 +172,14 @@ public class PrivacyControlActivity extends BaseFragment implements Notification
         doneButton.setVisibility(View.GONE);
 
         listAdapter = new ListAdapter(context);
-
+        SharedPreferences themePrefs = ApplicationLoader.applicationContext.getSharedPreferences(AndroidUtilities.THEME_PREFS, AndroidUtilities.THEME_PREFS_MODE);
+        bgColor = themePrefs.getInt("prefBGColor", 0xffffffff);
         fragmentView = new FrameLayout(context);
         FrameLayout frameLayout = (FrameLayout) fragmentView;
-        frameLayout.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundGray));
+        frameLayout.setBackgroundColor(Theme.usePlusTheme ? Theme.prefBGColor : Theme.getColor(Theme.key_windowBackgroundGray));
 
         listView = new RecyclerListView(context);
+        if(Theme.usePlusTheme)listView.setBackgroundColor(bgColor);
         listView.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false));
         listView.setVerticalScrollBarEnabled(false);
         frameLayout.addView(listView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT));
@@ -255,10 +265,56 @@ public class PrivacyControlActivity extends BaseFragment implements Notification
                 }
             }
         });
-
+        if(Theme.usePlusTheme)updateTheme();
         return fragmentView;
     }
 
+    private void updateTheme(){
+        actionBar.setBackgroundColor(Theme.prefActionbarColor);
+        actionBar.setTitleColor(Theme.prefActionbarTitleColor);
+        Drawable back = getParentActivity().getResources().getDrawable(R.drawable.ic_ab_back);
+        back.setColorFilter(Theme.prefActionbarIconsColor, PorterDuff.Mode.MULTIPLY);
+        actionBar.setBackButtonDrawable(back);
+        actionBar.setItemsColor(Theme.prefActionbarIconsColor, false);
+
+    }
+
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    public static void setEdgeGlowColor(AbsListView listView, int color) {
+        Class<?> CLASS_LIST_VIEW = AbsListView.class;
+        Field LIST_VIEW_FIELD_EDGE_GLOW_TOP;
+        Field LIST_VIEW_FIELD_EDGE_GLOW_BOTTOM;
+
+        Field edgeGlowTop = null, edgeGlowBottom = null;
+
+        for (Field f : CLASS_LIST_VIEW.getDeclaredFields()) {
+            switch (f.getName()) {
+                case "mEdgeGlowTop":
+                    f.setAccessible(true);
+                    edgeGlowTop = f;
+                    break;
+                case "mEdgeGlowBottom":
+                    f.setAccessible(true);
+                    edgeGlowBottom = f;
+                    break;
+            }
+        }
+
+        LIST_VIEW_FIELD_EDGE_GLOW_TOP = edgeGlowTop;
+        LIST_VIEW_FIELD_EDGE_GLOW_BOTTOM = edgeGlowBottom;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            try {
+                EdgeEffect ee;
+                ee = (EdgeEffect) LIST_VIEW_FIELD_EDGE_GLOW_TOP.get(listView);
+                ee.setColor(color);
+                ee = (EdgeEffect) LIST_VIEW_FIELD_EDGE_GLOW_BOTTOM.get(listView);
+                ee.setColor(color);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
     @Override
     public void didReceivedNotification(int id, Object... args) {
         if (id == NotificationCenter.privacyRulesUpdated) {
@@ -451,18 +507,23 @@ public class PrivacyControlActivity extends BaseFragment implements Notification
                 case 0:
                     view = new TextSettingsCell(mContext);
                     view.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
+                    if(Theme.usePlusTheme)view.setBackgroundColor(bgColor);
                     break;
                 case 1:
                     view = new TextInfoPrivacyCell(mContext);
+                    if(Theme.usePlusTheme)view.setBackgroundColor(bgColor);
                     break;
                 case 2:
                     view = new HeaderCell(mContext);
                     view.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
+                    if(Theme.usePlusTheme)view.setBackgroundColor(bgColor);
                     break;
                 case 3:
                 default:
                     view = new RadioCell(mContext);
                     view.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
+                    if(Theme.usePlusTheme)view.setBackgroundColor(bgColor);
+                    view.setTag("Pref");
                     break;
             }
             return new RecyclerListView.Holder(view);

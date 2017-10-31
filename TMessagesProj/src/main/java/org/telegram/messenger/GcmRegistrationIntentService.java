@@ -24,7 +24,8 @@ public class GcmRegistrationIntentService extends IntentService {
     protected void onHandleIntent(Intent intent) {
         try {
             InstanceID instanceID = InstanceID.getInstance(this);
-            final String token = instanceID.getToken(getString(R.string.gcm_defaultSenderId), GoogleCloudMessaging.INSTANCE_ID_SCOPE, null);
+            //final String token = instanceID.getToken(getString(R.string.gcm_defaultSenderId), GoogleCloudMessaging.INSTANCE_ID_SCOPE, null);
+            final String token = instanceID.getToken(BuildVars.GCM_SENDER_ID, GoogleCloudMessaging.INSTANCE_ID_SCOPE, null);
             FileLog.d("GCM Registration Token: " + token);
             AndroidUtilities.runOnUIThread(new Runnable() {
                 @Override

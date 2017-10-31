@@ -11,6 +11,7 @@ package org.telegram.ui.Cells;
 import android.animation.Animator;
 import android.animation.ObjectAnimator;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.text.method.LinkMovementMethod;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -18,7 +19,9 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import org.telegram.messenger.AndroidUtilities;
+import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.LocaleController;
+import org.telegram.messenger.R;
 import org.telegram.ui.Components.LayoutHelper;
 import org.telegram.ui.ActionBar.Theme;
 
@@ -44,6 +47,7 @@ public class TextInfoPrivacyCell extends FrameLayout {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(MeasureSpec.makeMeasureSpec(MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
+        if(Theme.usePlusTheme)setTheme();
     }
 
     public void setText(CharSequence text) {
@@ -54,7 +58,28 @@ public class TextInfoPrivacyCell extends FrameLayout {
         }
         textView.setText(text);
     }
+    //plus
+    public void setTextSize(int size) {
+        textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, size);
+    }
 
+    private void setTheme(){
+        int summaryColor = Theme.prefSummaryColor;
+        int shadowColor = Theme.prefShadowColor;
+        String tag = getTag() != null ? getTag().toString() : "";
+        if(tag.contains("Profile")){
+            summaryColor = Theme.profileRowStatusColor;
+        }else{
+            if(shadowColor != 0xfff0f0f0) {
+                setBackgroundColor(shadowColor);
+            } else {
+                setBackgroundResource(R.drawable.greydivider);
+            }
+        }
+        textView.setTextColor(summaryColor);
+        textView.setLinkTextColor(AndroidUtilities.setDarkColor(summaryColor, -64));
+    }
+    //
     public void setTextColor(int color) {
         textView.setTextColor(color);
     }
@@ -71,3 +96,4 @@ public class TextInfoPrivacyCell extends FrameLayout {
         }
     }
 }
+    

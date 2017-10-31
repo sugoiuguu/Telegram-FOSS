@@ -16,6 +16,7 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Vibrator;
 import android.text.InputType;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -25,6 +26,7 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.ListAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -77,7 +79,7 @@ public class ThemeActivity extends BaseFragment {
         listAdapter = new ListAdapter(context);
 
         FrameLayout frameLayout = new FrameLayout(context);
-        frameLayout.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundGray));
+        frameLayout.setBackgroundColor(Theme.usePlusTheme ? Theme.prefBGColor : Theme.getColor(Theme.key_windowBackgroundGray));
         fragmentView = frameLayout;
 
         listView = new RecyclerListView(context);
@@ -159,6 +161,9 @@ public class ThemeActivity extends BaseFragment {
                                 AndroidUtilities.shakeView(editText, 2, 0);
                                 return;
                             }
+                            //plus
+                            Theme.setUsePlusThemeKey(false);
+                            //
                             ThemeEditorView themeEditorView = new ThemeEditorView();
                             String name = editText.getText().toString() + ".attheme";
                             themeEditorView.show(getParentActivity(), name);

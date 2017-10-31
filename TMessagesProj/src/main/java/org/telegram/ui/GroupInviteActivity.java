@@ -11,6 +11,7 @@ package org.telegram.ui;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -109,7 +110,8 @@ public class GroupInviteActivity extends BaseFragment implements NotificationCen
         fragmentView = new FrameLayout(context);
         FrameLayout frameLayout = (FrameLayout) fragmentView;
         frameLayout.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundGray));
-
+        SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences(AndroidUtilities.THEME_PREFS, AndroidUtilities.THEME_PREFS_MODE);
+        if(Theme.usePlusTheme)frameLayout.setBackgroundColor(preferences.getInt("prefBGColor", 0xfff0f0f0));
         emptyView = new EmptyTextProgressView(context);
         emptyView.showProgress();
 
@@ -272,6 +274,11 @@ public class GroupInviteActivity extends BaseFragment implements NotificationCen
                 default:
                     view = new TextBlockCell(mContext);
                     view.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
+                    SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences(AndroidUtilities.THEME_PREFS, AndroidUtilities.THEME_PREFS_MODE);
+                    int bgColor = preferences.getInt("prefBGColor", 0xffffffff);
+                    int titleColor = preferences.getInt("prefTitleColor", 0xff212121);
+                    view.setBackgroundColor(bgColor);
+                    ((TextBlockCell) view).setTextColor(titleColor);
                     break;
             }
             return new RecyclerListView.Holder(view);

@@ -9,6 +9,7 @@
 package org.telegram.ui.Components;
 
 import android.content.Context;
+import android.graphics.PorterDuff;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
@@ -51,6 +52,7 @@ public class PickerBottomLayoutViewer extends FrameLayout {
         doneButton = new TextView(context);
         doneButton.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
         doneButton.setTextColor(isDarkTheme ? 0xffffffff : 0xff19a7e8);
+        if(Theme.usePlusTheme)doneButton.setTextColor(Theme.prefTitleColor);
         doneButton.setGravity(Gravity.CENTER);
         doneButton.setBackgroundDrawable(Theme.createSelectorDrawable(isDarkTheme ? Theme.ACTION_BAR_PICKER_SELECTOR_COLOR : Theme.ACTION_BAR_AUDIO_SELECTOR_COLOR, 0));
         doneButton.setPadding(AndroidUtilities.dp(20), 0, AndroidUtilities.dp(20), 0);
@@ -64,6 +66,9 @@ public class PickerBottomLayoutViewer extends FrameLayout {
         doneButtonBadgeTextView.setTextColor(0xffffffff);
         doneButtonBadgeTextView.setGravity(Gravity.CENTER);
         doneButtonBadgeTextView.setBackgroundResource(isDarkTheme ? R.drawable.photobadge : R.drawable.bluecounter);
+        //plus
+        if(Theme.usePlusTheme)doneButtonBadgeTextView.getBackground().setColorFilter(Theme.chatHeaderColor, PorterDuff.Mode.SRC_IN);
+        //
         doneButtonBadgeTextView.setMinWidth(AndroidUtilities.dp(23));
         doneButtonBadgeTextView.setPadding(AndroidUtilities.dp(8), 0, AndroidUtilities.dp(8), AndroidUtilities.dp(1));
         addView(doneButtonBadgeTextView, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, 23, Gravity.TOP | Gravity.RIGHT, 0, 0, 7, 0));

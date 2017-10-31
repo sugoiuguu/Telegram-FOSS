@@ -832,13 +832,13 @@ public class ChannelAdminLogActivity extends BaseFragment implements PhotoViewer
         bottomOverlayChatText = new TextView(context);
         bottomOverlayChatText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 15);
         bottomOverlayChatText.setTypeface(AndroidUtilities.getTypeface("fonts/rmedium.ttf"));
-        bottomOverlayChatText.setTextColor(Theme.getColor(Theme.key_chat_fieldOverlayText));
+        bottomOverlayChatText.setTextColor(Theme.usePlusTheme ? Theme.chatEditTextIconsColor == 0xffadadad ? Theme.defColor : Theme.chatEditTextIconsColor : Theme.getColor(Theme.key_chat_fieldOverlayText));
         bottomOverlayChatText.setText(LocaleController.getString("SETTINGS", R.string.SETTINGS).toUpperCase());
         bottomOverlayChat.addView(bottomOverlayChatText, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER));
 
         bottomOverlayImage = new ImageView(context);
         bottomOverlayImage.setImageResource(R.drawable.log_info);
-        bottomOverlayImage.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_chat_fieldOverlayText), PorterDuff.Mode.MULTIPLY));
+        bottomOverlayImage.setColorFilter(new PorterDuffColorFilter(Theme.usePlusTheme ? Theme.chatEditTextIconsColor == 0xffadadad ? Theme.defColor : Theme.chatEditTextIconsColor :  Theme.getColor(Theme.key_chat_fieldOverlayText), PorterDuff.Mode.MULTIPLY));
         bottomOverlayImage.setScaleType(ImageView.ScaleType.CENTER);
         bottomOverlayChat.addView(bottomOverlayImage, LayoutHelper.createFrame(48, 48, Gravity.RIGHT | Gravity.TOP, 3, 0, 0, 0));
         bottomOverlayImage.setOnClickListener(new View.OnClickListener() {
@@ -900,7 +900,7 @@ public class ChannelAdminLogActivity extends BaseFragment implements PhotoViewer
         searchCalendarButton = new ImageView(context);
         searchCalendarButton.setScaleType(ImageView.ScaleType.CENTER);
         searchCalendarButton.setImageResource(R.drawable.search_calendar);
-        searchCalendarButton.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_chat_searchPanelIcons), PorterDuff.Mode.MULTIPLY));
+        searchCalendarButton.setColorFilter(new PorterDuffColorFilter(Theme.usePlusTheme ? Theme.chatEditTextIconsColor == 0xffadadad ? Theme.defColor : Theme.chatEditTextIconsColor : Theme.getColor(Theme.key_chat_searchPanelIcons), PorterDuff.Mode.MULTIPLY));
         searchContainer.addView(searchCalendarButton, LayoutHelper.createFrame(48, 48, Gravity.RIGHT | Gravity.TOP));
         searchCalendarButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -2029,7 +2029,12 @@ public class ChannelAdminLogActivity extends BaseFragment implements PhotoViewer
                     public void didLongPressed(ChatMessageCell cell) {
                         createMenu(cell);
                     }
+                    //plus
+                    @Override
+                    public void didLongPressedAvatar(ChatMessageCell cell, TLRPC.User user) {
 
+                    }
+                    //
                     @Override
                     public boolean canPerformActions() {
                         return true;

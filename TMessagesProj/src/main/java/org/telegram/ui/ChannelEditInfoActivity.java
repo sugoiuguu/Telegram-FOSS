@@ -307,7 +307,7 @@ public class ChannelEditInfoActivity extends BaseFragment implements AvatarUpdat
         doneButton = menu.addItemWithWidth(done_button, R.drawable.ic_done, AndroidUtilities.dp(56));
 
         fragmentView = new ScrollView(context);
-        fragmentView.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundGray));
+        fragmentView.setBackgroundColor(Theme.usePlusTheme ? Theme.prefBGColor : Theme.getColor(Theme.key_windowBackgroundGray));
         ScrollView scrollView = (ScrollView) fragmentView;
         scrollView.setFillViewport(true);
         linearLayout = new LinearLayout(context);
@@ -319,7 +319,7 @@ public class ChannelEditInfoActivity extends BaseFragment implements AvatarUpdat
 
         linearLayout2 = new LinearLayout(context);
         linearLayout2.setOrientation(LinearLayout.VERTICAL);
-        linearLayout2.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
+        linearLayout2.setBackgroundColor(Theme.usePlusTheme ? Theme.prefBGColor : Theme.getColor(Theme.key_windowBackgroundWhite));
         linearLayout.addView(linearLayout2, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
 
         FrameLayout frameLayout = new FrameLayout(context);
@@ -373,7 +373,7 @@ public class ChannelEditInfoActivity extends BaseFragment implements AvatarUpdat
         nameTextView.setMaxLines(4);
         nameTextView.setGravity(Gravity.CENTER_VERTICAL | (LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT));
         nameTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);
-        nameTextView.setHintTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
+        nameTextView.setHintTextColor(Theme.usePlusTheme ? Theme.prefSummaryColor : Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
         nameTextView.setBackgroundDrawable(Theme.createEditTextDrawable(context, false));
         nameTextView.setImeOptions(EditorInfo.IME_FLAG_NO_EXTRACT_UI);
         nameTextView.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
@@ -384,7 +384,7 @@ public class ChannelEditInfoActivity extends BaseFragment implements AvatarUpdat
         inputFilters[0] = new InputFilter.LengthFilter(100);
         nameTextView.setFilters(inputFilters);
         AndroidUtilities.clearCursorDrawable(nameTextView);
-        nameTextView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
+        nameTextView.setTextColor(Theme.usePlusTheme ? Theme.prefTitleColor : Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
         frameLayout.addView(nameTextView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER_VERTICAL, LocaleController.isRTL ? 16 : 96, 0, LocaleController.isRTL ? 96 : 16, 0));
         nameTextView.addTextChangedListener(new TextWatcher() {
             @Override
@@ -410,13 +410,13 @@ public class ChannelEditInfoActivity extends BaseFragment implements AvatarUpdat
 
         linearLayout3 = new LinearLayout(context);
         linearLayout3.setOrientation(LinearLayout.VERTICAL);
-        linearLayout3.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
+        linearLayout3.setBackgroundColor(Theme.usePlusTheme ? Theme.prefBGColor : Theme.getColor(Theme.key_windowBackgroundWhite));
         linearLayout.addView(linearLayout3, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
 
         descriptionTextView = new EditText(context);
         descriptionTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);
-        descriptionTextView.setHintTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
-        descriptionTextView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
+        descriptionTextView.setHintTextColor(Theme.usePlusTheme ? Theme.prefSummaryColor : Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
+        descriptionTextView.setTextColor(Theme.usePlusTheme ? Theme.prefTitleColor : Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
         descriptionTextView.setPadding(0, 0, 0, AndroidUtilities.dp(6));
         descriptionTextView.setBackgroundDrawable(null);
         descriptionTextView.setGravity(LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT);
@@ -462,13 +462,13 @@ public class ChannelEditInfoActivity extends BaseFragment implements AvatarUpdat
         linearLayout.addView(sectionCell, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
 
         container1 = new FrameLayout(context);
-        container1.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
+        container1.setBackgroundColor(Theme.usePlusTheme ? Theme.prefBGColor : Theme.getColor(Theme.key_windowBackgroundWhite));
         linearLayout.addView(container1, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
 
         if (currentChat.creator && (info == null || info.can_set_username)) {
             linearLayoutTypeContainer = new LinearLayout(context);
             linearLayoutTypeContainer.setOrientation(LinearLayout.VERTICAL);
-            linearLayoutTypeContainer.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
+            linearLayoutTypeContainer.setBackgroundColor(Theme.usePlusTheme ? Theme.prefBGColor : Theme.getColor(Theme.key_windowBackgroundWhite));
             linearLayout.addView(linearLayoutTypeContainer, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
 
             radioButtonCell1 = new RadioButtonCell(context);
@@ -514,7 +514,7 @@ public class ChannelEditInfoActivity extends BaseFragment implements AvatarUpdat
 
             linkContainer = new LinearLayout(context);
             linkContainer.setOrientation(LinearLayout.VERTICAL);
-            linkContainer.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
+            linkContainer.setBackgroundColor(Theme.usePlusTheme ? Theme.prefBGColor : Theme.getColor(Theme.key_windowBackgroundWhite));
             linearLayout.addView(linkContainer, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
 
             headerCell = new HeaderCell(context);
@@ -527,8 +527,8 @@ public class ChannelEditInfoActivity extends BaseFragment implements AvatarUpdat
             editText = new EditText(context);
             editText.setText(MessagesController.getInstance().linkPrefix + "/");
             editText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 18);
-            editText.setHintTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
-            editText.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
+            editText.setHintTextColor(Theme.usePlusTheme ? Theme.prefSummaryColor : Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
+            editText.setTextColor(Theme.usePlusTheme ? Theme.prefTitleColor : Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
             editText.setMaxLines(1);
             editText.setLines(1);
             editText.setEnabled(false);
@@ -544,8 +544,8 @@ public class ChannelEditInfoActivity extends BaseFragment implements AvatarUpdat
             if (!isPrivate) {
                 usernameTextView.setText(currentChat.username);
             }
-            usernameTextView.setHintTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
-            usernameTextView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
+            usernameTextView.setHintTextColor(Theme.usePlusTheme ? Theme.prefSummaryColor : Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
+            usernameTextView.setTextColor(Theme.usePlusTheme ? Theme.prefTitleColor : Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
             usernameTextView.setMaxLines(1);
             usernameTextView.setLines(1);
             usernameTextView.setBackgroundDrawable(null);
@@ -607,7 +607,7 @@ public class ChannelEditInfoActivity extends BaseFragment implements AvatarUpdat
             linearLayout.addView(loadingAdminedCell, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
 
             adminnedChannelsLayout = new LinearLayout(context);
-            adminnedChannelsLayout.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
+            adminnedChannelsLayout.setBackgroundColor(Theme.usePlusTheme ? Theme.prefBGColor : Theme.getColor(Theme.key_windowBackgroundWhite));
             adminnedChannelsLayout.setOrientation(LinearLayout.VERTICAL);
             linearLayout.addView(adminnedChannelsLayout, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
 
@@ -623,10 +623,10 @@ public class ChannelEditInfoActivity extends BaseFragment implements AvatarUpdat
         linearLayout.addView(lineView2, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 1));
 
         container2 = new FrameLayout(context);
-        container2.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
+        container2.setBackgroundColor(Theme.usePlusTheme ? Theme.prefBGColor : Theme.getColor(Theme.key_windowBackgroundWhite));
 
         container3 = new FrameLayout(context);
-        container3.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
+        container3.setBackgroundColor(Theme.usePlusTheme ? Theme.prefBGColor : Theme.getColor(Theme.key_windowBackgroundWhite));
         linearLayout.addView(container3, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
 
         lineView3 = new View(context);
@@ -656,7 +656,7 @@ public class ChannelEditInfoActivity extends BaseFragment implements AvatarUpdat
 
         if (currentChat.creator) {
             container3 = new FrameLayout(context);
-            container3.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
+            container3.setBackgroundColor(Theme.usePlusTheme ? Theme.prefBGColor : Theme.getColor(Theme.key_windowBackgroundWhite));
             linearLayout.addView(container3, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
 
             textCell = new TextSettingsCell(context);
@@ -906,7 +906,7 @@ public class ChannelEditInfoActivity extends BaseFragment implements AvatarUpdat
             }
         } else {
             typeInfoCell.setTag(Theme.key_windowBackgroundWhiteGrayText4);
-            typeInfoCell.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText4));
+            typeInfoCell.setTextColor(Theme.usePlusTheme ? Theme.prefSummaryColor : Theme.getColor(Theme.key_windowBackgroundWhiteGrayText4));
             sectionCell2.setVisibility(View.VISIBLE);
             adminedInfoCell.setVisibility(View.GONE);
             typeInfoCell.setBackgroundDrawable(Theme.getThemedDrawable(typeInfoCell.getContext(), R.drawable.greydivider_bottom, Theme.key_windowBackgroundGrayShadow));

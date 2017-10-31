@@ -28,6 +28,19 @@ public class DividerCell extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
+        if(Theme.usePlusTheme)setPaintColor();//plus
         canvas.drawLine(getPaddingLeft(), AndroidUtilities.dp(8), getWidth() - getPaddingRight(), AndroidUtilities.dp(8), Theme.dividerPaint);
     }
+    //plus
+    private void setPaintColor(){
+        String key = getTag() != null ? getTag().toString() : null;
+        if(key != null){
+            int color = AndroidUtilities.getIntDef(key, 0xffd9d9d9);
+            Theme.dividerPaint.setColor(color);
+            if(key.contains("00")){
+                Theme.dividerPaint.setColor(0x00000000);
+            }
+        }
+    }
+    //
 }

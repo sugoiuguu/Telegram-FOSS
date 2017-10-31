@@ -17,6 +17,7 @@ import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.text.TextUtils;
 import android.text.format.DateFormat;
+import android.util.Log;
 import android.util.Xml;
 
 import org.telegram.messenger.time.FastDateFormat;
@@ -138,7 +139,7 @@ public class LocaleController {
         }
 
         public boolean isRemote() {
-            return "remote".equals(pathToFile);
+            return false;//"remote".equals(pathToFile);
         }
 
         public boolean isLocal() {
@@ -185,7 +186,7 @@ public class LocaleController {
         addRules(new String[]{"pl"}, new PluralRules_Polish());
         addRules(new String[]{"ro", "mo"}, new PluralRules_Romanian());
         addRules(new String[]{"sl"}, new PluralRules_Slovenian());
-        addRules(new String[]{"ar"}, new PluralRules_Arabic());
+        addRules(new String[]{"ar", "fa"}, new PluralRules_Arabic());
         addRules(new String[]{"mk"}, new PluralRules_Macedonian());
         addRules(new String[]{"cy"}, new PluralRules_Welsh());
         addRules(new String[]{"br"}, new PluralRules_Breton());
@@ -194,8 +195,11 @@ public class LocaleController {
         addRules(new String[]{"mt"}, new PluralRules_Maltese());
         addRules(new String[]{"ga", "se", "sma", "smi", "smj", "smn", "sms"}, new PluralRules_Two());
         addRules(new String[]{"ak", "am", "bh", "fil", "tl", "guw", "hi", "ln", "mg", "nso", "ti", "wa"}, new PluralRules_Zero());
-        addRules(new String[]{"az", "bm", "fa", "ig", "hu", "ja", "kde", "kea", "ko", "my", "ses", "sg", "to",
+        addRules(new String[]{"az", "bm", /*"fa",*/ "ig", "hu", "ja", "kde", "kea", "ko", "my", "ses", "sg", "to",
                 "tr", "vi", "wo", "yo", "zh", "bo", "dz", "id", "jv", "ka", "km", "kn", "ms", "th"}, new PluralRules_None());
+        //plus
+        //addRules(new String[]{"fa_IR"}, new PluralRules_Persian());
+        //
 
         LocaleInfo localeInfo = new LocaleInfo();
         localeInfo.name = "English";
@@ -250,6 +254,170 @@ public class LocaleController {
         languages.add(localeInfo);
         languagesDict.put(localeInfo.shortName, localeInfo);
 
+		localeInfo = new LocaleInfo();
+        localeInfo.name = "Български";
+        localeInfo.nameEnglish = "Bulgarian";
+        localeInfo.shortName = "bg";
+        localeInfo.pathToFile = null;
+        localeInfo.builtIn = true;
+        languages.add(localeInfo);
+        languagesDict.put(localeInfo.shortName, localeInfo);
+
+        localeInfo = new LocaleInfo();
+        localeInfo.name = "فارسی";
+        localeInfo.nameEnglish = "Parsi";
+        localeInfo.shortName = "fa";
+        localeInfo.pathToFile = null;
+        localeInfo.builtIn = true;
+        languages.add(localeInfo);
+        languagesDict.put(localeInfo.shortName, localeInfo);
+
+        localeInfo = new LocaleInfo();
+        localeInfo.name = "अंग्रेजी";
+        localeInfo.nameEnglish = "Hindi";
+        localeInfo.shortName = "hi";
+        localeInfo.pathToFile = null;
+        localeInfo.builtIn = true;
+        languages.add(localeInfo);
+        languagesDict.put(localeInfo.shortName, localeInfo);
+
+        localeInfo = new LocaleInfo();
+        localeInfo.name = "Català";
+        localeInfo.nameEnglish = "Catalan";
+        localeInfo.shortName = "ca";
+        localeInfo.pathToFile = null;
+        localeInfo.builtIn = true;
+        languages.add(localeInfo);
+        languagesDict.put(localeInfo.shortName, localeInfo);
+
+        localeInfo = new LocaleInfo();
+        localeInfo.name = "Esperanto";
+        localeInfo.nameEnglish = "Esperanto";
+        localeInfo.shortName = "eo";
+        localeInfo.builtIn = true;
+        languages.add(localeInfo);
+        languagesDict.put(localeInfo.shortName, localeInfo);
+
+        localeInfo = new LocaleInfo();
+        localeInfo.name = "繁體中文（台灣）";
+        localeInfo.nameEnglish = "Chinese Traditional (Taiwan)";
+        localeInfo.shortName = "zh_tw";
+        localeInfo.pathToFile = null;
+        localeInfo.builtIn = true;
+        languages.add(localeInfo);
+        languagesDict.put(localeInfo.shortName, localeInfo);
+
+        localeInfo = new LocaleInfo();
+        localeInfo.name = "简体中文";
+        localeInfo.nameEnglish = "Simplified Chinese";
+        localeInfo.shortName = "zh_cn";
+        localeInfo.pathToFile = null;
+        localeInfo.builtIn = true;
+        languages.add(localeInfo);
+        languagesDict.put(localeInfo.shortName, localeInfo);
+
+        localeInfo = new LocaleInfo();
+        localeInfo.name = "繁體中文（香港）";
+        localeInfo.nameEnglish = "Chinese (Hong Kong)";
+        localeInfo.shortName = "zh_hk";
+        localeInfo.pathToFile = null;
+        localeInfo.builtIn = true;
+        languages.add(localeInfo);
+        languagesDict.put(localeInfo.shortName, localeInfo);
+
+        localeInfo = new LocaleInfo();
+        localeInfo.name = "日本語";
+        localeInfo.nameEnglish = "Japanese";
+        localeInfo.shortName = "ja";
+        localeInfo.pathToFile = null;
+        localeInfo.builtIn = true;
+        languages.add(localeInfo);
+        languagesDict.put(localeInfo.shortName, localeInfo);
+
+        localeInfo = new LocaleInfo();
+        localeInfo.name = "Hrvatski";
+        localeInfo.nameEnglish = "Croatian";
+        localeInfo.shortName = "hr";
+        localeInfo.pathToFile = null;
+        localeInfo.builtIn = true;
+        languages.add(localeInfo);
+        languagesDict.put(localeInfo.shortName, localeInfo);
+
+        localeInfo = new LocaleInfo();
+        localeInfo.name = "Euskara";
+        localeInfo.nameEnglish = "Basque";
+        localeInfo.shortName = "eu";
+        localeInfo.builtIn = true;
+        languages.add(localeInfo);
+        languagesDict.put(localeInfo.shortName, localeInfo);
+
+        localeInfo = new LocaleInfo();
+        localeInfo.name = "Français";
+        localeInfo.nameEnglish = "French";
+        localeInfo.shortName = "fr";
+        localeInfo.builtIn = true;
+        languages.add(localeInfo);
+        languagesDict.put(localeInfo.shortName, localeInfo);
+
+        localeInfo = new LocaleInfo();
+        localeInfo.name = "Galego";
+        localeInfo.nameEnglish = "Galician";
+        localeInfo.shortName = "gl";
+        localeInfo.builtIn = true;
+        languages.add(localeInfo);
+        languagesDict.put(localeInfo.shortName, localeInfo);
+
+        localeInfo = new LocaleInfo();
+        localeInfo.name = "עברית";
+        localeInfo.nameEnglish = "hebrew";
+        localeInfo.shortName = "he";
+        localeInfo.builtIn = true;
+        languages.add(localeInfo);
+        languagesDict.put(localeInfo.shortName, localeInfo);
+
+        localeInfo = new LocaleInfo();
+        localeInfo.name = "עברית";
+        localeInfo.nameEnglish = "Hebrew";
+        localeInfo.shortName = "iw";
+        localeInfo.builtIn = true;
+        languages.add(localeInfo);
+        languagesDict.put(localeInfo.shortName, localeInfo);
+
+        localeInfo = new LocaleInfo();
+        localeInfo.name = "Polski";
+        localeInfo.nameEnglish = "Polish";
+        localeInfo.shortName = "pl";
+        localeInfo.pathToFile = null;
+        localeInfo.builtIn = true;
+        languages.add(localeInfo);
+        languagesDict.put(localeInfo.shortName, localeInfo);
+
+        localeInfo = new LocaleInfo();
+        localeInfo.name = "Русский";
+        localeInfo.nameEnglish = "Russian";
+        localeInfo.shortName = "ru";
+        localeInfo.builtIn = true;
+        languages.add(localeInfo);
+        languagesDict.put(localeInfo.shortName, localeInfo);
+
+        localeInfo = new LocaleInfo();
+        localeInfo.name = "Türkçe";
+        localeInfo.nameEnglish = "Turkish";
+        localeInfo.shortName = "tr";
+        localeInfo.pathToFile = null;
+        localeInfo.builtIn = true;
+        languages.add(localeInfo);
+        languagesDict.put(localeInfo.shortName, localeInfo);
+        
+        localeInfo = new LocaleInfo();
+        localeInfo.name = "Українська";
+        localeInfo.nameEnglish = "Ukrainian";
+        localeInfo.shortName = "uk";
+        localeInfo.pathToFile = null;
+        localeInfo.builtIn = true;
+        languages.add(localeInfo);
+        languagesDict.put(localeInfo.shortName, localeInfo);
+		
         localeInfo = new LocaleInfo();
         localeInfo.name = "Português (Brasil)";
         localeInfo.nameEnglish = "Portuguese (Brazil)";
@@ -305,17 +473,17 @@ public class LocaleController {
                     override = true;
                 }
             }
-
+            if(currentInfo != null)Log.e("LocaleController", "4 currentInfo" + " // " + currentInfo.getSaveString());
             if (currentInfo == null && systemDefaultLocale.getLanguage() != null) {
                 currentInfo = getLanguageFromDict(systemDefaultLocale.getLanguage());
             }
+            if(currentInfo != null)Log.e("LocaleController", "5 currentInfo" + " // " + currentInfo.getSaveString());
             if (currentInfo == null) {
                 currentInfo = getLanguageFromDict(getLocaleString(systemDefaultLocale));
                 if (currentInfo == null) {
                     currentInfo = getLanguageFromDict("en");
                 }
             }
-
             applyLanguage(currentInfo, override);
         } catch (Exception e) {
             FileLog.e(e);
@@ -449,10 +617,10 @@ public class LocaleController {
             String languageName = stringMap.get("LanguageName");
             String languageNameInEnglish = stringMap.get("LanguageNameInEnglish");
             String languageCode = stringMap.get("LanguageCode");
-
-            if (languageName != null && languageName.length() > 0 &&
+			String theming = stringMap.get("Theming");
+            if ((languageName != null && languageName.length() > 0 &&
                     languageNameInEnglish != null && languageNameInEnglish.length() > 0 &&
-                    languageCode != null && languageCode.length() > 0) {
+                    languageCode != null && languageCode.length() > 0) || theming != null && theming.length() > 0)	{
 
                 if (languageName.contains("&") || languageName.contains("|")) {
                     return false;
@@ -1110,7 +1278,7 @@ public class LocaleController {
         if (lang == null) {
             lang = "en";
         }
-        isRTL = lang.toLowerCase().equals("ar");
+        isRTL = lang.toLowerCase().equals("ar") || lang.toLowerCase().equals("fa");
         nameDisplayOrder = lang.toLowerCase().equals("ko") ? 2 : 1;
 
         formatterMonth = createFormatter(locale, getStringInternal("formatterMonth", R.string.formatterMonth), "dd MMM");
@@ -1177,6 +1345,10 @@ public class LocaleController {
 
     public static String formatShortNumber(int number, int[] rounded) {
         String K = "";
+		//plus
+        if(true){
+            return NumberFormat.getNumberInstance().format(number);
+        }
         int lastDec = 0;
         int KCount = 0;
         while (number / 1000 > 0) {
@@ -2231,4 +2403,24 @@ public class LocaleController {
             }
         }
     }
+    //plus
+    /*public static class PluralRules_Persian extends PluralRules {
+        public int quantityForNumber(int count) {
+            int rem100 = count % 100;
+            if (count == 0) {
+                return QUANTITY_ZERO;
+            } else if (count == 1) {
+                return QUANTITY_ONE;
+            } else if (count == 2) {
+                return QUANTITY_TWO;
+            } else if (rem100 >= 3 && rem100 <= 10) {
+                return QUANTITY_FEW;
+            } else if (rem100 >= 11 && rem100 <= 99) {
+                return QUANTITY_MANY;
+            } else {
+                return QUANTITY_OTHER;
+            }
+        }
+    }*/
+    //
 }

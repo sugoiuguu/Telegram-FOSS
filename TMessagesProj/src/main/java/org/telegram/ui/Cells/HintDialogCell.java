@@ -9,20 +9,28 @@
 package org.telegram.ui.Cells;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Canvas;
+import android.graphics.PorterDuff;
 import android.graphics.RectF;
+import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.text.Layout;
 import android.text.StaticLayout;
+import android.text.TextPaint;
 import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import org.telegram.messenger.AndroidUtilities;
+import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.ContactsController;
 import org.telegram.messenger.MessagesController;
+import org.telegram.messenger.R;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.Components.AvatarDrawable;
@@ -46,11 +54,11 @@ public class HintDialogCell extends FrameLayout {
         super(context);
 
         imageView = new BackupImageView(context);
-        imageView.setRoundRadius(AndroidUtilities.dp(27));
+        imageView.setRoundRadius(AndroidUtilities.dp(/*27*/ Theme.chatsAvatarRadius));
         addView(imageView, LayoutHelper.createFrame(54, 54, Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 7, 0, 0));
 
         nameTextView = new TextView(context);
-        nameTextView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
+        nameTextView.setTextColor(Theme.usePlusTheme ? Theme.chatsNameColor : Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
         nameTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 12);
         nameTextView.setMaxLines(2);
         nameTextView.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL);
@@ -142,16 +150,16 @@ public class HintDialogCell extends FrameLayout {
     protected boolean drawChild(Canvas canvas, View child, long drawingTime) {
         boolean result = super.drawChild(canvas, child, drawingTime);
         if (child == imageView && countLayout != null) {
-            int top = AndroidUtilities.dp(6);
-            int left = AndroidUtilities.dp(54);
-            int x = left - AndroidUtilities.dp(5.5f);
+                int top = AndroidUtilities.dp(6);
+                int left = AndroidUtilities.dp(54);
+                int x = left - AndroidUtilities.dp(5.5f);
             rect.set(x, top, x + countWidth + AndroidUtilities.dp(11), top + AndroidUtilities.dp(23));
             canvas.drawRoundRect(rect, 11.5f * AndroidUtilities.density, 11.5f * AndroidUtilities.density, MessagesController.getInstance().isDialogMuted(dialog_id) ? Theme.dialogs_countGrayPaint : Theme.dialogs_countPaint);
-            canvas.save();
-            canvas.translate(left, top + AndroidUtilities.dp(4));
-            countLayout.draw(canvas);
-            canvas.restore();
-        }
+                canvas.save();
+                canvas.translate(left, top + AndroidUtilities.dp(4));
+                countLayout.draw(canvas);
+                canvas.restore();
+            }
         return result;
     }
 }

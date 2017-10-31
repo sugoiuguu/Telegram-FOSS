@@ -11,6 +11,7 @@ package org.telegram.ui;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Vibrator;
@@ -274,7 +275,11 @@ public class ChannelCreateActivity extends BaseFragment implements NotificationC
         });
 
         ActionBarMenu menu = actionBar.createMenu();
-        doneButton = menu.addItemWithWidth(done_button, R.drawable.ic_done, AndroidUtilities.dp(56));
+        //doneButton = menu.addItemWithWidth(done_button, R.drawable.ic_done, AndroidUtilities.dp(56));
+        Drawable done = getParentActivity().getResources().getDrawable(R.drawable.ic_done);
+        //SharedPreferences themePrefs = ApplicationLoader.applicationContext.getSharedPreferences(AndroidUtilities.THEME_PREFS, AndroidUtilities.THEME_PREFS_MODE);
+        done.setColorFilter(Theme.prefActionbarIconsColor, PorterDuff.Mode.SRC_IN);
+        doneButton = menu.addItemWithWidth(done_button, done, AndroidUtilities.dp(56));
 
         fragmentView = new ScrollView(context);
         ScrollView scrollView = (ScrollView) fragmentView;
@@ -286,14 +291,18 @@ public class ChannelCreateActivity extends BaseFragment implements NotificationC
         if (currentStep == 0) {
             actionBar.setTitle(LocaleController.getString("NewChannel", R.string.NewChannel));
             fragmentView.setTag(Theme.key_windowBackgroundWhite);
-            fragmentView.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
+            fragmentView.setBackgroundColor(Theme.usePlusTheme ? Theme.prefBGColor : Theme.getColor(Theme.key_windowBackgroundWhite));
+            //fragmentView.setBackgroundColor(Theme.prefBGColor);
             FrameLayout frameLayout = new FrameLayout(context);
             linearLayout.addView(frameLayout, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
 
             avatarImage = new BackupImageView(context);
-            avatarImage.setRoundRadius(AndroidUtilities.dp(32));
+            //avatarImage.setRoundRadius(AndroidUtilities.dp(32));
+            avatarImage.setRoundRadius(AndroidUtilities.dp(Theme.prefAvatarRadius));
             avatarDrawable.setInfo(5, null, null, false);
             avatarDrawable.setDrawPhoto(true);
+            avatarDrawable.setColor(Theme.prefAvatarColor);
+            avatarDrawable.setRadius(AndroidUtilities.dp(Theme.prefAvatarRadius));
             avatarImage.setImageDrawable(avatarDrawable);
             frameLayout.addView(avatarImage, LayoutHelper.createFrame(64, 64, Gravity.TOP | (LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT), LocaleController.isRTL ? 0 : 16, 12, LocaleController.isRTL ? 16 : 0, 12));
             avatarImage.setOnClickListener(new View.OnClickListener() {
@@ -339,11 +348,12 @@ public class ChannelCreateActivity extends BaseFragment implements NotificationC
             nameTextView.setMaxLines(4);
             nameTextView.setGravity(Gravity.CENTER_VERTICAL | (LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT));
             nameTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);
-            nameTextView.setHintTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
-            nameTextView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
+            nameTextView.setHintTextColor(Theme.usePlusTheme ? Theme.prefSummaryColor : Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
+            nameTextView.setTextColor(Theme.usePlusTheme ? Theme.prefTitleColor : Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
             nameTextView.setImeOptions(EditorInfo.IME_FLAG_NO_EXTRACT_UI);
             nameTextView.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
             nameTextView.setBackgroundDrawable(Theme.createEditTextDrawable(context, false));
+            if(Theme.usePlusTheme)nameTextView.getBackground().setColorFilter(Theme.defColor, PorterDuff.Mode.SRC_IN);
             InputFilter[] inputFilters = new InputFilter[1];
             inputFilters[0] = new InputFilter.LengthFilter(100);
             nameTextView.setFilters(inputFilters);
@@ -364,15 +374,17 @@ public class ChannelCreateActivity extends BaseFragment implements NotificationC
                 @Override
                 public void afterTextChanged(Editable s) {
                     avatarDrawable.setInfo(5, nameTextView.length() > 0 ? nameTextView.getText().toString() : null, null, false);
+                    avatarDrawable.setColor(Theme.prefAvatarColor);
                     avatarImage.invalidate();
                 }
             });
 
             descriptionTextView = new EditText(context);
             descriptionTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 18);
-            descriptionTextView.setHintTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
-            descriptionTextView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
+            descriptionTextView.setHintTextColor(Theme.usePlusTheme ? Theme.prefSummaryColor : Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
+            descriptionTextView.setTextColor(Theme.usePlusTheme ? Theme.prefTitleColor : Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
             descriptionTextView.setBackgroundDrawable(Theme.createEditTextDrawable(context, false));
+            if(Theme.usePlusTheme)descriptionTextView.getBackground().setColorFilter(Theme.defColor, PorterDuff.Mode.SRC_IN);
             descriptionTextView.setPadding(0, 0, 0, AndroidUtilities.dp(6));
             descriptionTextView.setGravity(LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT);
             descriptionTextView.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES | InputType.TYPE_TEXT_FLAG_MULTI_LINE | InputType.TYPE_TEXT_FLAG_AUTO_CORRECT);
@@ -412,18 +424,17 @@ public class ChannelCreateActivity extends BaseFragment implements NotificationC
 
             helpTextView = new TextView(context);
             helpTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 15);
-            helpTextView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText8));
+            helpTextView.setTextColor(Theme.usePlusTheme ? Theme.prefSummaryColor : Theme.getColor(Theme.key_windowBackgroundWhiteGrayText8));
             helpTextView.setGravity(LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT);
             helpTextView.setText(LocaleController.getString("DescriptionInfo", R.string.DescriptionInfo));
             linearLayout.addView(helpTextView, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT, 24, 10, 24, 20));
         } else if (currentStep == 1) {
             actionBar.setTitle(LocaleController.getString("ChannelSettings", R.string.ChannelSettings));
             fragmentView.setTag(Theme.key_windowBackgroundGray);
-            fragmentView.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundGray));
-
+            fragmentView.setBackgroundColor(Theme.usePlusTheme ? Theme.prefShadowColor : Theme.getColor(Theme.key_windowBackgroundGray));
             linearLayout2 = new LinearLayout(context);
             linearLayout2.setOrientation(LinearLayout.VERTICAL);
-            linearLayout2.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
+            linearLayout2.setBackgroundColor(Theme.usePlusTheme ? Theme.prefBGColor : Theme.getColor(Theme.key_windowBackgroundWhite));
             linearLayout.addView(linearLayout2, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
 
             radioButtonCell1 = new RadioButtonCell(context);
@@ -461,7 +472,7 @@ public class ChannelCreateActivity extends BaseFragment implements NotificationC
 
             linkContainer = new LinearLayout(context);
             linkContainer.setOrientation(LinearLayout.VERTICAL);
-            linkContainer.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
+            linkContainer.setBackgroundColor(Theme.usePlusTheme ? Theme.prefBGColor : Theme.getColor(Theme.key_windowBackgroundWhite));
             linearLayout.addView(linkContainer, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
 
             headerCell = new HeaderCell(context);
@@ -474,8 +485,8 @@ public class ChannelCreateActivity extends BaseFragment implements NotificationC
             editText = new EditText(context);
             editText.setText(MessagesController.getInstance().linkPrefix + "/");
             editText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 18);
-            editText.setHintTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
-            editText.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
+            editText.setHintTextColor(Theme.usePlusTheme ? Theme.prefSummaryColor : Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
+            editText.setTextColor(Theme.usePlusTheme ? Theme.prefTitleColor : Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
             editText.setMaxLines(1);
             editText.setLines(1);
             editText.setEnabled(false);
@@ -488,8 +499,8 @@ public class ChannelCreateActivity extends BaseFragment implements NotificationC
 
             nameTextView = new EditText(context);
             nameTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 18);
-            nameTextView.setHintTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
-            nameTextView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
+            nameTextView.setHintTextColor(Theme.usePlusTheme ? Theme.prefSummaryColor : Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
+            nameTextView.setTextColor(Theme.usePlusTheme ? Theme.prefTitleColor : Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
             nameTextView.setMaxLines(1);
             nameTextView.setLines(1);
             nameTextView.setBackgroundDrawable(null);
@@ -561,8 +572,17 @@ public class ChannelCreateActivity extends BaseFragment implements NotificationC
 
             updatePrivatePublic();
         }
-
+        if(Theme.usePlusTheme)updateTheme();
         return fragmentView;
+    }
+
+    private void updateTheme(){
+        actionBar.setBackgroundColor(Theme.prefActionbarColor);
+        actionBar.setTitleColor(Theme.prefActionbarTitleColor);
+        Drawable back = getParentActivity().getResources().getDrawable(R.drawable.ic_ab_back);
+        back.setColorFilter(Theme.prefActionbarIconsColor, PorterDuff.Mode.MULTIPLY);
+        actionBar.setBackButtonDrawable(back);
+        actionBar.setItemsColor(Theme.prefActionbarIconsColor, false);
     }
 
     private void generateLink() {

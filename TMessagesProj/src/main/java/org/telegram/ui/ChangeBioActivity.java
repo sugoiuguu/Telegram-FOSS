@@ -32,6 +32,7 @@ import android.widget.TextView;
 
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.ApplicationLoader;
+import org.telegram.messenger.BuildConfig;
 import org.telegram.messenger.FileLog;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MessagesController;
@@ -59,6 +60,7 @@ public class ChangeBioActivity extends BaseFragment {
     private TextView helpTextView;
 
     private final static int done_button = 1;
+    private final static int bio_size = BuildConfig.DEBUG ? 255 : 70;
 
     @Override
     public View createView(Context context) {
@@ -94,17 +96,23 @@ public class ChangeBioActivity extends BaseFragment {
 
         firstNameField = new EditText(context);
         firstNameField.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 18);
-        firstNameField.setHintTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
-        firstNameField.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
+        firstNameField.setHintTextColor(Theme.usePlusTheme ? Theme.prefSummaryColor : Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
+        firstNameField.setTextColor(Theme.usePlusTheme ? Theme.prefTitleColor : Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
         firstNameField.setBackgroundDrawable(Theme.createEditTextDrawable(context, false));
-        firstNameField.setMaxLines(4);
+        //firstNameField.setMaxLines(4);
         firstNameField.setPadding(AndroidUtilities.dp(LocaleController.isRTL ? 24 : 0), 0, AndroidUtilities.dp(LocaleController.isRTL ? 0 : 24), AndroidUtilities.dp(6));
         firstNameField.setGravity(LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT);
         firstNameField.setImeOptions(EditorInfo.IME_FLAG_NO_EXTRACT_UI);
-        firstNameField.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES | InputType.TYPE_TEXT_FLAG_MULTI_LINE);
+        firstNameField.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES | InputType.TYPE_TEXT_FLAG_MULTI_LINE | InputType.TYPE_TEXT_FLAG_AUTO_CORRECT);
+        //
+        SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("plusconfig", Activity.MODE_PRIVATE);
+        if(preferences.getBoolean("showEmojiKbBtn", false)){
+            firstNameField.setInputType(firstNameField.getInputType() | InputType.TYPE_TEXT_VARIATION_SHORT_MESSAGE);
+        }
+        //
         firstNameField.setImeOptions(EditorInfo.IME_ACTION_DONE);
         InputFilter[] inputFilters = new InputFilter[1];
-        inputFilters[0] = new InputFilter.LengthFilter(70) {
+        inputFilters[0] = new InputFilter.LengthFilter(/*70*/bio_size) {
             @Override
             public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
                 if (source != null && TextUtils.indexOf(source, '\n') != -1) {
@@ -149,7 +157,7 @@ public class ChangeBioActivity extends BaseFragment {
 
             @Override
             public void afterTextChanged(Editable s) {
-                checkTextView.setText("" + (70 - firstNameField.length()));
+                checkTextView.setText("" + (bio_size - firstNameField.length()));
             }
         });
 
@@ -157,13 +165,13 @@ public class ChangeBioActivity extends BaseFragment {
 
         checkTextView = new TextView(context);
         checkTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 15);
-        checkTextView.setText("70");
-        checkTextView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText4));
+        checkTextView.setText(/*"70"*/"" + bio_size);
+        checkTextView.setTextColor(Theme.usePlusTheme ? Theme.prefSummaryColor : Theme.getColor(Theme.key_windowBackgroundWhiteGrayText4));
         fieldContainer.addView(checkTextView, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, LocaleController.isRTL ? Gravity.LEFT : Gravity.RIGHT, 0, 4, 4, 0));
 
         helpTextView = new TextView(context);
         helpTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 15);
-        helpTextView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText8));
+        helpTextView.setTextColor(Theme.usePlusTheme ? Theme.prefSummaryColor : Theme.getColor(Theme.key_windowBackgroundWhiteGrayText8));
         helpTextView.setGravity(LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT);
         helpTextView.setText(AndroidUtilities.replaceTags(LocaleController.getString("UserBioInfo", R.string.UserBioInfo)));
         linearLayout.addView(helpTextView, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT, 24, 10, 24, 0));

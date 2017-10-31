@@ -21,6 +21,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.PorterDuff;
 import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
@@ -652,6 +653,7 @@ public class LoginActivity extends BaseFragment {
             codeField.setInputType(InputType.TYPE_CLASS_PHONE);
             codeField.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
             codeField.setBackgroundDrawable(Theme.createEditTextDrawable(context, false));
+            if(Theme.usePlusTheme)codeField.getBackground().setColorFilter(Theme.defColor, PorterDuff.Mode.SRC_IN);
             AndroidUtilities.clearCursorDrawable(codeField);
             codeField.setPadding(AndroidUtilities.dp(10), 0, 0, 0);
             codeField.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 18);
@@ -750,8 +752,8 @@ public class LoginActivity extends BaseFragment {
 
             phoneField = new HintEditText(context);
             phoneField.setInputType(InputType.TYPE_CLASS_PHONE);
-            phoneField.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
-            phoneField.setHintTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
+            phoneField.setTextColor(Theme.usePlusTheme ? Theme.prefTitleColor : Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
+            phoneField.setHintTextColor(Theme.usePlusTheme ? Theme.prefSummaryColor : Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
             phoneField.setBackgroundDrawable(Theme.createEditTextDrawable(context, false));
             phoneField.setPadding(0, 0, 0, 0);
             AndroidUtilities.clearCursorDrawable(phoneField);
@@ -1262,11 +1264,12 @@ public class LoginActivity extends BaseFragment {
             }
 
             codeField = new EditText(context);
-            codeField.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
+            codeField.setTextColor(Theme.usePlusTheme ? Theme.prefTitleColor : Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
             codeField.setHint(LocaleController.getString("Code", R.string.Code));
             AndroidUtilities.clearCursorDrawable(codeField);
-            codeField.setHintTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
+            codeField.setHintTextColor(Theme.usePlusTheme ? Theme.prefSummaryColor : Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
             codeField.setBackgroundDrawable(Theme.createEditTextDrawable(context, false));
+            if(Theme.usePlusTheme)codeField.getBackground().setColorFilter(Theme.defColor, PorterDuff.Mode.SRC_IN);
             codeField.setImeOptions(EditorInfo.IME_ACTION_NEXT | EditorInfo.IME_FLAG_NO_EXTRACT_UI);
             codeField.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 18);
             codeField.setInputType(InputType.TYPE_CLASS_PHONE);
@@ -1944,10 +1947,11 @@ public class LoginActivity extends BaseFragment {
             addView(confirmTextView, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT));
 
             codeField = new EditText(context);
-            codeField.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
+            codeField.setTextColor(Theme.usePlusTheme ? Theme.prefTitleColor : Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
             AndroidUtilities.clearCursorDrawable(codeField);
-            codeField.setHintTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
+            codeField.setHintTextColor(Theme.usePlusTheme ? Theme.prefSummaryColor : Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
             codeField.setBackgroundDrawable(Theme.createEditTextDrawable(context, false));
+            if(Theme.usePlusTheme)codeField.getBackground().setColorFilter(Theme.defColor, PorterDuff.Mode.SRC_IN);
             codeField.setHint(LocaleController.getString("LoginPassword", R.string.LoginPassword));
             codeField.setImeOptions(EditorInfo.IME_ACTION_NEXT | EditorInfo.IME_FLAG_NO_EXTRACT_UI);
             codeField.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 18);
@@ -2472,10 +2476,11 @@ public class LoginActivity extends BaseFragment {
             addView(confirmTextView, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, (LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT)));
 
             codeField = new EditText(context);
-            codeField.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
+            codeField.setTextColor(Theme.usePlusTheme ? Theme.prefTitleColor : Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
             AndroidUtilities.clearCursorDrawable(codeField);
-            codeField.setHintTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
+            codeField.setHintTextColor(Theme.usePlusTheme ? Theme.prefSummaryColor : Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
             codeField.setBackgroundDrawable(Theme.createEditTextDrawable(context, false));
+            if(Theme.usePlusTheme)codeField.getBackground().setColorFilter(Theme.defColor, PorterDuff.Mode.SRC_IN);
             codeField.setHint(LocaleController.getString("PasswordCode", R.string.PasswordCode));
             codeField.setImeOptions(EditorInfo.IME_ACTION_NEXT | EditorInfo.IME_FLAG_NO_EXTRACT_UI);
             codeField.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 18);
@@ -2693,9 +2698,10 @@ public class LoginActivity extends BaseFragment {
             addView(textView, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT, 0, 8, 0, 0));
 
             firstNameField = new EditText(context);
-            firstNameField.setHintTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
-            firstNameField.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
+            firstNameField.setHintTextColor(Theme.usePlusTheme ? Theme.prefSummaryColor : Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
+            firstNameField.setTextColor(Theme.usePlusTheme ? Theme.prefTitleColor : Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
             firstNameField.setBackgroundDrawable(Theme.createEditTextDrawable(context, false));
+            if(Theme.usePlusTheme)firstNameField.getBackground().setColorFilter(Theme.defColor, PorterDuff.Mode.SRC_IN);
             AndroidUtilities.clearCursorDrawable(firstNameField);
             firstNameField.setHint(LocaleController.getString("FirstName", R.string.FirstName));
             firstNameField.setImeOptions(EditorInfo.IME_ACTION_NEXT | EditorInfo.IME_FLAG_NO_EXTRACT_UI);
@@ -2719,6 +2725,7 @@ public class LoginActivity extends BaseFragment {
             lastNameField.setHintTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
             lastNameField.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
             lastNameField.setBackgroundDrawable(Theme.createEditTextDrawable(context, false));
+            if(Theme.usePlusTheme)lastNameField.getBackground().setColorFilter(Theme.defColor, PorterDuff.Mode.SRC_IN);
             AndroidUtilities.clearCursorDrawable(lastNameField);
             lastNameField.setImeOptions(EditorInfo.IME_ACTION_NEXT | EditorInfo.IME_FLAG_NO_EXTRACT_UI);
             lastNameField.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 18);

@@ -19,17 +19,38 @@ public class ShadowSectionCell extends View {
 
     private int size = 12;
 
+    boolean bTheme;
     public ShadowSectionCell(Context context) {
         super(context);
         setBackgroundDrawable(Theme.getThemedDrawable(context, R.drawable.greydivider, Theme.key_windowBackgroundGrayShadow));
+        bTheme = true;
     }
 
     public void setSize(int value) {
         size = value;
+
+
+
+    }
+
+    public ShadowSectionCell(Context context, boolean theme) {
+        super(context);
+        setBackgroundDrawable(Theme.getThemedDrawable(context, R.drawable.greydivider, Theme.key_windowBackgroundGrayShadow));
+        bTheme = theme;
     }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(MeasureSpec.makeMeasureSpec(MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(AndroidUtilities.dp(size), MeasureSpec.EXACTLY));
+        if(Theme.usePlusTheme && bTheme)setTheme();
     }
+
+    private void setTheme(){
+        if(Theme.prefShadowColor == 0xfff0f0f0) {
+            setBackgroundResource(R.drawable.greydivider);
+        } else {
+            setBackgroundColor(Theme.prefShadowColor);
+        }
+    }
+
 }

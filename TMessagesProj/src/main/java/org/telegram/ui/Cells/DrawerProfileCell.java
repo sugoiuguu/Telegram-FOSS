@@ -8,7 +8,9 @@
 
 package org.telegram.ui.Cells;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -18,8 +20,10 @@ import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
 import android.text.TextUtils;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
@@ -29,16 +33,23 @@ import android.widget.TextView;
 
 import org.telegram.PhoneFormat.PhoneFormat;
 import org.telegram.messenger.AndroidUtilities;
-import org.telegram.messenger.UserObject;
+import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.FileLog;
+import org.telegram.messenger.LocaleController;
+import org.telegram.messenger.MessageObject;
+import org.telegram.messenger.MessagesController;
 import org.telegram.messenger.R;
+import org.telegram.messenger.UserConfig;
+import org.telegram.messenger.UserObject;
+import org.telegram.messenger.VideoEditedInfo;
 import org.telegram.tgnet.TLRPC;
+import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.Components.AvatarDrawable;
 import org.telegram.ui.Components.BackupImageView;
 import org.telegram.ui.Components.LayoutHelper;
-import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.PhotoViewer;
 
-public class DrawerProfileCell extends FrameLayout {
+public class DrawerProfileCell extends FrameLayout implements PhotoViewer.PhotoViewerProvider{
 
     private BackupImageView avatarImageView;
     private TextView nameTextView;
@@ -63,9 +74,9 @@ public class DrawerProfileCell extends FrameLayout {
         @Override
         protected void onDraw(Canvas canvas) {
             if (Theme.isCustomTheme() && Theme.getCachedWallpaper() != null) {
-                paint.setColor(Theme.getServiceMessageColor());
+                paint.setColor(Theme.usePlusTheme ? Theme.darkColor : Theme.getServiceMessageColor());
             } else {
-                paint.setColor(Theme.getColor(Theme.key_chats_menuCloudBackgroundCats));
+                paint.setColor(Theme.usePlusTheme ? Theme.darkColor : Theme.getColor(Theme.key_chats_menuCloudBackgroundCats));
             }
             int newColor = Theme.getColor(Theme.key_chats_menuCloud);
             if (lastCloudColor != newColor) {
@@ -93,28 +104,82 @@ public class DrawerProfileCell extends FrameLayout {
 
         avatarImageView = new BackupImageView(context);
         avatarImageView.getImageReceiver().setRoundRadius(AndroidUtilities.dp(32));
-        addView(avatarImageView, LayoutHelper.createFrame(64, 64, Gravity.LEFT | Gravity.BOTTOM, 16, 0, 0, 67));
-
+        //addView(avatarImageView, LayoutHelper.createFrame(64, 64, Gravity.LEFT | Gravity.BOTTOM, 16, 0, 0, 67));
+        int aSize = Theme.usePlusTheme ? Theme.drawerAvatarSize : 64;
+        //boolean centerAvatar = themePrefs.getBoolean("drawerCenterAvatarCheck", false);
+        //if(!Theme.drawerCenterAvatarCheck){
+        //    addView(avatarImageView, LayoutHelper.createFrame(aSize, aSize, Gravity.LEFT | Gravity.BOTTOM, 16, 0, 0, 67));
+        //}else{
+            addView(avatarImageView, LayoutHelper.createFrame(aSize, aSize, Theme.drawerCenterAvatarCheck ? Gravity.CENTER | Gravity.BOTTOM : Gravity.LEFT | Gravity.BOTTOM, Theme.drawerCenterAvatarCheck ? 0 : 16, 0, 0, 67));
+        //}
+       
+        final Activity activity = (Activity) context;
+        avatarImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //if (activity == null) {
+                //    return;
+                //}
+                TLRPC.User user = MessagesController.getInstance().getUser(UserConfig.getClientUserId());
+                if (user.photo != null && user.photo.photo_big != null) {
+                    PhotoViewer.getInstance().setParentActivity(activity);
+                    PhotoViewer.getInstance().openPhoto(user.photo.photo_big, DrawerProfileCell.this);
+                }
+            }
+        });
+       
         nameTextView = new TextView(context);
         nameTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 15);
         nameTextView.setTypeface(AndroidUtilities.getTypeface("fonts/rmedium.ttf"));
         nameTextView.setLines(1);
         nameTextView.setMaxLines(1);
         nameTextView.setSingleLine(true);
-        nameTextView.setGravity(Gravity.LEFT);
-        nameTextView.setEllipsize(TextUtils.TruncateAt.END);
-        addView(nameTextView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.LEFT | Gravity.BOTTOM, 16, 0, 76, 28));
+        if(!Theme.drawerCenterAvatarCheck){
+            nameTextView.setGravity(Gravity.LEFT);
+            nameTextView.setEllipsize(TextUtils.TruncateAt.END);
+            addView(nameTextView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.LEFT | Gravity.BOTTOM, 16, 0, 76, 28));
+        }else{
+            nameTextView.setGravity(Gravity.CENTER);
+            addView(nameTextView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER | Gravity.BOTTOM, 0, 0, 0, 28));
+        }
 
         phoneTextView = new TextView(context);
         phoneTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 13);
         phoneTextView.setLines(1);
         phoneTextView.setMaxLines(1);
         phoneTextView.setSingleLine(true);
-        phoneTextView.setGravity(Gravity.LEFT);
-        addView(phoneTextView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.LEFT | Gravity.BOTTOM, 16, 0, 76, 9));
+        if(!Theme.drawerCenterAvatarCheck){
+            phoneTextView.setGravity(Gravity.LEFT);
+            addView(phoneTextView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.LEFT | Gravity.BOTTOM, 16, 0, 76, 9));
+        }else{
+            phoneTextView.setGravity(Gravity.CENTER);
+            addView(phoneTextView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER | Gravity.BOTTOM, 0, 0, 0, 9));
+        }
 
         cloudView = new CloudView(context);
         addView(cloudView, LayoutHelper.createFrame(61, 61, Gravity.RIGHT | Gravity.BOTTOM));
+    }
+
+    public void refreshAvatar(int size, int radius){
+        removeView(avatarImageView);
+        removeView(nameTextView);
+        removeView(phoneTextView);
+        avatarImageView.getImageReceiver().setRoundRadius(AndroidUtilities.dp(radius));
+
+        //SharedPreferences themePrefs = ApplicationLoader.applicationContext.getSharedPreferences(AndroidUtilities.THEME_PREFS, AndroidUtilities.THEME_PREFS_MODE);
+        if(!Theme.drawerCenterAvatarCheck){
+            addView(avatarImageView, LayoutHelper.createFrame(size, size, Gravity.LEFT | Gravity.BOTTOM, 16, 0, 0, 67));
+            nameTextView.setGravity(Gravity.LEFT);
+            addView(nameTextView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.LEFT | Gravity.BOTTOM, 16, 0, 16, 28));
+            phoneTextView.setGravity(Gravity.LEFT);
+            addView(phoneTextView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.LEFT | Gravity.BOTTOM, 16, 0, 16, 9));
+        }else{
+            addView(avatarImageView, LayoutHelper.createFrame(size, size, Gravity.CENTER | Gravity.BOTTOM, 0, 0, 0, 67));
+            nameTextView.setGravity(Gravity.CENTER);
+            addView(nameTextView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER | Gravity.BOTTOM, 0, 0, 0, 28));
+            phoneTextView.setGravity(Gravity.CENTER);
+            addView(phoneTextView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER | Gravity.BOTTOM, 0, 0, 0, 9));
+        }
     }
 
     @Override
@@ -129,6 +194,14 @@ public class DrawerProfileCell extends FrameLayout {
                 FileLog.e(e);
             }
         }
+        //plus
+        //SharedPreferences plusPreferences = ApplicationLoader.applicationContext.getSharedPreferences("plusconfig", Activity.MODE_PRIVATE);
+        if(Theme.plusHideMobile && !Theme.plusShowUsername){
+            phoneTextView.setVisibility(GONE);
+        }else{
+            phoneTextView.setVisibility(VISIBLE);
+        }
+        //
     }
 
     @Override
@@ -145,9 +218,11 @@ public class DrawerProfileCell extends FrameLayout {
             shadowView.getDrawable().setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.MULTIPLY));
         }
         nameTextView.setTextColor(Theme.getColor(Theme.key_chats_menuName));
-        if (Theme.isCustomTheme() && backgroundDrawable != null) {
+        //Log.e("DrawerProfileCell", "onDraw isCustomTheme() " + Theme.isCustomTheme());
+        if (Theme.isCustomTheme() && backgroundDrawable != null && (!Theme.usePlusTheme || Theme.usePlusTheme && !Theme.drawerHeaderBGCheck)) {
             phoneTextView.setTextColor(Theme.getColor(Theme.key_chats_menuPhone));
-            shadowView.setVisibility(VISIBLE);
+            shadowView.setVisibility(Theme.usePlusTheme && Theme.drawerHideBGShadowCheck ? INVISIBLE : VISIBLE);
+            //Log.e("DrawerProfileCell", "onDraw IN");
             if (backgroundDrawable instanceof ColorDrawable) {
                 backgroundDrawable.setBounds(0, 0, getMeasuredWidth(), getMeasuredHeight());
                 backgroundDrawable.draw(canvas);
@@ -173,6 +248,9 @@ public class DrawerProfileCell extends FrameLayout {
             phoneTextView.setTextColor(Theme.getColor(Theme.key_chats_menuPhoneCats));
             super.onDraw(canvas);
         }
+        if(Theme.usePlusTheme /*&& Theme.drawerHeaderBGCheck*/){
+            updateTheme();
+        }
     }
 
     public void setUser(TLRPC.User user) {
@@ -184,15 +262,160 @@ public class DrawerProfileCell extends FrameLayout {
             photo = user.photo.photo_small;
         }
         nameTextView.setText(UserObject.getUserName(user));
-        phoneTextView.setText(PhoneFormat.getInstance().format("+" + user.phone));
+        //phoneTextView.setText(PhoneFormat.getInstance().format("+" + user.phone));
+        //SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("plusconfig", Activity.MODE_PRIVATE);
+        String value;
+        if(Theme.plusShowUsername) {
+            if (user.username != null && user.username.length() != 0) {
+                value = "@" + user.username;
+            } else {
+                value = LocaleController.getString("UsernameEmpty", R.string.UsernameEmpty);
+            }
+        } else{
+            value = PhoneFormat.getInstance().format("+" + user.phone);
+        }
+        phoneTextView.setText(value);
         AvatarDrawable avatarDrawable = new AvatarDrawable(user);
         avatarDrawable.setColor(Theme.getColor(Theme.key_avatar_backgroundInProfileBlue));
         avatarImageView.setImage(photo, "50_50", avatarDrawable);
+        if(Theme.usePlusTheme)updateTheme();
     }
 
     @Override
     public void invalidate() {
         super.invalidate();
         cloudView.invalidate();
+    }
+
+    @Override
+    public void updatePhotoAtIndex(int index) {}
+
+    @Override
+    public boolean allowCaption() {
+        return false;
+    }
+
+    @Override
+    public boolean scaleToFill() {
+        return false;
+    }
+
+    @Override
+    public PhotoViewer.PlaceProviderObject getPlaceForPhoto(MessageObject messageObject, TLRPC.FileLocation fileLocation, int index) {
+        if (fileLocation == null) {
+            return null;
+        }
+        TLRPC.User user = MessagesController.getInstance().getUser(UserConfig.getClientUserId());
+        if (user != null && user.photo != null && user.photo.photo_big != null) {
+            TLRPC.FileLocation photoBig = user.photo.photo_big;
+            if (photoBig.local_id == fileLocation.local_id && photoBig.volume_id == fileLocation.volume_id && photoBig.dc_id == fileLocation.dc_id) {
+                int coords[] = new int[2];
+                avatarImageView.getLocationInWindow(coords);
+                PhotoViewer.PlaceProviderObject object = new PhotoViewer.PlaceProviderObject();
+                object.viewX = coords[0];
+                object.viewY = coords[1] - AndroidUtilities.statusBarHeight;
+                object.parentView = avatarImageView;
+                object.imageReceiver = avatarImageView.getImageReceiver();
+                //object.user_id = UserConfig.getClientUserId();
+                object.thumb = object.imageReceiver.getBitmap();
+                object.size = -1;
+                object.radius = avatarImageView.getImageReceiver().getRoundRadius();
+                return object;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public Bitmap getThumbForPhoto(MessageObject messageObject, TLRPC.FileLocation fileLocation, int index) {
+        return null;
+    }
+
+    @Override
+    public void willSwitchFromPhoto(MessageObject messageObject, TLRPC.FileLocation fileLocation, int index) { }
+
+    @Override
+    public void willHidePhotoViewer() {
+        avatarImageView.getImageReceiver().setVisible(true, true);
+    }
+
+    @Override
+    public boolean isPhotoChecked(int index) { return false; }
+
+    @Override
+    public void setPhotoChecked(int index, VideoEditedInfo videoEditedInfo) {
+
+    }
+
+    @Override
+    public boolean cancelButtonPressed() {
+        return true;
+    }
+
+    @Override
+    public void sendButtonPressed(int index, VideoEditedInfo videoEditedInfo) {
+
+    }
+
+    @Override
+    public int getSelectedCount() { return 0; }
+
+    private void updateTheme(){
+        SharedPreferences themePrefs = ApplicationLoader.applicationContext.getSharedPreferences(AndroidUtilities.THEME_PREFS, AndroidUtilities.THEME_PREFS_MODE);
+        int tColor = themePrefs.getInt("themeColor", AndroidUtilities.defColor);
+        //int dColor = AndroidUtilities.getIntDarkerColor("themeColor", -0x40);
+
+        int hColor = themePrefs.getInt("drawerHeaderColor", tColor);
+        setBackgroundColor(hColor);
+        int value = themePrefs.getInt("drawerHeaderGradient", 0);
+        if(value > 0) {
+            GradientDrawable.Orientation go;
+            switch(value) {
+                case 2:
+                    go = GradientDrawable.Orientation.LEFT_RIGHT;
+                    break;
+                case 3:
+                    go = GradientDrawable.Orientation.TL_BR;
+                    break;
+                case 4:
+                    go = GradientDrawable.Orientation.BL_TR;
+                    break;
+                default:
+                    go = GradientDrawable.Orientation.TOP_BOTTOM;
+            }
+            int gradColor = themePrefs.getInt("drawerHeaderGradientColor", tColor);
+            int[] colors = new int[]{hColor, gradColor};
+            GradientDrawable gd = new GradientDrawable(go, colors);
+            setBackgroundDrawable(gd);
+        }
+
+        nameTextView.setTextColor(themePrefs.getInt("drawerNameColor", 0xffffffff));
+        nameTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, themePrefs.getInt("drawerNameSize", 15));
+        phoneTextView.setTextColor(themePrefs.getInt("drawerPhoneColor", Theme.lightColor));
+        phoneTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, themePrefs.getInt("drawerPhoneSize", 13));
+        //SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("mainconfig", Activity.MODE_PRIVATE);
+        //SharedPreferences plusPreferences = ApplicationLoader.applicationContext.getSharedPreferences("plusconfig", Activity.MODE_PRIVATE);
+
+        if(Theme.plusHideMobile && !Theme.plusShowUsername){
+            phoneTextView.setVisibility(GONE);
+        }else{
+            phoneTextView.setVisibility(VISIBLE);
+        }
+        TLRPC.User user = MessagesController.getInstance().getUser(UserConfig.getClientUserId());
+        TLRPC.FileLocation photo = null;
+        if (user != null && user.photo != null && user.photo.photo_small != null ) {
+           photo = user.photo.photo_small;
+        }
+        AvatarDrawable avatarDrawable = new AvatarDrawable(user);
+        avatarDrawable.setColor(themePrefs.getInt("drawerAvatarColor", Theme.darkColor));
+        int radius = AndroidUtilities.dp(themePrefs.getInt("drawerAvatarRadius", 32));
+        avatarDrawable.setRadius(radius);
+        //avatarImageView.getImageReceiver().setImageCoords(avatarImageView.getImageReceiver(), avatarTop, avatarSize, avatarSize);
+
+        avatarImageView.getImageReceiver().setRoundRadius(radius);
+        avatarImageView.setImage(photo, "50_50", avatarDrawable);
+
+        //cloudDrawable.setColorFilter(new PorterDuffColorFilter(themePrefs.getInt("drawerNameColor", 0xffffffff), PorterDuff.Mode.MULTIPLY));
+
     }
 }

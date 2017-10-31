@@ -9,13 +9,18 @@
 package org.telegram.ui.Cells;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.os.Build;
 import android.text.TextUtils;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
+import android.view.MotionEvent;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import org.telegram.messenger.AndroidUtilities;
+import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.ContactsController;
 import org.telegram.messenger.MessagesController;
 import org.telegram.messenger.R;
@@ -39,21 +44,22 @@ public class ShareDialogCell extends FrameLayout {
         imageView = new BackupImageView(context);
         imageView.setRoundRadius(AndroidUtilities.dp(27));
         addView(imageView, LayoutHelper.createFrame(54, 54, Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 7, 0, 0));
-
+        SharedPreferences themePrefs = ApplicationLoader.applicationContext.getSharedPreferences(AndroidUtilities.THEME_PREFS, AndroidUtilities.THEME_PREFS_MODE);
+        int nColor = themePrefs.getInt("chatAttachTextColor", 0xff757575);
         nameTextView = new TextView(context);
         nameTextView.setTextColor(Theme.getColor(Theme.key_dialogTextBlack));
+        if(Theme.usePlusTheme)nameTextView.setTextColor(nColor != 0xff757575 ? nColor : 0xff212121);
         nameTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 12);
         nameTextView.setMaxLines(2);
         nameTextView.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL);
         nameTextView.setLines(2);
         nameTextView.setEllipsize(TextUtils.TruncateAt.END);
         addView(nameTextView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.LEFT | Gravity.TOP, 6, 64, 6, 0));
-
         checkBox = new CheckBox(context, R.drawable.round_check2);
         checkBox.setSize(24);
         checkBox.setCheckOffset(AndroidUtilities.dp(1));
         checkBox.setVisibility(VISIBLE);
-        checkBox.setColor(Theme.getColor(Theme.key_dialogRoundCheckBox), Theme.getColor(Theme.key_dialogRoundCheckBoxCheck));
+        checkBox.setColor(Theme.usePlusTheme ? Theme.chatAttachTextColor : Theme.usePlusTheme && Theme.chatAttachTextColor == 0xffffffff ? Theme.chatAttachBGColor : Theme.getColor(Theme.key_dialogRoundCheckBox), Theme.getColor(Theme.key_dialogRoundCheckBoxCheck));
         addView(checkBox, LayoutHelper.createFrame(24, 24, Gravity.CENTER_HORIZONTAL | Gravity.TOP, 17, 39, 0, 0));
     }
 

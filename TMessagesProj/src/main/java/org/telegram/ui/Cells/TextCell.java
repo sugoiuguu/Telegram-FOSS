@@ -12,9 +12,12 @@ import android.content.Context;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
+import android.text.TextUtils;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.LocaleController;
@@ -121,7 +124,19 @@ public class TextCell extends FrameLayout {
         valueImageView.setVisibility(INVISIBLE);
         imageView.setPadding(0, AndroidUtilities.dp(7), 0, 0);
     }
+    //plus
+    public void setTextSize(int size) {
+        textView.setTextSize(size);
+    }
 
+    public void setIconColor(int color) {
+        imageView.setColorFilter(color, PorterDuff.Mode.SRC_IN);
+    }
+
+    public void setValueColor(int color) {
+        valueTextView.setTextColor(color);
+    }
+    //
     public void setTextAndValue(String text, String value) {
         textView.setText(text);
         valueTextView.setText(value);

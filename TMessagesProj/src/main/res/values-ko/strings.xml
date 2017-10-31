@@ -4,7 +4,6 @@
 
 <resources>
     <string name="AppName">텔레그램</string>
-    <string name="AppNameBeta">텔레그램 베타</string>
     <string name="LanguageName">한국어</string>
     <string name="English">한국어</string>
     <string name="LanguageNameInEnglish">한국어</string>
@@ -883,7 +882,7 @@
     <string name="TelegramFaq">자주 묻는 질문</string>
     <string name="TelegramFaqUrl">https://telegram.org/faq/ko</string>
     <string name="PrivacyPolicy">개인정보 정책</string>
-    <string name="PrivacyPolicyUrl">https://telegram.org/privacy</string>
+    <string name="PrivacyPolicyUrl">http://plusmessenger.org/privacy</string>
     <string name="DeleteLocalization">언어를 삭제할까요?</string>
     <string name="IncorrectLocalization">언어 파일이 올바르지 않습니다.</string>
     <string name="Enabled">켜기</string>
@@ -1720,4 +1719,11 @@
     <string name="formatterDay24H">HH:mm</string>
     <string name="formatterDay12H">a h:mm</string>
     <string name="formatDateAtTime">%1$s %2$s</string>
+    <!--Plus-->
+    <string name="updatePlusText">버전4.2.1.0의 새로운 기능:
+\n\n- 1:1대화에서 자동삭제 가능한 사진 및 동영상 전송 기능 (미디어 선택기에 있는 시계 아이콘 사용)
+\n- 향상된 사진 편집기로 더욱 빠르게 사진을 편집
+\n- 큰 그룹에서 프로필(설정에서 확인)에 대한 자기소개 작성 가능
+\n- 신규 암호화 CDN으로 큰 규모의 공개 채널에서의 미디어 다운로드 속도 개선
+\n- 스티커 선택시 스티커 패널에서 "위로" 버튼을 눌러 전체 화면으로 확대</string>
 </resources>

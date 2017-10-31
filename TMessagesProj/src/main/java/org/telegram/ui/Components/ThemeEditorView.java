@@ -36,6 +36,7 @@ import android.text.Editable;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -48,6 +49,7 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.ListAdapter;
 import android.widget.TextView;
 
 import org.telegram.messenger.AndroidUtilities;
@@ -125,6 +127,7 @@ public class ThemeEditorView {
     public class EditorAlert extends BottomSheet {
 
         private ColorPicker colorPicker;
+        private HistorySelectorView history;
         private RecyclerListView listView;
         private LinearLayoutManager layoutManager;
         private ListAdapter listAdapter;
@@ -195,6 +198,22 @@ public class ThemeEditorView {
                 linearLayout = new LinearLayout(context);
                 linearLayout.setOrientation(LinearLayout.HORIZONTAL);
                 addView(linearLayout, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER_HORIZONTAL | Gravity.TOP));
+                //plus
+                history = new HistorySelectorView(context, 1);
+                history.setWillNotDraw(false);
+                history.setOnColorChangedListener(new HistorySelectorView.OnColorChangedListener() {
+                    @Override
+                    public void colorChanged(int color) {
+                        colorPicker.setColor(color);
+                        for (int a = 0; a < currentThemeDesription.size(); a++) {
+                            currentThemeDesription.get(a).setColor(getColor(), false);
+                        }
+                    }
+                });
+
+                history.setOrientation(LinearLayout.HORIZONTAL);
+                addView(history, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM));
+                //
                 for (int a = 0; a < 4; a++){
                     colorEditText[a] = new EditText(context);
                     colorEditText[a].setInputType(InputType.TYPE_CLASS_NUMBER);
@@ -284,6 +303,9 @@ public class ThemeEditorView {
                 int heightSize = MeasureSpec.getSize(heightMeasureSpec);
                 int size = Math.min(widthSize, heightSize);
                 measureChild(linearLayout, widthMeasureSpec, heightMeasureSpec);
+                //plus
+                measureChild(history, widthMeasureSpec, heightMeasureSpec);
+                //
                 setMeasuredDimension(size, size);
             }
 
@@ -530,6 +552,9 @@ public class ThemeEditorView {
                     int pickerSize = Math.min(width, height);
 
                     int padding = height - pickerSize;
+                    //plus
+                    padding -= AndroidUtilities.dp(40);
+                    //
                     if (listView.getPaddingTop() != padding) {
                         ignoreLayout = true;
                         int previousPadding = listView.getPaddingTop();
@@ -712,7 +737,14 @@ public class ThemeEditorView {
             saveButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    //plus
+                    ThemeDescription description = currentThemeDesription.get(0);
+                    history.selectColor(description.getCurrentColor());
+                    //
                     setColorPickerVisible(false);
+                    //
+                    history.makeColorList();
+                    colorPicker.invalidate();
                 }
             });
         }

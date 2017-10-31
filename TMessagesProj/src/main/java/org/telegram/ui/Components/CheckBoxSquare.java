@@ -13,6 +13,9 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
 import android.graphics.RectF;
 import android.support.annotation.Keep;
 import android.view.View;
@@ -34,12 +37,13 @@ public class CheckBoxSquare extends View {
     private boolean isChecked;
     private boolean isDisabled;
     private boolean isAlert;
+    private int color = /*0xff43a0df*/Theme.defColor;
 
     private final static float progressBounceDiff = 0.2f;
 
     public CheckBoxSquare(Context context, boolean alert) {
         super(context);
-        rectF = new RectF();
+            rectF = new RectF();
         drawBitmap = Bitmap.createBitmap(AndroidUtilities.dp(18), AndroidUtilities.dp(18), Bitmap.Config.ARGB_4444);
         drawCanvas = new Canvas(drawBitmap);
         isAlert = alert;
@@ -57,7 +61,11 @@ public class CheckBoxSquare extends View {
     public float getProgress() {
         return progress;
     }
-
+    //plus
+    public void setColor(int value) {
+        color = value;
+    }
+    //
     private void cancelCheckAnimator() {
         if (checkAnimator != null) {
             checkAnimator.cancel();
@@ -118,7 +126,7 @@ public class CheckBoxSquare extends View {
         float checkProgress;
         float bounceProgress;
         int uncheckedColor = Theme.getColor(isAlert ? Theme.key_dialogCheckboxSquareUnchecked : Theme.key_checkboxSquareUnchecked);
-        int color = Theme.getColor(isAlert ? Theme.key_dialogCheckboxSquareBackground : Theme.key_checkboxSquareBackground);
+        int color = Theme.usePlusTheme ? Theme.defColor : Theme.getColor(isAlert ? Theme.key_dialogCheckboxSquareBackground : Theme.key_checkboxSquareBackground);
         if (progress <= 0.5f) {
             bounceProgress = checkProgress = progress / 0.5f;
             int rD = (int) ((Color.red(color) - Color.red(uncheckedColor)) * checkProgress);

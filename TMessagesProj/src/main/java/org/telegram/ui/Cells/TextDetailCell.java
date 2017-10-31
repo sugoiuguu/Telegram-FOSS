@@ -11,6 +11,7 @@ package org.telegram.ui.Cells;
 import android.content.Context;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
+import android.graphics.drawable.Drawable;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
@@ -36,6 +37,9 @@ public class TextDetailCell extends FrameLayout {
         textView = new TextView(context);
         textView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
         textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);
+        textView.setLines(1);
+        textView.setMaxLines(1);
+        textView.setSingleLine(true);
         textView.setGravity(LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT);
         addView(textView, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT, LocaleController.isRTL ? 16 : 71, 10, LocaleController.isRTL ? 71 : 16, 0));
 
@@ -57,7 +61,7 @@ public class TextDetailCell extends FrameLayout {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         if (!multiline) {
-            super.onMeasure(MeasureSpec.makeMeasureSpec(MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.EXACTLY), View.MeasureSpec.makeMeasureSpec(AndroidUtilities.dp(64), View.MeasureSpec.EXACTLY));
+        super.onMeasure(MeasureSpec.makeMeasureSpec(MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.EXACTLY), View.MeasureSpec.makeMeasureSpec(AndroidUtilities.dp(64), View.MeasureSpec.EXACTLY));
         } else {
             measureChildWithMargins(textView, widthMeasureSpec, 0, heightMeasureSpec, 0);
             measureChildWithMargins(valueTextView, widthMeasureSpec, 0, heightMeasureSpec, 0);
@@ -103,4 +107,19 @@ public class TextDetailCell extends FrameLayout {
             textView.setSingleLine(true);
         }
     }
+    //pluss
+    public void setTextColor(int color) {
+        textView.setTextColor(color);
+    }
+
+    public void setValueColor(int color) {
+        valueTextView.setTextColor(color);
+
+    }
+
+    public void setIconColor(int color) {
+        imageView.setColorFilter(color, PorterDuff.Mode.SRC_IN);
+    }
+    //
+
 }

@@ -50,6 +50,7 @@ import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 import android.view.TextureView;
 import android.view.View;
 import android.view.WindowManager;
@@ -91,7 +92,7 @@ import java.util.TimerTask;
 import java.util.concurrent.Semaphore;
 
 public class MediaController implements AudioManager.OnAudioFocusChangeListener, NotificationCenter.NotificationCenterDelegate, SensorEventListener {
-
+	public static String iFilter = "*";
     private native int startRecord(String path);
     private native int writeFrame(ByteBuffer frame, int len);
     private native void stopRecord();
@@ -709,15 +710,15 @@ public class MediaController implements AudioManager.OnAudioFocusChangeListener,
             checkAutodownloadSettings();
         }
 
-        mediaProjections = new String[]{
-                MediaStore.Images.ImageColumns.DATA,
-                MediaStore.Images.ImageColumns.DISPLAY_NAME,
-                MediaStore.Images.ImageColumns.BUCKET_DISPLAY_NAME,
-                MediaStore.Images.ImageColumns.DATE_TAKEN,
-                MediaStore.Images.ImageColumns.TITLE,
-                MediaStore.Images.ImageColumns.WIDTH,
-                MediaStore.Images.ImageColumns.HEIGHT
-        };
+            mediaProjections = new String[]{
+                    MediaStore.Images.ImageColumns.DATA,
+                    MediaStore.Images.ImageColumns.DISPLAY_NAME,
+                    MediaStore.Images.ImageColumns.BUCKET_DISPLAY_NAME,
+                    MediaStore.Images.ImageColumns.DATE_TAKEN,
+                    MediaStore.Images.ImageColumns.TITLE,
+                    MediaStore.Images.ImageColumns.WIDTH,
+                    MediaStore.Images.ImageColumns.HEIGHT
+            };
 
         try {
             ApplicationLoader.applicationContext.getContentResolver().registerContentObserver(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, false, new GalleryObserverExternal());
@@ -1789,7 +1790,9 @@ public class MediaController implements AudioManager.OnAudioFocusChangeListener,
             countLess = 0;
         } else if (proximityTouched) {
             if (playingMessageObject != null && (playingMessageObject.isVoice() || playingMessageObject.isRoundVideo())) {
-                if (!useFrontSpeaker) {
+                SharedPreferences plusPreferences = ApplicationLoader.applicationContext.getSharedPreferences("plusconfig", Activity.MODE_PRIVATE);
+                //if (!useFrontSpeaker) {
+                if (!useFrontSpeaker && !plusPreferences.getBoolean("disableAudioStop", false)) {
                     FileLog.e("start listen by proximity only");
                     if (proximityHasDifferentValues && proximityWakeLock != null && !proximityWakeLock.isHeld()) {
                         proximityWakeLock.acquire();
@@ -3627,7 +3630,7 @@ public class MediaController implements AudioManager.OnAudioFocusChangeListener,
                                 long dateTaken = cursor.getLong(dateColumn);
                                 int orientation = cursor.getInt(orientationColumn);
 
-                                if (path == null || path.length() == 0) {
+                                if (path == null || path.length() == 0 || !iFilter.equals("*") && !path.toLowerCase().endsWith(iFilter)) {//|| !path.contains(".webp")
                                     continue;
                                 }
 
@@ -4147,7 +4150,7 @@ public class MediaController implements AudioManager.OnAudioFocusChangeListener,
 
                 checkConversionCanceled();
 
-                if (resultWidth != originalWidth || resultHeight != originalHeight || rotateRender != 0 || messageObject.videoEditedInfo.roundVideo) {
+                if (resultWidth != originalWidth || resultHeight != originalHeight || rotateRender != 0 || messageObject.videoEditedInfo.roundVideo || inputFile.length() - messageObject.messageOwner.media.document.size > 5) {
                     int videoIndex;
                     videoIndex = selectTrack(extractor, false);
                     if (videoIndex >= 0) {

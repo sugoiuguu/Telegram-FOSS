@@ -237,6 +237,20 @@ public class ActionBar extends FrameLayout {
         return subtitleTextView.getText().toString();
     }
 
+	//Plus
+    /*public void setTitleColor(int color) {
+        if (titleTextView == null) {
+            createTitleTextView();
+        }
+        if (titleTextView != null) {
+            titleTextView.setTextColor(color);
+        }
+    }*/
+	
+	public void setBackButtonColor(int color){
+        backButtonImageView.setColorFilter(color, PorterDuff.Mode.SRC_IN);
+    }
+	//
     public ActionBarMenu createMenu() {
         if (menu != null) {
             return menu;

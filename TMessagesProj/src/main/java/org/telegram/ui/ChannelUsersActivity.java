@@ -318,7 +318,7 @@ public class ChannelUsersActivity extends BaseFragment implements NotificationCe
         }
 
         fragmentView = new FrameLayout(context);
-        fragmentView.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundGray));
+        fragmentView.setBackgroundColor(Theme.usePlusTheme ? Theme.prefBGColor : Theme.getColor(Theme.key_windowBackgroundGray));
         FrameLayout frameLayout = (FrameLayout) fragmentView;
 
         emptyView = new EmptyTextProgressView(context);
@@ -1142,7 +1142,7 @@ public class ChannelUsersActivity extends BaseFragment implements NotificationCe
             switch (viewType) {
                 case 0:
                     view = new ManageChatUserCell(mContext, 2, selectType == 0);
-                    view.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
+                    view.setBackgroundColor(Theme.usePlusTheme ? Theme.profileRowColor : Theme.getColor(Theme.key_windowBackgroundWhite));
                     ((ManageChatUserCell) view).setDelegate(new ManageChatUserCell.ManageChatUserCellDelegate() {
                         @Override
                         public boolean onOptionsButtonCheck(ManageChatUserCell cell, boolean click) {
@@ -1247,6 +1247,11 @@ public class ChannelUsersActivity extends BaseFragment implements NotificationCe
                     }
 
                     ManageChatUserCell userCell = (ManageChatUserCell) holder.itemView;
+					holder.itemView.setTag("Profile");
+                    if(Theme.usePlusTheme) {
+                        userCell.setNameColor(Theme.profileRowTitleColor);
+                        userCell.setStatusColor(Theme.profileRowStatusColor);
+                    }
                     userCell.setTag(position);
                     userCell.setData(user, name, username);
 
@@ -1316,7 +1321,12 @@ public class ChannelUsersActivity extends BaseFragment implements NotificationCe
             switch (viewType) {
                 case 0:
                     view = new ManageChatUserCell(mContext, type == 0 ? 8 : 1, selectType == 0);
-                    view.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
+                    view.setBackgroundColor(Theme.usePlusTheme ? Theme.profileRowColor : Theme.getColor(Theme.key_windowBackgroundWhite));
+                    view.setTag("Profile");
+                    if(Theme.usePlusTheme) {
+                        ((ManageChatUserCell)view).setNameColor(Theme.profileRowTitleColor);
+                        ((ManageChatUserCell)view).setStatusColor(Theme.profileRowStatusColor);
+                    }
                     ((ManageChatUserCell) view).setDelegate(new ManageChatUserCell.ManageChatUserCellDelegate() {
                         @Override
                         public boolean onOptionsButtonCheck(ManageChatUserCell cell, boolean click) {
@@ -1330,7 +1340,11 @@ public class ChannelUsersActivity extends BaseFragment implements NotificationCe
                     break;
                 case 2:
                     view = new ManageChatTextCell(mContext);
-                    view.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
+                    view.setBackgroundColor(Theme.usePlusTheme ? Theme.profileRowColor : Theme.getColor(Theme.key_windowBackgroundWhite));
+                    view.setTag("Profile");
+                    if(Theme.usePlusTheme) {
+                        ((ManageChatTextCell)view).setTextColor(Theme.profileRowTitleColor);
+                    }
                     break;
                 case 3:
                     view = new ShadowSectionCell(mContext);

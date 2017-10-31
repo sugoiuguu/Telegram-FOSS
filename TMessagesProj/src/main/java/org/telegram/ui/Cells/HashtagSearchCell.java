@@ -10,8 +10,11 @@ package org.telegram.ui.Cells;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.os.Build;
 import android.util.TypedValue;
 import android.view.Gravity;
+import android.view.MotionEvent;
 import android.widget.TextView;
 
 import org.telegram.messenger.AndroidUtilities;
@@ -27,6 +30,14 @@ public class HashtagSearchCell extends TextView {
         setPadding(AndroidUtilities.dp(16), 0, AndroidUtilities.dp(16), 0);
         setTextSize(TypedValue.COMPLEX_UNIT_DIP, 17);
         setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
+    }
+
+    public void setBackgroundColor(int color) {
+        setBackgroundColor(color);
+    }
+
+    public void setDividerColor(int color) {
+        //paint.setColor(color);
     }
 
     public void setNeedDivider(boolean value) {

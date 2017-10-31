@@ -88,6 +88,7 @@ public class SessionCell extends FrameLayout {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(MeasureSpec.makeMeasureSpec(MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(AndroidUtilities.dp(90) + (needDivider ? 1 : 0), MeasureSpec.EXACTLY));
+        if(Theme.usePlusTheme)setTheme();
     }
 
     public void setSession(TLRPC.TL_authorization session, boolean divider) {
@@ -147,6 +148,14 @@ public class SessionCell extends FrameLayout {
         }
 
         detailTextView.setText(stringBuilder);
+    }
+
+    private void setTheme(){
+        setBackgroundColor(Theme.prefBGColor);
+        nameTextView.setTextColor(Theme.prefTitleColor);
+        detailTextView.setTextColor(Theme.prefTitleColor);
+        detailExTextView.setTextColor(Theme.prefSummaryColor);
+        Theme.dividerPaint.setColor(Theme.prefDividerColor);
     }
 
     @Override

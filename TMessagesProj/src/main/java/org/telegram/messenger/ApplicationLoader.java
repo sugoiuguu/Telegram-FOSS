@@ -21,6 +21,7 @@ import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.res.Configuration;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Handler;
 import android.os.PowerManager;
@@ -29,17 +30,27 @@ import android.util.Base64;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 
+import org.telegram.SQLite.DatabaseHandler;
 import org.telegram.tgnet.ConnectionsManager;
 import org.telegram.tgnet.SerializedData;
 import org.telegram.tgnet.TLRPC;
+import org.telegram.ui.Components.Favorite;
 import org.telegram.ui.Components.ForegroundDetector;
 
 import java.io.File;
 import java.io.RandomAccessFile;
 
 public class ApplicationLoader extends Application {
+    
+   @SuppressLint("StaticFieldLeak")
+    //private static Drawable cachedWallpaper;
+    //private static int selectedColor;
+    //private static boolean isCustomTheme;
+    //private static final Object sync = new Object();
 
-    @SuppressLint("StaticFieldLeak")
+    //private static int serviceMessageColor;
+    ///private static int serviceSelectedMessageColor;
+
     public static volatile Context applicationContext;
     public static volatile Handler applicationHandler;
     private static volatile boolean applicationInited = false;
@@ -48,6 +59,13 @@ public class ApplicationLoader extends Application {
     public static volatile boolean mainInterfacePaused = true;
     public static volatile boolean mainInterfacePausedStageQueue = true;
     public static volatile long mainInterfacePausedStageQueueTime;
+
+    public static DatabaseHandler databaseHandler;
+    public static boolean SHOW_ANDROID_EMOJI;
+    public static boolean KEEP_ORIGINAL_FILENAME;
+    public static boolean USE_DEVICE_FONT;
+    public static boolean isTeslaInstalled = false;
+    public static boolean ENABLE_TAGS = true;
 
     private static void convertConfig() {
         SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("dataconfig", Context.MODE_PRIVATE);
@@ -107,7 +125,8 @@ public class ApplicationLoader extends Application {
         } catch (Exception e) {
             FileLog.e(e);
         }
-        return new File("/data/data/org.telegram.messenger/files");
+        //return new File("/data/data/org.telegram.messenger/files");
+        return new File("/data/data/" + ApplicationLoader.applicationContext.getPackageName() + "/files");
     }
 
     public static void postInitApplication() {
@@ -206,7 +225,18 @@ public class ApplicationLoader extends Application {
         new ForegroundDetector(this);
 
         applicationHandler = new Handler(applicationContext.getMainLooper());
-
+        //plus
+        //long startTime = System.currentTimeMillis();
+        databaseHandler = new DatabaseHandler(applicationContext);
+        Favorite.getInstance();
+        //Log.e("ApplicationLoader", "IN onCreate " + " / " + String.valueOf((Favorite.getInstance().getList())));
+        SharedPreferences plusPreferences = ApplicationLoader.applicationContext.getSharedPreferences("plusconfig", Activity.MODE_PRIVATE);
+        SHOW_ANDROID_EMOJI = plusPreferences.getBoolean("showAndroidEmoji", false);
+        KEEP_ORIGINAL_FILENAME = plusPreferences.getBoolean("keepOriginalFilename", false);
+        USE_DEVICE_FONT = plusPreferences.getBoolean("useDeviceFont", false);
+        isTeslaInstalled = AndroidUtilities.isAppInstalled(this, "com.teslacoilsw.notifier");
+        //Log.e("ApplicationLoader", "OUT onCreate " + " / " + (System.currentTimeMillis() - startTime) + "ms");
+        //
         startPushService();
     }
 

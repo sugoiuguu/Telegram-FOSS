@@ -98,8 +98,8 @@ public class ReportOtherActivity extends BaseFragment {
 
         firstNameField = new EditText(context);
         firstNameField.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 18);
-        firstNameField.setHintTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
-        firstNameField.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
+        firstNameField.setHintTextColor(Theme.usePlusTheme ? Theme.prefSummaryColor : Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
+        firstNameField.setTextColor(Theme.usePlusTheme ? Theme.prefTitleColor : Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
         firstNameField.setBackgroundDrawable(Theme.createEditTextDrawable(context, false));
         firstNameField.setMaxLines(3);
         firstNameField.setPadding(0, 0, 0, 0);

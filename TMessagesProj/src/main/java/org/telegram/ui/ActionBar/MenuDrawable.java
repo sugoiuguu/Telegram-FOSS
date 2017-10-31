@@ -30,7 +30,7 @@ public class MenuDrawable extends Drawable {
 
     public MenuDrawable() {
         super();
-        paint.setColor(0xffffffff);
+        paint.setColor(Theme.usePlusTheme ? Theme.chatsHeaderIconsColor : 0xffffffff);
         paint.setStrokeWidth(AndroidUtilities.dp(2));
     }
 

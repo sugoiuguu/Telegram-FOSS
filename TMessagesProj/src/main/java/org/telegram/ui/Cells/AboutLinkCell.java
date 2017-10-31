@@ -11,6 +11,8 @@ package org.telegram.ui.Cells;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.text.Layout;
@@ -87,7 +89,7 @@ public class AboutLinkCell extends FrameLayout {
         oldText = text;
         stringBuilder = new SpannableStringBuilder(oldText);
         if (parseLinks) {
-            MessageObject.addLinks(false, stringBuilder, false);
+        MessageObject.addLinks(false, stringBuilder, false);
         }
         Emoji.replaceEmoji(stringBuilder, Theme.profile_aboutTextPaint.getFontMetricsInt(), AndroidUtilities.dp(20), false);
         requestLayout();
@@ -97,7 +99,11 @@ public class AboutLinkCell extends FrameLayout {
             imageView.setImageResource(resId);
         }
     }
-
+    //plus
+    public void setIconColor(int color) {
+        imageView.setColorFilter(color, PorterDuff.Mode.SRC_IN);
+    }
+    //
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         float x = event.getX();
@@ -152,8 +158,8 @@ public class AboutLinkCell extends FrameLayout {
                             if (pressedLink instanceof URLSpan) {
                                 Browser.openUrl(getContext(), ((URLSpan) pressedLink).getURL());
                             } else {
-                                pressedLink.onClick(this);
-                            }
+                            pressedLink.onClick(this);
+                        }
                         }
                     } catch (Exception e) {
                         FileLog.e(e);
@@ -172,7 +178,7 @@ public class AboutLinkCell extends FrameLayout {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         if (stringBuilder != null) {
-            textLayout = new StaticLayout(stringBuilder, Theme.profile_aboutTextPaint, MeasureSpec.getSize(widthMeasureSpec) - AndroidUtilities.dp(71 + 16), Layout.Alignment.ALIGN_NORMAL, 1.0f, 0.0f, false);
+        textLayout = new StaticLayout(stringBuilder, Theme.profile_aboutTextPaint, MeasureSpec.getSize(widthMeasureSpec) - AndroidUtilities.dp(71 + 16), Layout.Alignment.ALIGN_NORMAL, 1.0f, 0.0f, false);
         }
         super.onMeasure(MeasureSpec.makeMeasureSpec(MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec((textLayout != null ? textLayout.getHeight() : AndroidUtilities.dp(20)) + AndroidUtilities.dp(16), MeasureSpec.EXACTLY));
     }
@@ -186,7 +192,7 @@ public class AboutLinkCell extends FrameLayout {
         }
         try {
             if (textLayout != null) {
-                textLayout.draw(canvas);
+        textLayout.draw(canvas);
             }
         } catch (Exception e) {
             FileLog.e(e);

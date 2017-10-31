@@ -30,12 +30,14 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.app.RemoteInput;
 import android.text.TextUtils;
+import android.util.Log;
 import android.util.SparseArray;
 
 import org.telegram.tgnet.ConnectionsManager;
 import org.telegram.tgnet.RequestDelegate;
 import org.telegram.tgnet.TLObject;
 import org.telegram.tgnet.TLRPC;
+import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.LaunchActivity;
 import org.telegram.ui.PopupNotificationActivity;
 
@@ -920,8 +922,8 @@ public class NotificationsController {
                                 if (messageObject.messageOwner.media.ttl_seconds != 0) {
                                     msg = LocaleController.formatString("NotificationMessageSDPhoto", R.string.NotificationMessageSDPhoto, name);
                                 } else {
-                                    msg = LocaleController.formatString("NotificationMessagePhoto", R.string.NotificationMessagePhoto, name);
-                                }
+                                msg = LocaleController.formatString("NotificationMessagePhoto", R.string.NotificationMessagePhoto, name);
+                            }
                             }
                         } else if (messageObject.isVideo()) {
                             if (!shortMessage && Build.VERSION.SDK_INT >= 19 && !TextUtils.isEmpty(messageObject.messageOwner.media.caption)) {
@@ -930,8 +932,8 @@ public class NotificationsController {
                                 if (messageObject.messageOwner.media.ttl_seconds != 0) {
                                     msg = LocaleController.formatString("NotificationMessageSDVideo", R.string.NotificationMessageSDVideo, name);
                                 } else {
-                                    msg = LocaleController.formatString("NotificationMessageVideo", R.string.NotificationMessageVideo, name);
-                                }
+                                msg = LocaleController.formatString("NotificationMessageVideo", R.string.NotificationMessageVideo, name);
+                            }
                             }
                         } else if (messageObject.isGame()) {
                             msg = LocaleController.formatString("NotificationMessageGame", R.string.NotificationMessageGame, name, messageObject.messageOwner.media.game.title);
@@ -1380,6 +1382,9 @@ public class NotificationsController {
     }
 
     private int getNotifyOverride(SharedPreferences preferences, long dialog_id) {
+	    //plus
+        if(AndroidUtilities.playingAGame)return 2;
+        //
         int notifyOverride = preferences.getInt("notify2_" + dialog_id, 0);
         if (notifyOverride == 3) {
             int muteUntil = preferences.getInt("notifyuntil_" + dialog_id, 0);
@@ -1736,7 +1741,8 @@ public class NotificationsController {
             String name;
             boolean replace = true;
             if ((int) dialog_id == 0 || pushDialogs.size() > 1 || AndroidUtilities.needShowPasscode(false) || UserConfig.isWaitingForPasscodeEnter) {
-                name = LocaleController.getString("AppName", R.string.AppName);
+                //name = LocaleController.getString("AppName", R.string.AppName);
+				name = BuildVars.DEBUG_VERSION ? LocaleController.getString("AppNameBeta", R.string.AppNameBeta) : LocaleController.getString("AppName", R.string.AppName);
                 replace = false;
             } else {
                 if (chat != null) {
@@ -1761,7 +1767,8 @@ public class NotificationsController {
                     .setContentIntent(contentIntent)
                     .setGroup("messages")
                     .setGroupSummary(true)
-                    .setColor(0xff2ca5e0);
+                    //.setColor(0xff2ca5e0);
+                    .setColor(Theme.defColor); //Plus
 
             mBuilder.setCategory(NotificationCompat.CATEGORY_MESSAGE);
             if (chat == null && user != null && user.phone != null && user.phone.length() > 0) {
@@ -1829,13 +1836,13 @@ public class NotificationsController {
                     try {
                         File file = FileLoader.getPathToAttach(photoPath, true);
                         if (file.exists()) {
-                            float scaleFactor = 160.0f / AndroidUtilities.dp(50);
-                            BitmapFactory.Options options = new BitmapFactory.Options();
-                            options.inSampleSize = scaleFactor < 1 ? 1 : (int) scaleFactor;
+                        float scaleFactor = 160.0f / AndroidUtilities.dp(50);
+                        BitmapFactory.Options options = new BitmapFactory.Options();
+                        options.inSampleSize = scaleFactor < 1 ? 1 : (int) scaleFactor;
                             Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath(), options);
-                            if (bitmap != null) {
-                                mBuilder.setLargeIcon(bitmap);
-                            }
+                        if (bitmap != null) {
+                            mBuilder.setLargeIcon(bitmap);
+                        }
                         }
                     } catch (Throwable e) {
                         //ignore
@@ -1953,7 +1960,8 @@ public class NotificationsController {
             }
             TLRPC.FileLocation photoPath = null;
             if (AndroidUtilities.needShowPasscode(false) || UserConfig.isWaitingForPasscodeEnter) {
-                name = LocaleController.getString("AppName", R.string.AppName);
+                //name = LocaleController.getString("AppName", R.string.AppName);
+                name = BuildVars.DEBUG_VERSION ? LocaleController.getString("AppNameBeta", R.string.AppNameBeta) : LocaleController.getString("AppName", R.string.AppName);
             } else {
                 if (chat != null) {
                     name = chat.title;
@@ -2091,13 +2099,13 @@ public class NotificationsController {
                     try {
                         File file = FileLoader.getPathToAttach(photoPath, true);
                         if (file.exists()) {
-                            float scaleFactor = 160.0f / AndroidUtilities.dp(50);
-                            BitmapFactory.Options options = new BitmapFactory.Options();
-                            options.inSampleSize = scaleFactor < 1 ? 1 : (int) scaleFactor;
+                        float scaleFactor = 160.0f / AndroidUtilities.dp(50);
+                        BitmapFactory.Options options = new BitmapFactory.Options();
+                        options.inSampleSize = scaleFactor < 1 ? 1 : (int) scaleFactor;
                             Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath(), options);
-                            if (bitmap != null) {
-                                builder.setLargeIcon(bitmap);
-                            }
+                        if (bitmap != null) {
+                            builder.setLargeIcon(bitmap);
+                        }
                         }
                     } catch (Throwable e) {
                         //ignore

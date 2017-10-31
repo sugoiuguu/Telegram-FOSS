@@ -13,7 +13,9 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Canvas;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
@@ -30,6 +32,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.DecelerateInterpolator;
 import android.view.inputmethod.EditorInfo;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -101,12 +104,20 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
 
     private int scrollOffsetY;
     private int topBeforeSwitch;
+    private TextView quoteTextView;
+    private Switch quoteSwitch;
+    private boolean favsFirst;
+    private int textColor;
 
     public ShareAlert(final Context context, MessageObject messageObject, final String text, boolean publicChannel, final String copyLink, boolean fullScreen) {
         super(context, true);
-
+        SharedPreferences plusPreferences = ApplicationLoader.applicationContext.getSharedPreferences("plusconfig", Activity.MODE_PRIVATE);
+        favsFirst = plusPreferences.getBoolean("directShareFavsFirst", false);
+        SharedPreferences themePrefs = ApplicationLoader.applicationContext.getSharedPreferences(AndroidUtilities.THEME_PREFS, AndroidUtilities.THEME_PREFS_MODE);
+        int textColorGray = themePrefs.getInt("chatAttachTextColor", 0xff757575);
+        textColor = themePrefs.getInt("chatAttachTextColor", Theme.defColor);
         shadowDrawable = context.getResources().getDrawable(R.drawable.sheet_shadow).mutate();
-        shadowDrawable.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_dialogBackground), PorterDuff.Mode.MULTIPLY));
+        shadowDrawable.setColorFilter(new PorterDuffColorFilter(Theme.usePlusTheme ? Theme.chatAttachBGColor : Theme.getColor(Theme.key_dialogBackground), PorterDuff.Mode.MULTIPLY));
 
         linkToCopy = copyLink;
         sendingMessageObject = messageObject;
@@ -164,20 +175,20 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
                 }
                 int size = Math.max(searchAdapter.getItemCount(), listAdapter.getItemCount());
                 int contentSize = AndroidUtilities.dp(48) + Math.max(3, (int) Math.ceil(size / 4.0f)) * AndroidUtilities.dp(100) + backgroundPaddingTop;
-                int padding = contentSize < height ? 0 : height - (height / 5 * 3) + AndroidUtilities.dp(8);
-                if (gridView.getPaddingTop() != padding) {
-                    ignoreLayout = true;
+                    int padding = contentSize < height ? 0 : height - (height / 5 * 3) + AndroidUtilities.dp(8);
+                    if (gridView.getPaddingTop() != padding) {
+                        ignoreLayout = true;
                     gridView.setPadding(0, padding, 0, AndroidUtilities.dp(frameLayout2.getTag() != null ? 56 : 8));
-                    ignoreLayout = false;
+                        ignoreLayout = false;
+                    }
+                    super.onMeasure(widthMeasureSpec, MeasureSpec.makeMeasureSpec(Math.min(contentSize, height), MeasureSpec.EXACTLY));
                 }
-                super.onMeasure(widthMeasureSpec, MeasureSpec.makeMeasureSpec(Math.min(contentSize, height), MeasureSpec.EXACTLY));
-            }
 
             @Override
             protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
                 super.onLayout(changed, left, top, right, bottom);
-                updateLayout();
-            }
+                    updateLayout();
+                }
 
             @Override
             public void requestLayout() {
@@ -189,15 +200,15 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
 
             @Override
             protected void onDraw(Canvas canvas) {
-                shadowDrawable.setBounds(0, scrollOffsetY - backgroundPaddingTop, getMeasuredWidth(), getMeasuredHeight());
-                shadowDrawable.draw(canvas);
-            }
+                    shadowDrawable.setBounds(0, scrollOffsetY - backgroundPaddingTop, getMeasuredWidth(), getMeasuredHeight());
+                    shadowDrawable.draw(canvas);
+                }
         };
         containerView.setWillNotDraw(false);
         containerView.setPadding(backgroundPaddingLeft, 0, backgroundPaddingLeft, 0);
 
         frameLayout = new FrameLayout(context);
-        frameLayout.setBackgroundColor(Theme.getColor(Theme.key_dialogBackground));
+        frameLayout.setBackgroundColor(Theme.usePlusTheme ? Theme.chatAttachBGColor : Theme.getColor(Theme.key_dialogBackground));
         frameLayout.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -229,7 +240,13 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
                             if (frameLayout2.getTag() != null && commentTextView.length() > 0) {
                                 SendMessagesHelper.getInstance().sendMessage(commentTextView.getText().toString(), entry.getKey(), null, null, true, null, null, null);
                             }
-                            SendMessagesHelper.getInstance().sendMessage(arrayList, entry.getKey());
+                            if (quoteSwitch.isChecked()) {
+                                SendMessagesHelper.getInstance().sendMessage(arrayList, entry.getKey());
+                            } else {
+                                for (MessageObject object : arrayList) {
+                                    SendMessagesHelper.getInstance().processForwardFromMyName(object, entry.getKey());
+                                }
+                            }
                         }
                     } else if (sendingText != null) {
                         for (HashMap.Entry<Long, TLRPC.TL_dialog> entry : selectedDialogs.entrySet()) {
@@ -247,9 +264,10 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
         doneButtonBadgeTextView = new TextView(context);
         doneButtonBadgeTextView.setTypeface(AndroidUtilities.getTypeface("fonts/rmedium.ttf"));
         doneButtonBadgeTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 13);
-        doneButtonBadgeTextView.setTextColor(Theme.getColor(Theme.key_dialogBadgeText));
+        doneButtonBadgeTextView.setTextColor(Theme.usePlusTheme ? Theme.chatAttachBGColor : Theme.getColor(Theme.key_dialogBadgeText));
         doneButtonBadgeTextView.setGravity(Gravity.CENTER);
         doneButtonBadgeTextView.setBackgroundDrawable(Theme.createRoundRectDrawable(AndroidUtilities.dp(12.5f), Theme.getColor(Theme.key_dialogBadgeBackground)));
+        if(Theme.usePlusTheme)doneButtonBadgeTextView.getBackground().setColorFilter(textColor, PorterDuff.Mode.SRC_IN);
         doneButtonBadgeTextView.setMinWidth(AndroidUtilities.dp(23));
         doneButtonBadgeTextView.setPadding(AndroidUtilities.dp(8), 0, AndroidUtilities.dp(8), AndroidUtilities.dp(1));
         doneButton.addView(doneButtonBadgeTextView, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, 23, Gravity.CENTER_VERTICAL, 0, 0, 10, 0));
@@ -261,12 +279,40 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
         doneButtonTextView.setTypeface(AndroidUtilities.getTypeface("fonts/rmedium.ttf"));
         doneButton.addView(doneButtonTextView, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER_VERTICAL));
 
-        ImageView imageView = new ImageView(context);
-        imageView.setImageResource(R.drawable.ic_ab_search);
-        imageView.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_dialogIcon), PorterDuff.Mode.MULTIPLY));
-        imageView.setScaleType(ImageView.ScaleType.CENTER);
-        imageView.setPadding(0, AndroidUtilities.dp(2), 0, 0);
-        frameLayout.addView(imageView, LayoutHelper.createFrame(48, 48, Gravity.LEFT | Gravity.CENTER_VERTICAL));
+        //ImageView imageView = new ImageView(context);
+        //imageView.setImageResource(R.drawable.ic_ab_search);
+        //imageView.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_dialogIcon), PorterDuff.Mode.MULTIPLY));
+        //imageView.setScaleType(ImageView.ScaleType.CENTER);
+        //imageView.setPadding(0, AndroidUtilities.dp(2), 0, 0);
+        //frameLayout.addView(imageView, LayoutHelper.createFrame(48, 48, Gravity.LEFT | Gravity.CENTER_VERTICAL));
+        //switch
+        SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("plusconfig", Activity.MODE_PRIVATE);
+        quoteSwitch = new Switch(context);
+        quoteSwitch.setTag("chat");
+        quoteSwitch.setDuplicateParentStateEnabled(false);
+        quoteSwitch.setFocusable(false);
+        quoteSwitch.setFocusableInTouchMode(false);
+        quoteSwitch.setClickable(true);
+        setCheck(preferences.getBoolean("directShareQuote", true));
+        setCheckColor();
+        frameLayout.addView(quoteSwitch, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.LEFT | Gravity.CENTER_VERTICAL, 0, 2, 0, 0));
+        quoteSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("plusconfig", Activity.MODE_PRIVATE);
+                SharedPreferences.Editor editor = preferences.edit();
+                editor.putBoolean("directShareQuote", isChecked).apply();
+                setCheckColor();
+            }
+        });
+        quoteTextView = new TextView(context);
+        quoteTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 9);
+        quoteTextView.setTextColor(quoteSwitch.isChecked() ? textColor : 0xff979797);
+        quoteTextView.setGravity(Gravity.CENTER);
+        quoteTextView.setCompoundDrawablePadding(AndroidUtilities.dp(8));
+        quoteTextView.setText(LocaleController.getString("Quote", R.string.Quote).toUpperCase());
+        quoteTextView.setTypeface(AndroidUtilities.getTypeface("fonts/rmedium.ttf"));
+        frameLayout.addView(quoteTextView, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.LEFT | Gravity.TOP , 12, 2, 0, 0));
 
         nameTextView = new EditText(context);
         nameTextView.setHint(LocaleController.getString("ShareSendTo", R.string.ShareSendTo));
@@ -279,7 +325,7 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
         nameTextView.setImeOptions(EditorInfo.IME_FLAG_NO_EXTRACT_UI);
         nameTextView.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
         AndroidUtilities.clearCursorDrawable(nameTextView);
-        nameTextView.setTextColor(Theme.getColor(Theme.key_dialogTextBlack));
+        nameTextView.setTextColor(Theme.usePlusTheme ? textColorGray != 0xff757575 ? textColorGray : 0xff212121 : Theme.getColor(Theme.key_dialogTextBlack));
         frameLayout.addView(nameTextView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT, Gravity.TOP | Gravity.LEFT, 48, 2, 96, 0));
         nameTextView.addTextChangedListener(new TextWatcher() {
             @Override
@@ -344,7 +390,7 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
         });
         containerView.addView(gridView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT, Gravity.TOP | Gravity.LEFT, 0, 48, 0, 0));
         gridView.setAdapter(listAdapter = new ShareDialogsAdapter(context));
-        gridView.setGlowColor(Theme.getColor(Theme.key_dialogScrollGlow));
+        gridView.setGlowColor(Theme.usePlusTheme ? Theme.chatAttachBGColor != 0xffffffff ? Theme.chatAttachBGColor : 0xfff5f6f7 : Theme.getColor(Theme.key_dialogScrollGlow));
         gridView.setOnItemClickListener(new RecyclerListView.OnItemClickListener() {
             @Override
             public void onItemClick(View view, int position) {
@@ -371,12 +417,12 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
                 updateSelectedCount();
             }
         });
-        gridView.setOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                updateLayout();
-            }
-        });
+            gridView.setOnScrollListener(new RecyclerView.OnScrollListener() {
+                @Override
+                public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                    updateLayout();
+                }
+            });
 
         searchEmptyView = new EmptyTextProgressView(context);
         searchEmptyView.setShowAtCenter(true);
@@ -392,7 +438,7 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
         containerView.addView(shadow, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 3, Gravity.TOP | Gravity.LEFT, 0, 48, 0, 0));
 
         frameLayout2 = new FrameLayout(context);
-        frameLayout2.setBackgroundColor(Theme.getColor(Theme.key_dialogBackground));
+        frameLayout2.setBackgroundColor(Theme.usePlusTheme ? Theme.chatAttachBGColor : Theme.getColor(Theme.key_dialogBackground));
         frameLayout2.setTranslationY(AndroidUtilities.dp(53));
         containerView.addView(frameLayout2, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 48, Gravity.LEFT | Gravity.BOTTOM));
         frameLayout2.setOnTouchListener(new View.OnTouchListener() {
@@ -491,7 +537,21 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
             FileLog.e(e);
         }
     }
+    //plus
+    public void setCheck(boolean checked) {
+        if (Build.VERSION.SDK_INT < 11) {
+            quoteSwitch.resetLayout();
+            quoteSwitch.requestLayout();
+        }
+        quoteSwitch.setChecked(checked);
+        setCheckColor();
+    }
 
+    private void setCheckColor(){
+        quoteSwitch.setColor(textColor);
+        if(quoteTextView != null)quoteTextView.setTextColor(quoteSwitch.isChecked() ? textColor : 0xff979797);
+    }
+    //
     private void showCommentTextView(final boolean show) {
         if (show == (frameLayout2.getTag() != null)) {
             return;
@@ -548,6 +608,7 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
             doneButton.setEnabled(true);
             doneButtonTextView.setText(LocaleController.getString("Send", R.string.Send).toUpperCase());
         }
+        if(Theme.usePlusTheme)doneButtonTextView.setTextColor(textColor);
     }
 
     @Override
@@ -568,9 +629,32 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
         }
 
         public void fetchDialogs() {
-            dialogs.clear();
+           dialogs.clear();
+            //plus
+            if(favsFirst) {
+                for (int a = 0; a < MessagesController.getInstance().dialogsFavs.size(); a++) {
+                    TLRPC.TL_dialog dialog = MessagesController.getInstance().dialogsFavs.get(a);
+                    int lower_id = (int) dialog.id;
+                    int high_id = (int) (dialog.id >> 32);
+                    if (lower_id != 0 && high_id != 1) {
+                        if (lower_id > 0) {
+                            dialogs.add(dialog);
+                        } else {
+                            TLRPC.Chat chat = MessagesController.getInstance().getChat(-lower_id);
+                        if (!(chat == null || ChatObject.isNotInChat(chat) || ChatObject.isChannel(chat) && !chat.creator && (chat.admin_rights == null || !chat.admin_rights.post_messages) && !chat.megagroup)) {
+                                dialogs.add(dialog);
+                            }
+                        }
+                    }
+                }
+            }
             for (int a = 0; a < MessagesController.getInstance().dialogsServerOnly.size(); a++) {
                 TLRPC.TL_dialog dialog = MessagesController.getInstance().dialogsServerOnly.get(a);
+                //plus
+                if(favsFirst && Favorite.getInstance().isFavorite(dialog.id)){
+                    continue;
+                }
+                //
                 int lower_id = (int) dialog.id;
                 int high_id = (int) (dialog.id >> 32);
                 if (lower_id != 0 && high_id != 1) {

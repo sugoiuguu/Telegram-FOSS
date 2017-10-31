@@ -59,6 +59,7 @@ public class TextDetailSettingsCell extends FrameLayout {
         } else {
             super.onMeasure(MeasureSpec.makeMeasureSpec(MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
         }
+        if(Theme.usePlusTheme)setTheme();
     }
 
     public void setMultilineDetail(boolean value) {
@@ -75,7 +76,48 @@ public class TextDetailSettingsCell extends FrameLayout {
             valueTextView.setPadding(0, 0, 0, 0);
         }
     }
+    //plus
+    public void setMultilineText(boolean value) {
+        multiline = value;
+        if (value) {
+            textView.setLines(0);
+            textView.setMaxLines(0);
+            textView.setSingleLine(false);
+            textView.setPadding(0, 0, 0, AndroidUtilities.dp(35));
+            removeView(valueTextView);
+            addView(valueTextView, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, (LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.BOTTOM, 17, 0, 17, 12));
+        } else {
+            textView.setLines(1);
+            textView.setMaxLines(1);
+            textView.setSingleLine(true);
+            textView.setPadding(0, 0, 0, 0);
+        }
+    }
 
+    public void setTitleColor(int color) {
+        textView.setTextColor(color);
+    }
+
+    public void setSummaryColor(int color) {
+        valueTextView.setTextColor(color);
+    }
+
+    public void setDividerColor(int color) {
+        Theme.dividerPaint.setColor(color);
+    }
+
+    private void setTheme(){
+        //SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences(AndroidUtilities.THEME_PREFS, AndroidUtilities.THEME_PREFS_MODE);
+        //int bgColor = preferences.getInt("prefBGColor", 0xffffffff);
+        setBackgroundColor(Theme.prefBGColor);
+        //int divColor = preferences.getInt("prefDividerColor", 0xffd9d9d9);
+        //int titleColor = preferences.getInt("prefTitleColor", 0xff212121);
+        //int summaryColor = preferences.getInt("prefSummaryColor", 0xff8a8a8a);
+        textView.setTextColor(Theme.prefTitleColor);
+        valueTextView.setTextColor(Theme.prefSummaryColor);
+        Theme.dividerPaint.setColor(Theme.prefDividerColor);
+    }
+    //
     public void setTextAndValue(String text, String value, boolean divider) {
         textView.setText(text);
         valueTextView.setText(value);

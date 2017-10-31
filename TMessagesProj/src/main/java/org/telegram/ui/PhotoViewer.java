@@ -33,6 +33,7 @@ import android.graphics.SurfaceTexture;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
 import android.media.MediaCodecInfo;
 import android.net.Uri;
 import android.os.Build;
@@ -64,6 +65,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Scroller;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.boxes.Box;
@@ -388,7 +390,14 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
     private final static int gallery_menu_share = 10;
     private final static int gallery_menu_openin = 11;
     private final static int gallery_menu_masks = 13;
-
+    //plus
+    private final static int gallery_menu_gotomsg = 20;
+    private android.widget.SeekBar qualityBar;
+    private FrameLayout photoQualityLayout;
+    private int photoQualityLayoutSize = 30;
+    private int barQualityValue;
+    private boolean muteItemAvailable;
+    //
     private static DecelerateInterpolator decelerateInterpolator;
     private static Paint progressPaint;
 
@@ -1450,12 +1459,41 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
         }
 
         actionBar = new ActionBar(activity);
-        actionBar.setTitleColor(0xffffffff);
-        actionBar.setSubtitleColor(0xffffffff);
-        actionBar.setBackgroundColor(Theme.ACTION_BAR_PHOTO_VIEWER_COLOR);
+		actionBar.setTitleColor(Theme.usePlusTheme ? Theme.chatHeaderIconsColor : 0xffffffff);
+        actionBar.setSubtitleColor(Theme.usePlusTheme ? Theme.chatHeaderIconsColor : 0xffffffff);
+        actionBar.setBackgroundColor(Theme.usePlusTheme ? Theme.chatHeaderColor : Theme.ACTION_BAR_PHOTO_VIEWER_COLOR);
         actionBar.setOccupyStatusBar(Build.VERSION.SDK_INT >= 21);
         actionBar.setItemsBackgroundColor(Theme.ACTION_BAR_WHITE_SELECTOR_COLOR, false);
         actionBar.setBackButtonImage(R.drawable.ic_ab_back);
+		//plus
+        if(Theme.usePlusTheme) {
+            Drawable back = parentActivity.getResources().getDrawable(R.drawable.ic_ab_back);
+            SharedPreferences themePrefs = ApplicationLoader.applicationContext.getSharedPreferences(AndroidUtilities.THEME_PREFS, AndroidUtilities.THEME_PREFS_MODE);
+            back.setColorFilter(Theme.chatHeaderIconsColor, PorterDuff.Mode.MULTIPLY);
+            actionBar.setBackButtonDrawable(back);
+            int val = themePrefs.getInt("chatHeaderGradient", 0);
+            if (val > 0) {
+                GradientDrawable.Orientation go;
+                switch (val) {
+                    case 2:
+                        go = GradientDrawable.Orientation.LEFT_RIGHT;
+                        break;
+                    case 3:
+                        go = GradientDrawable.Orientation.TL_BR;
+                        break;
+                    case 4:
+                        go = GradientDrawable.Orientation.BL_TR;
+                        break;
+                    default:
+                        go = GradientDrawable.Orientation.TOP_BOTTOM;
+                }
+                int gradColor = themePrefs.getInt("chatHeaderGradientColor", Theme.defColor);
+                int[] colors = new int[]{Theme.chatHeaderColor, gradColor};
+                GradientDrawable gd = new GradientDrawable(go, colors);
+                actionBar.setBackgroundDrawable(gd);
+            }
+        }
+        //
         actionBar.setTitle(LocaleController.formatString("Of", R.string.Of, 1, 1));
         containerView.addView(actionBar, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
 
@@ -1682,6 +1720,27 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                     StickersAlert stickersAlert = new StickersAlert(parentActivity, currentMessageObject.messageOwner.media.photo);
                     stickersAlert.show();
                 }
+				// plus
+                else if (id == gallery_menu_gotomsg) {
+                    if (/*opennedFromMedia && */currentDialogId != 0 && parentActivity != null) {
+                        Bundle args = new Bundle();
+                        int lower_part = (int) currentDialogId;
+                        if (lower_part != 0) {
+                            if (lower_part > 0) {
+                                args.putInt("user_id", lower_part);
+                            } else if (lower_part < 0) {
+                                args.putInt("chat_id", -lower_part);
+                            }
+                        } else {
+                            args.putInt("enc_id", (int) (currentDialogId >> 32));
+                        }
+                        args.putInt("message_id", currentMessageObject.getId());
+                        closePhoto(true, false);
+                        ((LaunchActivity) parentActivity).presentFragment(new ChatActivity(args));
+
+                    }
+                }
+                //
             }
 
             @Override
@@ -1711,7 +1770,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
         menuItem.addSubItem(gallery_menu_share, LocaleController.getString("ShareFile", R.string.ShareFile));
         menuItem.addSubItem(gallery_menu_save, LocaleController.getString("SaveToGallery", R.string.SaveToGallery));
         menuItem.addSubItem(gallery_menu_delete, LocaleController.getString("Delete", R.string.Delete));
-
+        menuItem.addSubItem(gallery_menu_gotomsg, LocaleController.getString("GoToMessage", R.string.GoToMessage));
         bottomLayout = new FrameLayout(actvityContext);
         bottomLayout.setBackgroundColor(0x7f000000);
         containerView.addView(bottomLayout, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 48, Gravity.BOTTOM | Gravity.LEFT));
@@ -1990,9 +2049,9 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
 
         pickerViewSendButton = new ImageView(parentActivity);
         pickerViewSendButton.setScaleType(ImageView.ScaleType.CENTER);
-        Drawable drawable = Theme.createSimpleSelectorCircleDrawable(AndroidUtilities.dp(56), 0xff6cabeb, 0xff6cabeb);
+        Drawable drawable = Theme.createSimpleSelectorCircleDrawable(AndroidUtilities.dp(56), Theme.usePlusTheme ? Theme.defColor : 0xff6cabeb, Theme.usePlusTheme ? Theme.defColor : 0xff6cabeb);
         pickerViewSendButton.setBackgroundDrawable(drawable);
-        pickerViewSendButton.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_chats_actionIcon), PorterDuff.Mode.MULTIPLY));
+        pickerViewSendButton.setColorFilter(new PorterDuffColorFilter(Theme.usePlusTheme ? Theme.chatsFloatingPencilColor : Theme.getColor(Theme.key_chats_actionIcon), PorterDuff.Mode.MULTIPLY));
         pickerViewSendButton.setPadding(AndroidUtilities.dp(4), 0, 0, 0);
         pickerViewSendButton.setImageResource(R.drawable.ic_send);
         pickerView.addView(pickerViewSendButton, LayoutHelper.createFrame(56, 56, (LocaleController.isRTL ? Gravity.LEFT : Gravity.RIGHT) | Gravity.BOTTOM, 0, 0, 14, 14));
@@ -2007,7 +2066,61 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                 }
             }
         });
+        //plus
+        photoQualityLayout = new FrameLayout(actvityContext);
+        //photoQualityLayout.setBackgroundColor(0x7f000000);
+        photoQualityLayout.setVisibility(View.GONE);
+        containerView.addView(photoQualityLayout, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, photoQualityLayoutSize, Gravity.BOTTOM, 0, 0, 60, 48));
+        qualityBar = new android.widget.SeekBar(actvityContext);
+        qualityBar.setPadding(AndroidUtilities.dp(20), 0 , AndroidUtilities.dp(75), 0);
+        qualityBar.setBackgroundColor(0x00000000);
+        qualityBar.getProgressDrawable().setColorFilter(new PorterDuffColorFilter(0xffffffff, PorterDuff.Mode.MULTIPLY));
+        if (Build.VERSION.SDK_INT >= 16) {
+            qualityBar.getThumb().setColorFilter(0xffffffff, PorterDuff.Mode.SRC_IN);
+        }
+        final int step = 1;
+        int max = 100;
+        final int min = 1;
+        qualityBar.setMax((max - min) / step);
+        qualityBar.setProgress(Theme.plusPhotoQuality);
+        barQualityValue = min + (Theme.plusPhotoQuality * step);
+        photoQualityLayout.addView(qualityBar, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT, Gravity.LEFT));
 
+        final TextView tvQuality = new TextView(actvityContext);
+        tvQuality.setPadding(0, 0 , AndroidUtilities.dp(20), 0);
+        tvQuality.setBackgroundColor(0x00000000);
+        tvQuality.setText((barQualityValue > 100 ? String.valueOf(100) : String.valueOf(barQualityValue))+"%");
+        tvQuality.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);
+        tvQuality.setTextColor(0xffffffff);
+        photoQualityLayout.addView(tvQuality, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.MATCH_PARENT, Gravity.RIGHT));
+
+        qualityBar.setOnSeekBarChangeListener(new android.widget.SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onStopTrackingTouch(android.widget.SeekBar seekBar) {
+                /*Toast toast = Toast.makeText(seekBar.getContext(), LocaleController.formatString("Quality", R.string.Quality, String.valueOf(barQualityValue)), Toast.LENGTH_SHORT);
+                toast.setGravity(Gravity.BOTTOM, 0 , AndroidUtilities.dp(25));
+                toast.getView().setBackgroundColor(0x00000000);
+                toast.show();*/
+                SharedPreferences plusPrefs = ApplicationLoader.applicationContext.getSharedPreferences("plusconfig", Activity.MODE_PRIVATE);
+                SharedPreferences.Editor editor = plusPrefs.edit();
+                Theme.plusPhotoQuality = barQualityValue > 100 ? 100 : barQualityValue;
+                editor.putInt("photoQuality", Theme.plusPhotoQuality);
+                editor.apply();
+            }
+
+            @Override
+            public void onStartTrackingTouch(android.widget.SeekBar seekBar) {
+                // TODO Auto-generated method stub
+            }
+
+            @Override
+            public void onProgressChanged(android.widget.SeekBar seekBar, int progress, boolean fromUser) {
+                barQualityValue = min + (progress * step);
+                tvQuality.setText(String.valueOf(barQualityValue)+"%");
+            }
+        });
+
+        //
         itemsLayout = new LinearLayout(parentActivity);
         itemsLayout.setOrientation(LinearLayout.HORIZONTAL);
         pickerView.addView(itemsLayout, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, 48, Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM, 0, 0, 34, 0));
@@ -2219,7 +2332,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                         } else if (object instanceof MediaController.SearchImage) {
                             ((MediaController.SearchImage) object).ttl = seconds;
                         }
-                        timeItem.setColorFilter(seconds != 0 ? new PorterDuffColorFilter(0xff3dadee, PorterDuff.Mode.MULTIPLY) : null);
+                        timeItem.setColorFilter(seconds != 0 ? new PorterDuffColorFilter(Theme.usePlusTheme ? Theme.lightColor : 0xff3dadee, PorterDuff.Mode.MULTIPLY) : null);
                         if (!checkImageView.isChecked()) {
                             checkImageView.callOnClick();
                         }
@@ -2230,7 +2343,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                 textView.setMinWidth(AndroidUtilities.dp(64));
                 textView.setTag(Dialog.BUTTON_NEGATIVE);
                 textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
-                textView.setTextColor(0xff49bcf2);
+                textView.setTextColor(Theme.usePlusTheme ? Theme.lightColor : 0xff49bcf2);
                 textView.setGravity(Gravity.CENTER);
                 textView.setTypeface(AndroidUtilities.getTypeface("fonts/rmedium.ttf"));
                 textView.setText(LocaleController.getString("Cancel", R.string.Cancel).toUpperCase());
@@ -2338,7 +2451,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
         checkImageView.setHasBorder(true);
         checkImageView.setSize(40);
         checkImageView.setCheckOffset(AndroidUtilities.dp(1));
-        checkImageView.setColor(0xff6cabeb, 0xffffffff);
+        checkImageView.setColor(Theme.usePlusTheme ? Theme.defColor : 0xff6cabeb, /*Theme.usePlusTheme ? Theme.chatAttachBGColor :*/ 0xffffffff);
         checkImageView.setVisibility(View.GONE);
         containerView.addView(checkImageView, LayoutHelper.createFrame(40, 40, Gravity.RIGHT | Gravity.TOP, 0, rotation == Surface.ROTATION_270 || rotation == Surface.ROTATION_90 ? 58 : 68, 10, 0));
         if (Build.VERSION.SDK_INT >= 21) {
@@ -2354,7 +2467,12 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                 }
             }
         });
-
+		//plus
+        if(Theme.usePlusTheme) {
+            menuItem.setIconColor(Theme.chatHeaderIconsColor);
+            masksItem.setIconColor(Theme.chatHeaderIconsColor);
+        }
+		//
         photosCounterView = new CounterView(parentActivity);
         containerView.addView(photosCounterView, LayoutHelper.createFrame(40, 40, Gravity.RIGHT | Gravity.TOP, 0, rotation == Surface.ROTATION_270 || rotation == Surface.ROTATION_90 ? 58 : 68, 66, 0));
         if (Build.VERSION.SDK_INT >= 21) {
@@ -2592,6 +2710,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
         } else {
             actionBar.setTitle(LocaleController.getString("PhotoCaption", R.string.PhotoCaption));
         }
+		photoQualityLayout.setVisibility(View.GONE);
     }
 
     private VideoEditedInfo getCurrentVideoEditedInfo() {
@@ -2653,7 +2772,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
         if (isCurrentVideo) {
             actionBar.setSubtitle(muteVideo ? null : currentSubtitle);
         }
-
+        if(Theme.plusShowPhotoQualityBar)photoQualityLayout.setVisibility(View.VISIBLE);
         updateCaptionTextForCurrentPhoto(object);
         setCurrentCaption(captionEditText.getFieldCharSequence());
         if (captionEditText.isPopupShowing()) {
@@ -2941,13 +3060,13 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                         entry.stickers.addAll(stickers);
                     }
                     if (currentEditMode == 1) {
-                        cropItem.setColorFilter(new PorterDuffColorFilter(0xff3dadee, PorterDuff.Mode.MULTIPLY));
+                        cropItem.setColorFilter(new PorterDuffColorFilter(Theme.usePlusTheme ? Theme.lightColor : 0xff3dadee, PorterDuff.Mode.MULTIPLY));
                         entry.isCropped = true;
                     } else if (currentEditMode == 2) {
-                        tuneItem.setColorFilter(new PorterDuffColorFilter(0xff3dadee, PorterDuff.Mode.MULTIPLY));
+                        tuneItem.setColorFilter(new PorterDuffColorFilter(Theme.usePlusTheme ? Theme.lightColor : 0xff3dadee, PorterDuff.Mode.MULTIPLY));
                         entry.isFiltered = true;
                     } else if (currentEditMode == 3) {
-                        paintItem.setColorFilter(new PorterDuffColorFilter(0xff3dadee, PorterDuff.Mode.MULTIPLY));
+                        paintItem.setColorFilter(new PorterDuffColorFilter(Theme.usePlusTheme ? Theme.lightColor : 0xff3dadee, PorterDuff.Mode.MULTIPLY));
                         entry.isPainted = true;
                     }
                 } else if (object instanceof MediaController.SearchImage) {
@@ -2961,13 +3080,13 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                         entry.stickers.addAll(stickers);
                     }
                     if (currentEditMode == 1) {
-                        cropItem.setColorFilter(new PorterDuffColorFilter(0xff3dadee, PorterDuff.Mode.MULTIPLY));
+                        cropItem.setColorFilter(new PorterDuffColorFilter(Theme.usePlusTheme ? Theme.lightColor : 0xff3dadee, PorterDuff.Mode.MULTIPLY));
                         entry.isCropped = true;
                     } else if (currentEditMode == 2) {
-                        tuneItem.setColorFilter(new PorterDuffColorFilter(0xff3dadee, PorterDuff.Mode.MULTIPLY));
+                        tuneItem.setColorFilter(new PorterDuffColorFilter(Theme.usePlusTheme ? Theme.lightColor : 0xff3dadee, PorterDuff.Mode.MULTIPLY));
                         entry.isFiltered = true;
                     } else if (currentEditMode == 3) {
-                        paintItem.setColorFilter(new PorterDuffColorFilter(0xff3dadee, PorterDuff.Mode.MULTIPLY));
+                        paintItem.setColorFilter(new PorterDuffColorFilter(Theme.usePlusTheme ? Theme.lightColor : 0xff3dadee, PorterDuff.Mode.MULTIPLY));
                         entry.isPainted = true;
                     }
                 }
@@ -3100,6 +3219,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                         arrayList.add(ObjectAnimator.ofFloat(checkImageView, "alpha", 1));
                         arrayList.add(ObjectAnimator.ofFloat(photosCounterView, "alpha", 1));
                     }
+		            arrayList.add(ObjectAnimator.ofFloat(photoQualityLayout, "alpha", 1));
                     animatorSet.playTogether(arrayList);
                     animatorSet.setDuration(200);
                     animatorSet.addListener(new AnimatorListenerAdapter() {
@@ -3114,6 +3234,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                                 checkImageView.setVisibility(View.VISIBLE);
                                 photosCounterView.setVisibility(View.VISIBLE);
                             }
+			                if(Theme.plusShowPhotoQualityBar)photoQualityLayout.setVisibility(View.VISIBLE);
                         }
                     });
                     animatorSet.start();
@@ -3165,6 +3286,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                 arrayList.add(ObjectAnimator.ofFloat(checkImageView, "alpha", 1, 0));
                 arrayList.add(ObjectAnimator.ofFloat(photosCounterView, "alpha", 1, 0));
             }
+	        arrayList.add(ObjectAnimator.ofFloat(photoQualityLayout, "alpha", 1, 0));
             changeModeAnimation.playTogether(arrayList);
             changeModeAnimation.setDuration(200);
             changeModeAnimation.addListener(new AnimatorListenerAdapter() {
@@ -3179,7 +3301,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                         checkImageView.setVisibility(View.GONE);
                         photosCounterView.setVisibility(View.GONE);
                     }
-
+                    photoQualityLayout.setVisibility(View.GONE);
                     final Bitmap bitmap = centerImage.getBitmap();
                     if (bitmap != null) {
                         photoCropView.setBitmap(bitmap, centerImage.getOrientation(), sendPhotoType != 1);
@@ -3283,6 +3405,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                 arrayList.add(ObjectAnimator.ofFloat(checkImageView, "alpha", 1, 0));
                 arrayList.add(ObjectAnimator.ofFloat(photosCounterView, "alpha", 1, 0));
             }
+	        arrayList.add(ObjectAnimator.ofFloat(photoQualityLayout, "alpha", 1, 0));
             changeModeAnimation.playTogether(arrayList);
             changeModeAnimation.setDuration(200);
             changeModeAnimation.addListener(new AnimatorListenerAdapter() {
@@ -3298,7 +3421,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                         checkImageView.setVisibility(View.GONE);
                         photosCounterView.setVisibility(View.GONE);
                     }
-
+                    photoQualityLayout.setVisibility(View.GONE);
                     Bitmap bitmap = centerImage.getBitmap();
                     if (bitmap != null) {
                         int bitmapWidth = centerImage.getBitmapWidth();
@@ -3385,6 +3508,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                 arrayList.add(ObjectAnimator.ofFloat(checkImageView, "alpha", 1, 0));
                 arrayList.add(ObjectAnimator.ofFloat(photosCounterView, "alpha", 1, 0));
             }
+            arrayList.add(ObjectAnimator.ofFloat(photoQualityLayout, "alpha", 1, 0));
             changeModeAnimation.playTogether(arrayList);
             changeModeAnimation.setDuration(200);
             changeModeAnimation.addListener(new AnimatorListenerAdapter() {
@@ -3399,7 +3523,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                         checkImageView.setVisibility(View.GONE);
                         photosCounterView.setVisibility(View.GONE);
                     }
-
+                    photoQualityLayout.setVisibility(View.GONE);
                     Bitmap bitmap = centerImage.getBitmap();
                     if (bitmap != null) {
                         int bitmapWidth = centerImage.getBitmapWidth();
@@ -3463,6 +3587,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
             arrayList.add(ObjectAnimator.ofFloat(checkImageView, "alpha", show ? 1.0f : 0.0f));
             arrayList.add(ObjectAnimator.ofFloat(photosCounterView, "alpha", show ? 1.0f : 0.0f));
         }
+	    arrayList.add(ObjectAnimator.ofFloat(photoQualityLayout, "alpha", show ? 1.0f : 0.0f));
         animatorSet.playTogether(arrayList);
         animatorSet.setDuration(200);
         animatorSet.start();
@@ -3694,6 +3819,8 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
         }
         allowShare = false;
         menuItem.hideSubItem(gallery_menu_showall);
+        menuItem.hideSubItem(gallery_menu_gotomsg);
+        muteItemAvailable = false;		
         menuItem.hideSubItem(gallery_menu_share);
         menuItem.hideSubItem(gallery_menu_openin);
         actionBar.setTranslationY(0);
@@ -3707,7 +3834,12 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
         pickerView.setVisibility(View.GONE);
         pickerView.setAlpha(1.0f);
         pickerView.setTranslationY(0);
-
+	    //plus
+	    photoQualityLayout.setAlpha(1.0f);
+        checkImageView.setVisibility(View.GONE);
+        pickerView.setVisibility(View.GONE);
+        photoQualityLayout.setVisibility(View.GONE);
+	    //
         paintItem.setVisibility(View.GONE);
         cropItem.setVisibility(View.GONE);
         tuneItem.setVisibility(View.GONE);
@@ -3746,6 +3878,9 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                 needSearchImageInArr = true;
                 imagesByIds[0].put(messageObject.getId(), messageObject);
                 menuItem.showSubItem(gallery_menu_showall);
+                // plus
+                menuItem.showSubItem(gallery_menu_gotomsg);
+                //
             }
             setImageIndex(0, true);
         } else if (fileLocation != null) {
@@ -3765,6 +3900,9 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
             currentUserAvatarLocation = fileLocation;
         } else if (messages != null) {
             menuItem.showSubItem(gallery_menu_showall);
+            // plus
+            menuItem.showSubItem(gallery_menu_gotomsg);
+            //
             opennedFromMedia = true;
             imagesArr.addAll(messages);
             if (!opennedFromMedia) {
@@ -3782,6 +3920,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                 photosCounterView.setVisibility(View.VISIBLE);
                 actionBar.setTitleRightMargin(AndroidUtilities.dp(100));
             }
+            if(Theme.plusShowPhotoQualityBar)photoQualityLayout.setVisibility(View.VISIBLE);			
             menuItem.setVisibility(View.GONE);
             imagesArrLocals.addAll(photos);
             Object obj = imagesArrLocals.get(index);
@@ -4092,6 +4231,9 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                 paintItem.setVisibility(View.GONE);
                 cropItem.setVisibility(View.GONE);
                 tuneItem.setVisibility(View.GONE);
+                //plus
+                photoQualityLayout.setVisibility(View.GONE);
+                //
             } else {
                 videoTimelineView.setVisibility(View.GONE);
                 muteItem.setVisibility(View.GONE);
@@ -4100,6 +4242,9 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                 paintItem.setVisibility(View.VISIBLE);
                 cropItem.setVisibility(View.VISIBLE);
                 tuneItem.setVisibility(View.VISIBLE);
+                //plus
+                if(Theme.plusShowPhotoQualityBar)photoQualityLayout.setVisibility(View.VISIBLE);
+                //
                 actionBar.setSubtitle(null);
             }
             if (fromCamera) {
@@ -4128,10 +4273,10 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
 
             setCurrentCaption(caption);
             updateCaptionTextForCurrentPhoto(object);
-            timeItem.setColorFilter(ttl != 0 ? new PorterDuffColorFilter(0xff3dadee, PorterDuff.Mode.MULTIPLY) : null);
-            paintItem.setColorFilter(isPainted ? new PorterDuffColorFilter(0xff3dadee, PorterDuff.Mode.MULTIPLY) : null);
-            cropItem.setColorFilter(isCropped ? new PorterDuffColorFilter(0xff3dadee, PorterDuff.Mode.MULTIPLY) : null);
-            tuneItem.setColorFilter(isFiltered ? new PorterDuffColorFilter(0xff3dadee, PorterDuff.Mode.MULTIPLY) : null);
+            timeItem.setColorFilter(ttl != 0 ? new PorterDuffColorFilter(Theme.usePlusTheme ? Theme.lightColor : 0xff3dadee, PorterDuff.Mode.MULTIPLY) : null);
+            paintItem.setColorFilter(isPainted ? new PorterDuffColorFilter(Theme.usePlusTheme ? Theme.lightColor : 0xff3dadee, PorterDuff.Mode.MULTIPLY) : null);
+            cropItem.setColorFilter(isCropped ? new PorterDuffColorFilter(Theme.usePlusTheme ? Theme.lightColor : 0xff3dadee, PorterDuff.Mode.MULTIPLY) : null);
+            tuneItem.setColorFilter(isFiltered ? new PorterDuffColorFilter(Theme.usePlusTheme ? Theme.lightColor : 0xff3dadee, PorterDuff.Mode.MULTIPLY) : null);
         }
 
 
@@ -4238,7 +4383,8 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
             if (captionTextView.getParent() != containerView) {
                 captionTextView.setBackgroundColor(0x7f000000);
                 pickerView.removeView(captionTextView);
-                containerView.addView(captionTextView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.BOTTOM | Gravity.LEFT, 0, 0, 0, 48));
+                //containerView.addView(captionTextView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.BOTTOM | Gravity.LEFT, 0, 0, 0, 48));
+		        containerView.addView(captionTextView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.BOTTOM | Gravity.LEFT, 0, 0, 0, /*48*/ 48 + (Theme.plusShowPhotoQualityBar ? photoQualityLayoutSize : 0)));
             }
         }
         if (isCurrentVideo) {
@@ -4272,6 +4418,12 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                 captionTextView.setVisibility(View.INVISIBLE);
             }
         }
+        // plus
+        if(muteItemAvailable)photoQualityLayout.setVisibility(View.GONE);
+        FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) captionTextView.getLayoutParams();
+        layoutParams.bottomMargin = AndroidUtilities.dp(48 + (photoQualityLayout.getVisibility() == View.VISIBLE && Theme.plusShowPhotoQualityBar ? photoQualityLayoutSize : 0));
+        captionTextView.setLayoutParams(layoutParams);
+        //
     }
 
     private void checkProgress(int a, boolean animated) {
@@ -5138,6 +5290,10 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                     }
                 }, 100);
             }
+        }
+		// workaround for hidden controls when using system camera on devices with soft keys
+        else{
+            qualityBar.requestLayout();
         }
     }
 
@@ -6122,7 +6278,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
         if (muteVideo) {
             actionBar.setSubtitle(null);
             muteItem.setImageResource(R.drawable.volume_off);
-            muteItem.setColorFilter(new PorterDuffColorFilter(0xff3dadee, PorterDuff.Mode.MULTIPLY));
+            muteItem.setColorFilter(new PorterDuffColorFilter(Theme.usePlusTheme ? Theme.lightColor : 0xff3dadee, PorterDuff.Mode.MULTIPLY));
             if (compressItem.getTag() != null) {
                 compressItem.setClickable(false);
                 compressItem.setAlpha(0.5f);

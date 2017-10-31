@@ -176,6 +176,13 @@ public class WallpapersActivity extends BaseFragment implements NotificationCent
                         editor.putInt("selectedColor", selectedColor);
                         editor.putBoolean("overrideThemeWallpaper", Theme.hasWallpaperFromTheme() && overrideThemeWallpaper);
                         editor.commit();
+                        //
+                        SharedPreferences themePrefs = ApplicationLoader.applicationContext.getSharedPreferences(AndroidUtilities.THEME_PREFS, AndroidUtilities.THEME_PREFS_MODE);
+                        SharedPreferences.Editor edit = themePrefs.edit();
+                        edit.putBoolean("chatSolidBGColorCheck", false);
+                        Theme.chatSolidBGColorCheck = false;
+                        edit.commit();
+                        //
                         Theme.reloadWallpaper();
                     }
                     finishFragment();
@@ -184,8 +191,10 @@ public class WallpapersActivity extends BaseFragment implements NotificationCent
         });
 
         ActionBarMenu menu = actionBar.createMenu();
-        doneButton = menu.addItemWithWidth(done_button, R.drawable.ic_done, AndroidUtilities.dp(56));
-
+        //doneButton = menu.addItemWithWidth(done_button, R.drawable.ic_done, AndroidUtilities.dp(56));
+        Drawable done = getParentActivity().getResources().getDrawable(R.drawable.ic_done);
+        done.setColorFilter(Theme.prefActionbarIconsColor, PorterDuff.Mode.SRC_IN);
+        doneButton = menu.addItemWithWidth(done_button, done, AndroidUtilities.dp(56));
         FrameLayout frameLayout = new FrameLayout(context);
         fragmentView = frameLayout;
 
@@ -248,6 +257,13 @@ public class WallpapersActivity extends BaseFragment implements NotificationCent
                     listAdapter.notifyDataSetChanged();
                     processSelectedBackground();
                 }
+                //Plus
+                AndroidUtilities.runOnUIThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        NotificationCenter.getInstance().postNotificationName(NotificationCenter.wallpaperChanged);
+                    }
+                });
             }
         });
 
@@ -441,6 +457,16 @@ public class WallpapersActivity extends BaseFragment implements NotificationCent
             listAdapter.notifyDataSetChanged();
         }
         processSelectedBackground();
+        if(Theme.usePlusTheme)updateTheme();
+    }
+
+    private void updateTheme(){
+        actionBar.setBackgroundColor(Theme.prefActionbarColor);
+        actionBar.setTitleColor(Theme.prefActionbarTitleColor);
+        Drawable back = getParentActivity().getResources().getDrawable(R.drawable.ic_ab_back);
+        back.setColorFilter(Theme.prefActionbarIconsColor, PorterDuff.Mode.MULTIPLY);
+        actionBar.setBackButtonDrawable(back);
+        actionBar.setItemsColor(Theme.prefActionbarIconsColor, false);
     }
 
     private class ListAdapter extends RecyclerListView.SelectionAdapter {

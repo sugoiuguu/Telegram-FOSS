@@ -9,12 +9,19 @@
 package org.telegram.ui.Components;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Canvas;
+import android.graphics.ColorFilter;
 import android.graphics.Paint;
 import android.graphics.Paint.Style;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.StateListDrawable;
+import android.os.Build;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
+import android.util.SparseArray;
 import android.view.View;
 import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.widget.FrameLayout;
@@ -103,7 +110,7 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
         getViewTreeObserver().addOnGlobalLayoutListener(new OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
-                getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                    getViewTreeObserver().removeOnGlobalLayoutListener(this);
                 currentPosition = pager.getCurrentItem();
                 scrollToChild(currentPosition, 0);
             }

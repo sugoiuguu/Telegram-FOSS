@@ -155,7 +155,7 @@ public class TwoStepVerificationActivity extends BaseFragment implements Notific
 
         fragmentView = new FrameLayout(context);
         FrameLayout frameLayout = (FrameLayout) fragmentView;
-        frameLayout.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundGray));
+        frameLayout.setBackgroundColor(Theme.usePlusTheme ? Theme.prefBGColor : Theme.getColor(Theme.key_windowBackgroundGray));
 
         ActionBarMenu menu = actionBar.createMenu();
         doneItem = menu.addItemWithWidth(done_button, R.drawable.ic_done, AndroidUtilities.dp(56));
@@ -176,8 +176,8 @@ public class TwoStepVerificationActivity extends BaseFragment implements Notific
 
         passwordEditText = new EditText(context);
         passwordEditText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
-        passwordEditText.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
-        passwordEditText.setHintTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
+        passwordEditText.setTextColor(Theme.usePlusTheme ? Theme.prefTitleColor : Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
+        passwordEditText.setHintTextColor(Theme.usePlusTheme ? Theme.prefSummaryColor : Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
         passwordEditText.setBackgroundDrawable(Theme.createEditTextDrawable(context, false));
         passwordEditText.setMaxLines(1);
         passwordEditText.setLines(1);
@@ -314,6 +314,7 @@ public class TwoStepVerificationActivity extends BaseFragment implements Notific
             emptyView.showProgress();
 
             listView = new RecyclerListView(context);
+            if(Theme.usePlusTheme)listView.setBackgroundColor(Theme.prefBGColor);
             listView.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false));
             listView.setEmptyView(emptyView);
             listView.setVerticalScrollBarEnabled(false);
@@ -946,7 +947,7 @@ public class TwoStepVerificationActivity extends BaseFragment implements Notific
                 case 0:
                     TextSettingsCell textCell = (TextSettingsCell) holder.itemView;
                     textCell.setTag(Theme.key_windowBackgroundWhiteBlackText);
-                    textCell.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
+                    textCell.setTextColor(Theme.usePlusTheme ? Theme.prefSummaryColor : Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
                     if (position == changePasswordRow) {
                         textCell.setText(LocaleController.getString("ChangePassword", R.string.ChangePassword), true);
                     } else if (position == setPasswordRow) {

@@ -154,7 +154,7 @@ public class SetAdminsActivity extends BaseFragment implements NotificationCente
 
         fragmentView = new FrameLayout(context);
         FrameLayout frameLayout = (FrameLayout) fragmentView;
-        fragmentView.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundGray));
+        fragmentView.setBackgroundColor(Theme.usePlusTheme ? Theme.prefBGColor : Theme.getColor(Theme.key_windowBackgroundGray));
 
         listView = new RecyclerListView(context);
         listView.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false));
@@ -436,6 +436,8 @@ public class SetAdminsActivity extends BaseFragment implements NotificationCente
                     break;
                 case 2:
                     UserCell userCell = (UserCell) holder.itemView;
+                    if(Theme.usePlusTheme)userCell.setBackgroundColor(Theme.profileRowColor);
+                    userCell.setTag("Profile");
                     TLRPC.ChatParticipant part = participants.get(position - usersStartRow);
                     TLRPC.User user = MessagesController.getInstance().getUser(part.user_id);
                     userCell.setData(user, null, null, 0);

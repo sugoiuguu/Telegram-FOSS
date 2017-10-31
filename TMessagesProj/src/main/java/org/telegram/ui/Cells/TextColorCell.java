@@ -13,6 +13,7 @@ import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.widget.FrameLayout;
@@ -50,8 +51,12 @@ public class TextColorCell extends FrameLayout {
         textView.setLines(1);
         textView.setMaxLines(1);
         textView.setSingleLine(true);
+        //plus
+        textView.setEllipsize(TextUtils.TruncateAt.END);
+        //
         textView.setGravity((LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.CENTER_VERTICAL);
-        addView(textView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT, (LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.TOP, 17, 0, 17, 0));
+        addView(textView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT, (LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.TOP, 17, 0, /*17*/ 45, 0));
+
     }
 
     @Override
@@ -68,6 +73,7 @@ public class TextColorCell extends FrameLayout {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(MeasureSpec.makeMeasureSpec(MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(AndroidUtilities.dp(48) + (needDivider ? 1 : 0), MeasureSpec.EXACTLY));
+        if(Theme.usePlusTheme)setTheme();
     }
 
     public void setTextAndColor(String text, int color, boolean divider) {
@@ -98,5 +104,11 @@ public class TextColorCell extends FrameLayout {
             colorPaint.setAlpha((int) (255 * alpha));
             canvas.drawCircle(LocaleController.isRTL ? AndroidUtilities.dp(29) : getMeasuredWidth() - AndroidUtilities.dp(29), getMeasuredHeight() / 2, AndroidUtilities.dp(10), colorPaint);
         }
+    }
+
+    private void setTheme(){
+        setBackgroundColor(Theme.prefBGColor);
+        textView.setTextColor(Theme.prefTitleColor);
+        Theme.dividerPaint.setColor(Theme.prefDividerColor);
     }
 }

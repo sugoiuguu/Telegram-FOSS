@@ -8,9 +8,14 @@
 
 package org.telegram.ui.Cells;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.RectF;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
 import android.text.Layout;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
@@ -18,15 +23,18 @@ import android.text.StaticLayout;
 import android.text.TextPaint;
 import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
+import android.util.Log;
 
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.PhoneFormat.PhoneFormat;
+import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.ChatObject;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MessageObject;
 import org.telegram.messenger.UserObject;
 import org.telegram.messenger.FileLog;
 import org.telegram.messenger.query.DraftQuery;
+import org.telegram.tgnet.ConnectionsManager;
 import org.telegram.tgnet.TLObject;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.messenger.ContactsController;
@@ -37,6 +45,7 @@ import org.telegram.messenger.UserConfig;
 import org.telegram.messenger.ImageReceiver;
 import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.Components.AvatarDrawable;
+import org.telegram.ui.Components.Favorite;
 
 import java.util.ArrayList;
 
@@ -126,12 +135,28 @@ public class DialogCell extends BaseCell {
     private boolean isSelected;
 
     private RectF rect = new RectF();
+    //plus
+    private int nameTop = AndroidUtilities.dp(13);
+    private int avatarSize = AndroidUtilities.dp(Theme.chatsAvatarSize);
+
+    private int avatarLeftMargin = AndroidUtilities.dp(Theme.chatsAvatarMarginLeft);
+    private GradientDrawable statusBG;
+    private boolean drawStatus;
+    private boolean isFav;
+
+    //private boolean twoLinesMsg = false;
+    private boolean markAsUnread;
+    //
 
     public DialogCell(Context context) {
         super(context);
 
         Theme.createDialogsResources(context);
-        avatarImage.setRoundRadius(AndroidUtilities.dp(26));
+        avatarImage.setRoundRadius(AndroidUtilities.dp(Theme.usePlusTheme ? Theme.chatsAvatarRadius : 26));
+        statusBG = new GradientDrawable();
+        //statusBG.setColor(Color.GRAY);
+        statusBG.setCornerRadius(AndroidUtilities.dp(16));
+        //statusBG.setStroke(AndroidUtilities.dp(2), Color.WHITE);
     }
 
     public void setDialog(TLRPC.TL_dialog dialog, int i, int type) {
@@ -211,7 +236,13 @@ public class DialogCell extends BaseCell {
         drawNameLock = false;
         drawNameBot = false;
         drawVerified = false;
-
+        //plus
+        drawStatus = false;
+        SharedPreferences plusPreferences = ApplicationLoader.applicationContext.getSharedPreferences("plusconfig", Activity.MODE_PRIVATE);
+        markAsUnread = plusPreferences.getInt("unread_" + currentDialogId, 0) == 1;
+        avatarSize = AndroidUtilities.dp(Theme.chatsAvatarSize);
+        avatarLeftMargin = AndroidUtilities.dp(Theme.chatsAvatarMarginLeft);
+        //
         if (customDialog != null) {
             if (customDialog.type == 2) {
                 drawNameLock = true;
@@ -230,9 +261,11 @@ public class DialogCell extends BaseCell {
                     nameLockTop = AndroidUtilities.dp(17.5f);
                     if (!LocaleController.isRTL) {
                         nameLockLeft = AndroidUtilities.dp(AndroidUtilities.leftBaseline);
-                        nameLeft = AndroidUtilities.dp(AndroidUtilities.leftBaseline + 4) + (drawNameGroup ? Theme.dialogs_groupDrawable.getIntrinsicWidth() : Theme.dialogs_broadcastDrawable.getIntrinsicWidth());
+                        //nameLeft = AndroidUtilities.dp(AndroidUtilities.leftBaseline + 4) + (drawNameGroup ? Theme.dialogs_groupDrawable.getIntrinsicWidth() : Theme.dialogs_broadcastDrawable.getIntrinsicWidth());
+                        nameLeft = AndroidUtilities.dp(AndroidUtilities.leftBaseline + 4) + (drawNameGroup ? chat != null && chat.megagroup ? Theme.dialogs_superGroupDrawable.getIntrinsicWidth() : Theme.dialogs_groupDrawable.getIntrinsicWidth() : Theme.dialogs_broadcastDrawable.getIntrinsicWidth());
                     } else {
-                        nameLockLeft = getMeasuredWidth() - AndroidUtilities.dp(AndroidUtilities.leftBaseline) - (drawNameGroup ? Theme.dialogs_groupDrawable.getIntrinsicWidth() : Theme.dialogs_broadcastDrawable.getIntrinsicWidth());
+                        //nameLockLeft = getMeasuredWidth() - AndroidUtilities.dp(AndroidUtilities.leftBaseline) - (drawNameGroup ? Theme.dialogs_groupDrawable.getIntrinsicWidth() : Theme.dialogs_broadcastDrawable.getIntrinsicWidth());
+                        nameLockLeft = getMeasuredWidth() - AndroidUtilities.dp(AndroidUtilities.leftBaseline) - (drawNameGroup ? chat != null && chat.megagroup ? Theme.dialogs_superGroupDrawable.getIntrinsicWidth() : Theme.dialogs_groupDrawable.getIntrinsicWidth() : Theme.dialogs_broadcastDrawable.getIntrinsicWidth());
                         nameLeft = AndroidUtilities.dp(14);
                     }
                 } else {
@@ -249,7 +282,8 @@ public class DialogCell extends BaseCell {
                 checkMessage = false;
                 SpannableStringBuilder stringBuilder;
                 if (customDialog.isMedia) {
-                    currentMessagePaint = Theme.dialogs_messagePrintingPaint;
+                    currentMessagePaint = Theme.usePlusTheme ? Theme.dialogs_mediaPaint : Theme.dialogs_messagePrintingPaint;
+                    //currentMessagePaint = Theme.dialogs_mediaPaint;
                     stringBuilder = SpannableStringBuilder.valueOf(String.format("%s: %s", name, message.messageText));
                     stringBuilder.setSpan(new ForegroundColorSpan(Theme.getColor(Theme.key_chats_attachMessage)), name.length() + 2, stringBuilder.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                 } else {
@@ -266,7 +300,8 @@ public class DialogCell extends BaseCell {
             } else {
                 messageString = customDialog.message;
                 if (customDialog.isMedia) {
-                    currentMessagePaint = Theme.dialogs_messagePrintingPaint;
+                    currentMessagePaint = Theme.usePlusTheme ? Theme.dialogs_mediaPaint : Theme.dialogs_messagePrintingPaint;
+                    //currentMessagePaint = Theme.dialogs_mediaPaint;
                 }
             }
 
@@ -318,9 +353,11 @@ public class DialogCell extends BaseCell {
 
                     if (!LocaleController.isRTL) {
                         nameLockLeft = AndroidUtilities.dp(AndroidUtilities.leftBaseline);
-                        nameLeft = AndroidUtilities.dp(AndroidUtilities.leftBaseline + 4) + (drawNameGroup ? Theme.dialogs_groupDrawable.getIntrinsicWidth() : Theme.dialogs_broadcastDrawable.getIntrinsicWidth());
+                        //nameLeft = AndroidUtilities.dp(AndroidUtilities.leftBaseline + 4) + (drawNameGroup ? Theme.dialogs_groupDrawable.getIntrinsicWidth() : Theme.dialogs_broadcastDrawable.getIntrinsicWidth());
+                        nameLeft = AndroidUtilities.dp(AndroidUtilities.leftBaseline + 4) + (drawNameGroup ? chat != null && chat.megagroup ? Theme.dialogs_superGroupDrawable.getIntrinsicWidth() : Theme.dialogs_groupDrawable.getIntrinsicWidth() : Theme.dialogs_broadcastDrawable.getIntrinsicWidth());
                     } else {
-                        nameLockLeft = getMeasuredWidth() - AndroidUtilities.dp(AndroidUtilities.leftBaseline) - (drawNameGroup ? Theme.dialogs_groupDrawable.getIntrinsicWidth() : Theme.dialogs_broadcastDrawable.getIntrinsicWidth());
+                        //nameLockLeft = getMeasuredWidth() - AndroidUtilities.dp(AndroidUtilities.leftBaseline) - (drawNameGroup ? Theme.dialogs_groupDrawable.getIntrinsicWidth() : Theme.dialogs_broadcastDrawable.getIntrinsicWidth());
+                        nameLockLeft = getMeasuredWidth() - AndroidUtilities.dp(AndroidUtilities.leftBaseline) - (drawNameGroup ? chat != null && chat.megagroup ? Theme.dialogs_superGroupDrawable.getIntrinsicWidth() : Theme.dialogs_groupDrawable.getIntrinsicWidth() : Theme.dialogs_broadcastDrawable.getIntrinsicWidth());
                         nameLeft = AndroidUtilities.dp(14);
                     }
                 } else {
@@ -364,7 +401,8 @@ public class DialogCell extends BaseCell {
 
             if (printingString != null) {
                 lastPrintString = messageString = printingString;
-                currentMessagePaint = Theme.dialogs_messagePrintingPaint;
+                currentMessagePaint = Theme.usePlusTheme ? Theme.dialogs_messageTypingPaint : Theme.dialogs_messagePrintingPaint;
+                //currentMessagePaint = Theme.dialogs_messagePrintingPaint;
             } else {
                 lastPrintString = null;
 
@@ -373,7 +411,7 @@ public class DialogCell extends BaseCell {
                     if (TextUtils.isEmpty(draftMessage.message)) {
                         String draftString = LocaleController.getString("Draft", R.string.Draft);
                         SpannableStringBuilder stringBuilder = SpannableStringBuilder.valueOf(draftString);
-                        stringBuilder.setSpan(new ForegroundColorSpan(Theme.getColor(Theme.key_chats_draft)), 0, draftString.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        stringBuilder.setSpan(new ForegroundColorSpan(Theme.usePlusTheme ? Theme.chatsMediaColor : Theme.getColor(Theme.key_chats_draft)), 0, draftString.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                         messageString = stringBuilder;
                     } else {
                         String mess = draftMessage.message;
@@ -382,7 +420,7 @@ public class DialogCell extends BaseCell {
                         }
                         String draftString = LocaleController.getString("Draft", R.string.Draft);
                         SpannableStringBuilder stringBuilder = SpannableStringBuilder.valueOf(String.format("%s: %s", draftString, mess.replace('\n', ' ')));
-                        stringBuilder.setSpan(new ForegroundColorSpan(Theme.getColor(Theme.key_chats_draft)), 0, draftString.length() + 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        stringBuilder.setSpan(new ForegroundColorSpan(Theme.usePlusTheme ? Theme.chatsMediaColor : Theme.getColor(Theme.key_chats_draft)), 0, draftString.length() + 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                         messageString = Emoji.replaceEmoji(stringBuilder, Theme.dialogs_messagePaint.getFontMetricsInt(), AndroidUtilities.dp(20), false);
                     }
                 } else {
@@ -508,8 +546,18 @@ public class DialogCell extends BaseCell {
                 if (unreadCount != 0) {
                     drawCount = true;
                     countString = String.format("%d", unreadCount);
+                //plus
+                if(markAsUnread){
+                    SharedPreferences.Editor editor = plusPreferences.edit();
+                    editor.remove("unread_" + currentDialogId);
+                    editor.commit();
+                    markAsUnread = false;
+                }
                 } else {
                     drawCount = false;
+                    if(markAsUnread){
+                        countString = " ";
+                    }
                 }
 
                 if (message.isOut() && draftMessage == null) {
@@ -540,6 +588,7 @@ public class DialogCell extends BaseCell {
 
             if (chat != null) {
                 nameString = chat.title;
+                if(Theme.usePlusTheme)currentNamePaint = Theme.dialogs_groupPaint;
             } else if (user != null) {
                 if (user.id == UserConfig.getClientUserId()) {
                     nameString = LocaleController.getString("ChatYourSelfName", R.string.ChatYourSelfName);
@@ -550,6 +599,7 @@ public class DialogCell extends BaseCell {
                         if (user.phone != null && user.phone.length() != 0) {
                             nameString = PhoneFormat.getInstance().format("+" + user.phone);
                         } else {
+                            if(Theme.usePlusTheme)currentNamePaint = Theme.dialogs_nameUnknownPaint;
                             nameString = UserObject.getUserName(user);
                         }
                     }
@@ -559,6 +609,7 @@ public class DialogCell extends BaseCell {
                 if (encryptedChat != null) {
                     currentNamePaint = Theme.dialogs_nameEncryptedPaint;
                 }
+                if(!drawNameBot)drawStatus = true;
             }
             if (nameString.length() == 0) {
                 nameString = LocaleController.getString("HiddenName", R.string.HiddenName);
@@ -584,7 +635,8 @@ public class DialogCell extends BaseCell {
         if (drawNameLock) {
             nameWidth -= AndroidUtilities.dp(4) + Theme.dialogs_lockDrawable.getIntrinsicWidth();
         } else if (drawNameGroup) {
-            nameWidth -= AndroidUtilities.dp(4) + Theme.dialogs_groupDrawable.getIntrinsicWidth();
+            //nameWidth -= AndroidUtilities.dp(4) + Theme.dialogs_groupDrawable.getIntrinsicWidth();
+            nameWidth -= AndroidUtilities.dp(4) + (chat != null && chat.megagroup ? Theme.dialogs_superGroupDrawable.getIntrinsicWidth() : Theme.dialogs_groupDrawable.getIntrinsicWidth());
         } else if (drawNameBroadcast) {
             nameWidth -= AndroidUtilities.dp(4) + Theme.dialogs_broadcastDrawable.getIntrinsicWidth();
         } else if (drawNameBot) {
@@ -648,12 +700,12 @@ public class DialogCell extends BaseCell {
         int avatarLeft;
         if (!LocaleController.isRTL) {
             messageLeft = AndroidUtilities.dp(AndroidUtilities.leftBaseline);
-            avatarLeft = AndroidUtilities.dp(AndroidUtilities.isTablet() ? 13 : 9);
+            avatarLeft = Theme.usePlusTheme ? avatarLeftMargin : AndroidUtilities.dp(AndroidUtilities.isTablet() ? 13 : 9);
         } else {
             messageLeft = AndroidUtilities.dp(16);
-            avatarLeft = getMeasuredWidth() - AndroidUtilities.dp(AndroidUtilities.isTablet() ? 65 : 61);
+            avatarLeft = getMeasuredWidth() - (Theme.usePlusTheme ? avatarSize - avatarLeftMargin : AndroidUtilities.dp(AndroidUtilities.isTablet() ? 65 : 61));
         }
-        avatarImage.setImageCoords(avatarLeft, avatarTop, AndroidUtilities.dp(52), AndroidUtilities.dp(52));
+        avatarImage.setImageCoords(avatarLeft, Theme.usePlusTheme ? (getMeasuredHeight() - (avatarSize)) / 2 : avatarTop, Theme.usePlusTheme ? avatarSize : AndroidUtilities.dp(52), Theme.usePlusTheme ? avatarSize : AndroidUtilities.dp(52));
         if (drawError) {
             int w = AndroidUtilities.dp(23 + 8);
             messageWidth -= w;
@@ -663,9 +715,11 @@ public class DialogCell extends BaseCell {
                 errorLeft = AndroidUtilities.dp(11);
                 messageLeft += w;
             }
-        } else if (countString != null) {
-            countWidth = Math.max(AndroidUtilities.dp(12), (int)Math.ceil(Theme.dialogs_countTextPaint.measureText(countString)));
-            countLayout = new StaticLayout(countString, Theme.dialogs_countTextPaint, countWidth, Layout.Alignment.ALIGN_CENTER, 1.0f, 0.0f, false);
+        } else if (countString != null || markAsUnread) {
+            //countWidth = Math.max(AndroidUtilities.dp(12), (int)Math.ceil(Theme.dialogs_countTextPaint.measureText(countString)));
+            countWidth = Math.max(AndroidUtilities.dp(12), (int)Math.ceil(Theme.dialogs_countTextPaint.measureText(markAsUnread ? " " : countString)));
+            countLayout = new StaticLayout(markAsUnread ? " " : countString, Theme.dialogs_countTextPaint, countWidth, Layout.Alignment.ALIGN_CENTER, 1.0f, 0.0f, false);
+            //countLayout = new StaticLayout(countString, Theme.dialogs_countTextPaint, countWidth, Layout.Alignment.ALIGN_CENTER, 1.0f, 0.0f, false);
             int w = countWidth + AndroidUtilities.dp(18);
             messageWidth -= w;
             if (!LocaleController.isRTL) {
@@ -704,6 +758,7 @@ public class DialogCell extends BaseCell {
         CharSequence messageStringFinal = TextUtils.ellipsize(messageString, currentMessagePaint, messageWidth - AndroidUtilities.dp(12), TextUtils.TruncateAt.END);
         try {
             messageLayout = new StaticLayout(messageStringFinal, currentMessagePaint, messageWidth, Layout.Alignment.ALIGN_NORMAL, 1.0f, 0.0f, false);
+            if(Theme.usePlusTheme)nameLockTop = AndroidUtilities.dp(16.5f);
         } catch (Exception e) {
             FileLog.e(e);
         }
@@ -771,9 +826,30 @@ public class DialogCell extends BaseCell {
             return MessagesController.getInstance().dialogs;
         } else if (dialogsType == 1) {
             return MessagesController.getInstance().dialogsServerOnly;
-        } else if (dialogsType == 2) {
+        }  else if (dialogsType == 2) {
             return MessagesController.getInstance().dialogsGroupsOnly;
         }
+        //plus
+        else if (dialogsType == 3) {
+            return MessagesController.getInstance().dialogsUsers;
+        } else if (dialogsType == 4) {
+            return MessagesController.getInstance().dialogsGroups;
+        } else if (dialogsType == 5) {
+            return MessagesController.getInstance().dialogsChannels;
+        } else if (dialogsType == 6) {
+            return MessagesController.getInstance().dialogsBots;
+        } else if (dialogsType == 7) {
+            return MessagesController.getInstance().dialogsMegaGroups;
+        } else if (dialogsType == 8) {
+            return MessagesController.getInstance().dialogsFavs;
+        } else if (dialogsType == 9) {
+            return MessagesController.getInstance().dialogsGroupsAll;
+        } else if (dialogsType == 10) {
+            return MessagesController.getInstance().dialogsAdmin;
+        }  else if (dialogsType == 11) {
+            return MessagesController.getInstance().dialogsUnread;
+        }
+        //
         return null;
     }
 
@@ -879,7 +955,7 @@ public class DialogCell extends BaseCell {
             user = null;
             chat = null;
             encryptedChat = null;
-
+            isFav = Favorite.getInstance().isFavorite(currentDialogId);
             int lower_id = (int) currentDialogId;
             int high_id = (int) (currentDialogId >> 32);
             if (lower_id != 0) {
@@ -911,12 +987,19 @@ public class DialogCell extends BaseCell {
                     photo = user.photo.photo_small;
                 }
                 avatarDrawable.setInfo(user);
+                setStatusColor();//plus
             } else if (chat != null) {
                 if (chat.photo != null) {
                     photo = chat.photo.photo_small;
                 }
                 avatarDrawable.setInfo(chat);
             }
+            //plus
+            if(Theme.usePlusTheme) {
+                avatarImage.setRoundRadius(AndroidUtilities.dp(Theme.chatsAvatarRadius));
+                avatarDrawable.setRadius(AndroidUtilities.dp(Theme.chatsAvatarRadius));
+            }
+            //
             avatarImage.setImage(photo, "50_50", avatarDrawable, null, 0);
         }
         if (getMeasuredWidth() != 0 || getMeasuredHeight() != 0) {
@@ -926,6 +1009,23 @@ public class DialogCell extends BaseCell {
         }
 
         invalidate();
+    }
+
+    private void setStatusColor(){
+        String s = LocaleController.formatUserStatus(user);
+        if (s.equals(LocaleController.getString("ALongTimeAgo", R.string.ALongTimeAgo))){
+            statusBG.setColor(Color.BLACK);
+        } else if(s.equals(LocaleController.getString("Online", R.string.Online))){
+            statusBG.setColor(0xff00e676);
+        } else if(s.equals(LocaleController.getString("Lately", R.string.Lately))){
+            statusBG.setColor(Color.LTGRAY);
+        } else {
+            statusBG.setColor(Color.GRAY);
+        }
+        int l = user.status != null ? ConnectionsManager.getInstance().getCurrentTime() - user.status.expires : -2;
+        if(l > 0 && l < 86400){
+            statusBG.setColor(Color.LTGRAY);
+        }
     }
 
     @Override
@@ -945,8 +1045,15 @@ public class DialogCell extends BaseCell {
             setDrawableBounds(Theme.dialogs_lockDrawable, nameLockLeft, nameLockTop);
             Theme.dialogs_lockDrawable.draw(canvas);
         } else if (drawNameGroup) {
-            setDrawableBounds(Theme.dialogs_groupDrawable, nameLockLeft, nameLockTop);
-            Theme.dialogs_groupDrawable.draw(canvas);
+            //setDrawableBounds(Theme.dialogs_groupDrawable, nameLockLeft, nameLockTop);
+            //Theme.dialogs_groupDrawable.draw(canvas);
+            if(chat != null && chat.megagroup){
+                setDrawableBounds(Theme.dialogs_superGroupDrawable , nameLockLeft, nameLockTop);
+                Theme.dialogs_superGroupDrawable.draw(canvas);
+            }else{
+                setDrawableBounds(Theme.dialogs_groupDrawable, nameLockLeft, nameLockTop);
+                Theme.dialogs_groupDrawable.draw(canvas);
+            }
         } else if (drawNameBroadcast) {
             setDrawableBounds(Theme.dialogs_broadcastDrawable, nameLockLeft, nameLockTop);
             Theme.dialogs_broadcastDrawable.draw(canvas);
@@ -957,7 +1064,7 @@ public class DialogCell extends BaseCell {
 
         if (nameLayout != null) {
             canvas.save();
-            canvas.translate(nameLeft, AndroidUtilities.dp(13));
+            canvas.translate(nameLeft, Theme.usePlusTheme ? nameTop : AndroidUtilities.dp(13));
             nameLayout.draw(canvas);
             canvas.restore();
         }
@@ -994,11 +1101,11 @@ public class DialogCell extends BaseCell {
         }
 
         if (dialogMuted && !drawVerified) {
-            setDrawableBounds(Theme.dialogs_muteDrawable, nameMuteLeft, AndroidUtilities.dp(16.5f));
+            setDrawableBounds(Theme.dialogs_muteDrawable, nameMuteLeft, Theme.usePlusTheme ? nameLockTop : AndroidUtilities.dp(16.5f));
             Theme.dialogs_muteDrawable.draw(canvas);
         } else if (drawVerified) {
-            setDrawableBounds(Theme.dialogs_verifiedDrawable, nameMuteLeft, AndroidUtilities.dp(16.5f));
-            setDrawableBounds(Theme.dialogs_verifiedCheckDrawable, nameMuteLeft, AndroidUtilities.dp(16.5f));
+            setDrawableBounds(Theme.dialogs_verifiedDrawable, nameMuteLeft, Theme.usePlusTheme ? nameLockTop : AndroidUtilities.dp(16.5f));
+            setDrawableBounds(Theme.dialogs_verifiedCheckDrawable, nameMuteLeft, Theme.usePlusTheme ? nameLockTop : AndroidUtilities.dp(16.5f));
             Theme.dialogs_verifiedDrawable.draw(canvas);
             Theme.dialogs_verifiedCheckDrawable.draw(canvas);
         }
@@ -1008,7 +1115,7 @@ public class DialogCell extends BaseCell {
             canvas.drawRoundRect(rect, 11.5f * AndroidUtilities.density, 11.5f * AndroidUtilities.density, Theme.dialogs_errorPaint);
             setDrawableBounds(Theme.dialogs_errorDrawable, errorLeft + AndroidUtilities.dp(5.5f), errorTop + AndroidUtilities.dp(5));
             Theme.dialogs_errorDrawable.draw(canvas);
-        } else if (drawCount) {
+        } else if (drawCount | markAsUnread) {
             int x = countLeft - AndroidUtilities.dp(5.5f);
             rect.set(x, countTop, x + countWidth + AndroidUtilities.dp(11), countTop + AndroidUtilities.dp(23));
             canvas.drawRoundRect(rect, 11.5f * AndroidUtilities.density, 11.5f * AndroidUtilities.density, dialogMuted ? Theme.dialogs_countGrayPaint : Theme.dialogs_countPaint);
@@ -1024,6 +1131,7 @@ public class DialogCell extends BaseCell {
         }
 
         if (useSeparator) {
+            if(Theme.usePlusTheme)Theme.dividerPaint.setColor(Theme.chatsDividerColor);
             if (LocaleController.isRTL) {
                 canvas.drawLine(0, getMeasuredHeight() - 1, getMeasuredWidth() - AndroidUtilities.dp(AndroidUtilities.leftBaseline), getMeasuredHeight() - 1, Theme.dividerPaint);
             } else {
@@ -1032,6 +1140,16 @@ public class DialogCell extends BaseCell {
         }
 
         avatarImage.draw(canvas);
+
+        if(drawStatus && !Theme.chatsHideStatusIndicator){
+            statusBG.setStroke(AndroidUtilities.dp(2), Theme.usePlusTheme ? Theme.chatsRowColor : Theme.getColor(Theme.key_windowBackgroundGray));
+            setDrawableBounds(statusBG, AndroidUtilities.dp(36) + avatarLeftMargin, AndroidUtilities.dp(46), AndroidUtilities.dp(16), AndroidUtilities.dp(16));
+            statusBG.draw(canvas);
+        }
+        if (isFav) {
+            setDrawableBounds(Theme.dialogs_FavDrawable, AndroidUtilities.dp(4), AndroidUtilities.dp(4));
+            Theme.dialogs_FavDrawable.draw(canvas);
+        }
     }
 
     @Override

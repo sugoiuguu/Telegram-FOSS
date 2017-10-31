@@ -41,6 +41,7 @@ import org.telegram.tgnet.TLObject;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.AlertDialog;
 import org.telegram.ui.ActionBar.BaseFragment;
+import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.ChatActivity;
 import org.telegram.ui.Components.AlertsCreator;
 import org.telegram.ui.PaymentFormActivity;
@@ -844,10 +845,10 @@ public class SendMessagesHelper implements NotificationCenter.NotificationCenter
                         newMsg.fwd_from.channel_id = msgObj.messageOwner.to_id.channel_id;
                         newMsg.fwd_from.flags |= 2;
                         if (msgObj.messageOwner.post && msgObj.messageOwner.from_id > 0) {
-                            newMsg.fwd_from.from_id = msgObj.messageOwner.from_id;
-                            newMsg.fwd_from.flags |= 1;
+                                newMsg.fwd_from.from_id = msgObj.messageOwner.from_id;
+                                newMsg.fwd_from.flags |= 1;
+                            }
                         }
-                    }
                     if (msgObj.messageOwner.post_author != null) {
                         newMsg.fwd_from.post_author = msgObj.messageOwner.post_author;
                         newMsg.fwd_from.flags |= 8;
@@ -1718,7 +1719,7 @@ public class SendMessagesHelper implements NotificationCenter.NotificationCenter
                 if (ttl != 0) {
                     newMsg.ttl = ttl;
                 } else {
-                    newMsg.ttl = encryptedChat.ttl;
+                newMsg.ttl = encryptedChat.ttl;
                 }
                 if (newMsg.ttl != 0 && newMsg.media.document != null) {
                     if (MessageObject.isVoiceMessage(newMsg)) {
@@ -2276,8 +2277,8 @@ public class SendMessagesHelper implements NotificationCenter.NotificationCenter
                     if (retryMessageObject.messageOwner.fwd_from != null) {
                         reqSend.id.add(retryMessageObject.messageOwner.fwd_from.channel_post);
                     } else {
-                        reqSend.id.add(retryMessageObject.messageOwner.fwd_msg_id);
-                    }
+                    reqSend.id.add(retryMessageObject.messageOwner.fwd_msg_id);
+                }
                 }
                 performSendMessageRequest(reqSend, newMsgObj, null);
             } else if (type == 9) {
@@ -2649,7 +2650,7 @@ public class SendMessagesHelper implements NotificationCenter.NotificationCenter
         }
         if (sentMessage.media instanceof TLRPC.TL_messageMediaPhoto && sentMessage.media.photo != null && newMsg.media instanceof TLRPC.TL_messageMediaPhoto && newMsg.media.photo != null) {
             if (sentMessage.media.ttl_seconds == 0) {
-                MessagesStorage.getInstance().putSentFile(originalPath, sentMessage.media.photo, 0);
+            MessagesStorage.getInstance().putSentFile(originalPath, sentMessage.media.photo, 0);
             }
 
             if (newMsg.media.photo.sizes.size() == 1 && newMsg.media.photo.sizes.get(0).location instanceof TLRPC.TL_fileLocationUnavailable) {
@@ -2694,13 +2695,13 @@ public class SendMessagesHelper implements NotificationCenter.NotificationCenter
         } else if (sentMessage.media instanceof TLRPC.TL_messageMediaDocument && sentMessage.media.document != null && newMsg.media instanceof TLRPC.TL_messageMediaDocument && newMsg.media.document != null) {
             if (MessageObject.isVideoMessage(sentMessage)) {
                 if (sentMessage.media.ttl_seconds == 0) {
-                    MessagesStorage.getInstance().putSentFile(originalPath, sentMessage.media.document, 2);
+                MessagesStorage.getInstance().putSentFile(originalPath, sentMessage.media.document, 2);
                 }
                 sentMessage.attachPath = newMsg.attachPath;
             } else if (!MessageObject.isVoiceMessage(sentMessage) && !MessageObject.isRoundVideoMessage(sentMessage)) {
                 if (sentMessage.media.ttl_seconds == 0) {
-                    MessagesStorage.getInstance().putSentFile(originalPath, sentMessage.media.document, 1);
-                }
+                MessagesStorage.getInstance().putSentFile(originalPath, sentMessage.media.document, 1);
+            }
             }
 
             TLRPC.PhotoSize size2 = newMsg.media.document.thumb;

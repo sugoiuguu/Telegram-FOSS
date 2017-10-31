@@ -12,6 +12,7 @@ import android.animation.ObjectAnimator;
 import android.animation.StateListAnimator;
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.DataSetObserver;
 import android.graphics.Canvas;
 import android.graphics.Outline;
@@ -23,6 +24,7 @@ import android.os.Build;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.text.style.CharacterStyle;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
@@ -34,6 +36,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.telegram.messenger.AndroidUtilities;
+import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MessageObject;
 import org.telegram.messenger.NotificationCenter;
@@ -78,11 +81,15 @@ public class ThemePreviewActivity extends BaseFragment implements NotificationCe
     private File themeFile;
     private boolean applied;
 
+    private boolean previousPlusValue;
+
     public ThemePreviewActivity(File file, Theme.ThemeInfo themeInfo) {
         super();
         swipeBackEnabled = false;
         applyingTheme = themeInfo;
         themeFile = file;
+        previousPlusValue = Theme.usePlusTheme;
+        Theme.usePlusTheme = false;
     }
 
     @Override
@@ -347,6 +354,8 @@ public class ThemePreviewActivity extends BaseFragment implements NotificationCe
         doneButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                previousPlusValue = false;
+                Theme.setUsePlusThemeKey(false);
                 applied = true;
                 parentLayout.rebuildAllFragmentViews(false, false);
                 Theme.applyThemeFile(themeFile, applyingTheme.name, false);
@@ -365,6 +374,7 @@ public class ThemePreviewActivity extends BaseFragment implements NotificationCe
 
     @Override
     public void onFragmentDestroy() {
+        Theme.usePlusTheme = previousPlusValue;
         NotificationCenter.getInstance().removeObserver(this, NotificationCenter.emojiDidLoaded);
         super.onFragmentDestroy();
     }
@@ -773,6 +783,11 @@ public class ThemePreviewActivity extends BaseFragment implements NotificationCe
 
                     @Override
                     public void didLongPressed(ChatMessageCell cell) {
+
+                    }
+
+                    @Override
+                    public void didLongPressedAvatar(ChatMessageCell cell, TLRPC.User user) {
 
                     }
 

@@ -9,10 +9,12 @@
 package org.telegram.ui.Cells;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.view.Gravity;
 import android.widget.FrameLayout;
 
 import org.telegram.messenger.AndroidUtilities;
+import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MessagesController;
 import org.telegram.messenger.R;
@@ -42,23 +44,32 @@ public class GroupCreateUserCell extends FrameLayout {
     private int lastStatus;
     private TLRPC.FileLocation lastAvatar;
 
+    private SharedPreferences themePrefs;
+    private int nameColor;
+    private int statusColor;
+    private int onlineColor;
+
     public GroupCreateUserCell(Context context, boolean needCheck) {
         super(context);
         avatarDrawable = new AvatarDrawable();
+        themePrefs = ApplicationLoader.applicationContext.getSharedPreferences(AndroidUtilities.THEME_PREFS, AndroidUtilities.THEME_PREFS_MODE);
+        nameColor = themePrefs.getInt("contactsNameColor", 0xff212121);
+        statusColor = themePrefs.getInt("contactsStatusColor", 0xffa8a8a8);
+        onlineColor =  themePrefs.getInt("contactsOnlineColor", Theme.darkColor);
 
         avatarImageView = new BackupImageView(context);
-        avatarImageView.setRoundRadius(AndroidUtilities.dp(24));
+        avatarImageView.setRoundRadius(AndroidUtilities.dp(Theme.usePlusTheme ? themePrefs.getInt("contactsAvatarRadius", 32) : 24));
         addView(avatarImageView, LayoutHelper.createFrame(50, 50, (LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.TOP, LocaleController.isRTL ? 0 : 11, 11, LocaleController.isRTL ? 11 : 0, 0));
 
         nameTextView = new SimpleTextView(context);
-        nameTextView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
+        nameTextView.setTextColor(Theme. usePlusTheme ? nameColor : Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
         nameTextView.setTypeface(AndroidUtilities.getTypeface("fonts/rmedium.ttf"));
-        nameTextView.setTextSize(17);
+        nameTextView.setTextSize(Theme. usePlusTheme ? themePrefs.getInt("contactsNameSize", 17) : 17);
         nameTextView.setGravity((LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.TOP);
         addView(nameTextView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 20, (LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.TOP, LocaleController.isRTL ? 28 : 72, 14, LocaleController.isRTL ? 72 : 28, 0));
 
         statusTextView = new SimpleTextView(context);
-        statusTextView.setTextSize(16);
+        statusTextView.setTextSize(Theme.usePlusTheme ? themePrefs.getInt("contactsStatusSize", 16) : 16);
         statusTextView.setGravity((LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.TOP);
         addView(statusTextView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 20, (LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.TOP, LocaleController.isRTL ? 28 : 72, 39, LocaleController.isRTL ? 72 : 28, 0));
 
@@ -144,20 +155,20 @@ public class GroupCreateUserCell extends FrameLayout {
         if (currentStatus != null) {
             statusTextView.setText(currentStatus, true);
             statusTextView.setTag(Theme.key_groupcreate_offlineText);
-            statusTextView.setTextColor(Theme.getColor(Theme.key_groupcreate_offlineText));
+            statusTextView.setTextColor(Theme.usePlusTheme ? statusColor : Theme.getColor(Theme.key_groupcreate_offlineText));
         } else {
             if (currentUser.bot) {
                 statusTextView.setTag(Theme.key_groupcreate_offlineText);
-                statusTextView.setTextColor(Theme.getColor(Theme.key_groupcreate_offlineText));
+                statusTextView.setTextColor(Theme.usePlusTheme ? statusColor : Theme.getColor(Theme.key_groupcreate_offlineText));
                 statusTextView.setText(LocaleController.getString("Bot", R.string.Bot));
             } else {
                 if (currentUser.id == UserConfig.getClientUserId() || currentUser.status != null && currentUser.status.expires > ConnectionsManager.getInstance().getCurrentTime() || MessagesController.getInstance().onlinePrivacy.containsKey(currentUser.id)) {
                     statusTextView.setTag(Theme.key_groupcreate_offlineText);
-                    statusTextView.setTextColor(Theme.getColor(Theme.key_groupcreate_onlineText));
+                    statusTextView.setTextColor(Theme.usePlusTheme ? onlineColor : Theme.getColor(Theme.key_groupcreate_onlineText));
                     statusTextView.setText(LocaleController.getString("Online", R.string.Online));
                 } else {
                     statusTextView.setTag(Theme.key_groupcreate_offlineText);
-                    statusTextView.setTextColor(Theme.getColor(Theme.key_groupcreate_offlineText));
+                    statusTextView.setTextColor(Theme.usePlusTheme ? statusColor : Theme.getColor(Theme.key_groupcreate_offlineText));
                     statusTextView.setText(LocaleController.formatUserStatus(currentUser));
                 }
             }

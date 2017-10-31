@@ -482,7 +482,7 @@ public class PaymentFormActivity extends BaseFragment implements NotificationCen
 
         fragmentView = new FrameLayout(context);
         FrameLayout frameLayout = (FrameLayout) fragmentView;
-        fragmentView.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundGray));
+        fragmentView.setBackgroundColor(Theme.usePlusTheme ? Theme.prefBGColor : Theme.getColor(Theme.key_windowBackgroundGray));
 
         scrollView = new ScrollView(context);
         scrollView.setFillViewport(true);
@@ -574,8 +574,8 @@ public class PaymentFormActivity extends BaseFragment implements NotificationCen
                 }
                 inputFields[a].setTag(a);
                 inputFields[a].setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);
-                inputFields[a].setHintTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
-                inputFields[a].setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
+                inputFields[a].setHintTextColor(Theme.usePlusTheme ? Theme.prefSummaryColor : Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
+                inputFields[a].setTextColor(Theme.usePlusTheme ? Theme.prefTitleColor : Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
                 inputFields[a].setBackgroundDrawable(null);
                 AndroidUtilities.clearCursorDrawable(inputFields[a]);
                 if (a == FIELD_COUNTRY) {
@@ -1087,8 +1087,8 @@ public class PaymentFormActivity extends BaseFragment implements NotificationCen
                     inputFields[a] = new EditText(context);
                     inputFields[a].setTag(a);
                     inputFields[a].setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);
-                    inputFields[a].setHintTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
-                    inputFields[a].setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
+                    inputFields[a].setHintTextColor(Theme.usePlusTheme ? Theme.prefSummaryColor : Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
+                    inputFields[a].setTextColor(Theme.usePlusTheme ? Theme.prefTitleColor : Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
                     inputFields[a].setBackgroundDrawable(null);
                     AndroidUtilities.clearCursorDrawable(inputFields[a]);
                     if (a == FIELD_CVV) {
@@ -1555,8 +1555,8 @@ public class PaymentFormActivity extends BaseFragment implements NotificationCen
                 inputFields[a] = new EditText(context);
                 inputFields[a].setTag(a);
                 inputFields[a].setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);
-                inputFields[a].setHintTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
-                inputFields[a].setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
+                inputFields[a].setHintTextColor(Theme.usePlusTheme ? Theme.prefSummaryColor : Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
+                inputFields[a].setTextColor(Theme.usePlusTheme ? Theme.prefTitleColor : Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
                 inputFields[a].setBackgroundDrawable(null);
                 AndroidUtilities.clearCursorDrawable(inputFields[a]);
                 if (a == FIELD_SAVEDCARD) {

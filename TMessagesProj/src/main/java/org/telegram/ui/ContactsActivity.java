@@ -17,7 +17,9 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -143,6 +145,9 @@ public class ContactsActivity extends BaseFragment implements NotificationCenter
     @Override
     public void onFragmentDestroy() {
         super.onFragmentDestroy();
+        //Plus to paint drawerAction icons (refresh drawerLayoutAdapter)
+        NotificationCenter.getInstance().postNotificationName(NotificationCenter.mainUserInfoChanged);
+        //
         NotificationCenter.getInstance().removeObserver(this, NotificationCenter.contactsDidLoaded);
         NotificationCenter.getInstance().removeObserver(this, NotificationCenter.updateInterfaces);
         NotificationCenter.getInstance().removeObserver(this, NotificationCenter.encryptedChatCreated);
@@ -155,7 +160,12 @@ public class ContactsActivity extends BaseFragment implements NotificationCenter
 
         searching = false;
         searchWas = false;
-
+        SharedPreferences themePrefs = ApplicationLoader.applicationContext.getSharedPreferences(AndroidUtilities.THEME_PREFS, AndroidUtilities.THEME_PREFS_MODE);
+        int iconColor = themePrefs.getInt("contactsHeaderIconsColor", 0xffffffff);
+        if(Theme.usePlusTheme)actionBar.setItemsColor(iconColor, false);
+        /*Drawable back = getParentActivity().getResources().getDrawable(R.drawable.ic_ab_back);
+        back.setColorFilter(iconColor, PorterDuff.Mode.MULTIPLY);
+        actionBar.setBackButtonDrawable(back);*/
         actionBar.setBackButtonImage(R.drawable.ic_ab_back);
         actionBar.setAllowOverlayTitle(true);
         if (destroyAfterSelect) {
@@ -231,7 +241,17 @@ public class ContactsActivity extends BaseFragment implements NotificationCenter
         });
         item.getSearchField().setHint(LocaleController.getString("Search", R.string.Search));
         if (!createSecretChat && !returnAsResult) {
-            addItem = menu.addItem(add_button, R.drawable.add);
+            if(Theme.usePlusTheme) {
+                Drawable add = getParentActivity().getResources().getDrawable(R.drawable.add);
+                add.setColorFilter(iconColor, PorterDuff.Mode.MULTIPLY);
+                addItem = menu.addItem(add_button, add);
+                item.getSearchField().setTextColor(themePrefs.getInt("contactsHeaderTitleColor", 0xffffffff));
+                Drawable clear = getParentActivity().getResources().getDrawable(R.drawable.ic_close_white);
+                clear.setColorFilter(iconColor, PorterDuff.Mode.MULTIPLY);
+                item.getClearButton().setImageDrawable(clear);
+            } else{
+                addItem = menu.addItem(add_button, R.drawable.add);
+            }
         }
 
         searchListViewAdapter = new SearchAdapter(context, ignoreUsers, allowUsernameSearch, false, false, allowBots, 0);
@@ -500,9 +520,9 @@ public class ContactsActivity extends BaseFragment implements NotificationCenter
                 delegate = null;
             }
             if (needFinishFragment) {
-                finishFragment();
-            }
+            finishFragment();
         }
+    }
     }
 
     @Override
@@ -528,6 +548,41 @@ public class ContactsActivity extends BaseFragment implements NotificationCenter
                 }
             }
         }
+        if(Theme.usePlusTheme)updateTheme();
+    }
+
+    private void updateTheme(){
+        SharedPreferences themePrefs = ApplicationLoader.applicationContext.getSharedPreferences(AndroidUtilities.THEME_PREFS, AndroidUtilities.THEME_PREFS_MODE);
+        int def = themePrefs.getInt("themeColor", AndroidUtilities.defColor);
+
+        int hColor = themePrefs.getInt("contactsHeaderColor", def);
+        actionBar.setBackgroundColor(hColor);
+        int val = themePrefs.getInt("contactsHeaderGradient", 0);
+        if(val > 0) {
+            GradientDrawable.Orientation go;
+            switch(val) {
+                case 2:
+                    go = GradientDrawable.Orientation.LEFT_RIGHT;
+                    break;
+                case 3:
+                    go = GradientDrawable.Orientation.TL_BR;
+                    break;
+                case 4:
+                    go = GradientDrawable.Orientation.BL_TR;
+                    break;
+                default:
+                    go = GradientDrawable.Orientation.TOP_BOTTOM;
+            }
+            int gradColor = themePrefs.getInt("contactsHeaderGradientColor", def);
+            int[] colors = new int[]{hColor, gradColor};
+            GradientDrawable gd = new GradientDrawable(go, colors);
+            actionBar.setBackgroundDrawable(gd);
+        }
+
+        actionBar.setTitleColor(themePrefs.getInt("contactsHeaderTitleColor", 0xffffffff));
+
+        Drawable search = getParentActivity().getResources().getDrawable(R.drawable.ic_ab_search);
+        search.setColorFilter(themePrefs.getInt("contactsHeaderIconsColor", 0xffffffff), PorterDuff.Mode.MULTIPLY);
     }
 
     @Override

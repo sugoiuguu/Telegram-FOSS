@@ -27,6 +27,7 @@ import org.telegram.messenger.MessagesStorage;
 import org.telegram.messenger.NotificationCenter;
 import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.R;
+import org.telegram.messenger.VideoEditedInfo;
 import org.telegram.messenger.support.widget.LinearLayoutManager;
 import org.telegram.messenger.support.widget.RecyclerView;
 import org.telegram.tgnet.TLRPC;
@@ -74,6 +75,7 @@ public class PhotoAlbumPickerActivity extends BaseFragment implements Notificati
 
     private PhotoAlbumPickerActivityDelegate delegate;
 
+    public static String imageFilter = "*";
     public PhotoAlbumPickerActivity(boolean singlePhoto, boolean allowGifs, boolean allowCaption, ChatActivity chatActivity) {
         super();
         this.chatActivity = chatActivity;
@@ -85,6 +87,8 @@ public class PhotoAlbumPickerActivity extends BaseFragment implements Notificati
     @Override
     public boolean onFragmentCreate() {
         loading = true;
+        MediaController.iFilter = imageFilter;
+        if(!imageFilter.equals("*"))singlePhoto = true;
         MediaController.loadGalleryPhotosAlbums(classGuid);
         NotificationCenter.getInstance().addObserver(this, NotificationCenter.albumsDidLoaded);
         NotificationCenter.getInstance().addObserver(this, NotificationCenter.recentImagesDidLoaded);
@@ -97,6 +101,7 @@ public class PhotoAlbumPickerActivity extends BaseFragment implements Notificati
         NotificationCenter.getInstance().removeObserver(this, NotificationCenter.albumsDidLoaded);
         NotificationCenter.getInstance().removeObserver(this, NotificationCenter.recentImagesDidLoaded);
         NotificationCenter.getInstance().removeObserver(this, NotificationCenter.closeChats);
+        imageFilter = "*";
         super.onFragmentDestroy();
     }
 
@@ -129,7 +134,7 @@ public class PhotoAlbumPickerActivity extends BaseFragment implements Notificati
         FrameLayout frameLayout = (FrameLayout) fragmentView;
         frameLayout.setBackgroundColor(0xff000000);
 
-        actionBar.setTitle(LocaleController.getString("Gallery", R.string.Gallery));
+            actionBar.setTitle(LocaleController.getString("Gallery", R.string.Gallery));
 
         listView = new RecyclerListView(context);
         listView.setPadding(AndroidUtilities.dp(4), 0, AndroidUtilities.dp(4), AndroidUtilities.dp(4));
@@ -240,7 +245,7 @@ public class PhotoAlbumPickerActivity extends BaseFragment implements Notificati
                 if (singlePhoto) {
                     albumsSorted = (ArrayList<MediaController.AlbumEntry>) args[2];
                 } else {
-                    albumsSorted = (ArrayList<MediaController.AlbumEntry>) args[1];
+                albumsSorted = (ArrayList<MediaController.AlbumEntry>) args[1];
                 }
                 if (progressView != null) {
                     progressView.setVisibility(View.GONE);
@@ -422,10 +427,10 @@ public class PhotoAlbumPickerActivity extends BaseFragment implements Notificati
 
         @Override
         public int getItemCount() {
-            if (singlePhoto) {
-                return albumsSorted != null ? (int) Math.ceil(albumsSorted.size() / (float) columnsCount) : 0;
-            }
-            return 1 + (albumsSorted != null ? (int) Math.ceil(albumsSorted.size() / (float) columnsCount) : 0);
+                if (singlePhoto) {
+                    return albumsSorted != null ? (int) Math.ceil(albumsSorted.size() / (float) columnsCount) : 0;
+                }
+                return 1 + (albumsSorted != null ? (int) Math.ceil(albumsSorted.size() / (float) columnsCount) : 0);
         }
 
         @Override
@@ -471,12 +476,12 @@ public class PhotoAlbumPickerActivity extends BaseFragment implements Notificati
                     } else {
                         index = (position - 1) * columnsCount + a;
                     }
-                    if (index < albumsSorted.size()) {
-                        MediaController.AlbumEntry albumEntry = albumsSorted.get(index);
-                        photoPickerAlbumsCell.setAlbum(a, albumEntry);
-                    } else {
-                        photoPickerAlbumsCell.setAlbum(a, null);
-                    }
+                        if (index < albumsSorted.size()) {
+                            MediaController.AlbumEntry albumEntry = albumsSorted.get(index);
+                            photoPickerAlbumsCell.setAlbum(a, albumEntry);
+                        } else {
+                            photoPickerAlbumsCell.setAlbum(a, null);
+                        }
                 }
                 photoPickerAlbumsCell.requestLayout();
             }

@@ -22,6 +22,7 @@ import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
 import android.os.Vibrator;
 import android.support.v4.os.CancellationSignal;
@@ -531,22 +532,22 @@ public class PasscodeView extends FrameLayout {
                 }
             }
         });
-        passwordEditText.setCustomSelectionActionModeCallback(new ActionMode.Callback() {
-            public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-                return false;
-            }
+            passwordEditText.setCustomSelectionActionModeCallback(new ActionMode.Callback() {
+                public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+                    return false;
+                }
 
-            public void onDestroyActionMode(ActionMode mode) {
-            }
+                public void onDestroyActionMode(ActionMode mode) {
+                }
 
-            public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-                return false;
-            }
+                public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+                    return false;
+                }
 
-            public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-                return false;
-            }
-        });
+                public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+                    return false;
+                }
+            });
 
         checkImage = new ImageView(context);
         checkImage.setImageResource(R.drawable.passcode_check);
@@ -732,22 +733,22 @@ public class PasscodeView extends FrameLayout {
 
     private void processDone(boolean fingerprint) {
         if (!fingerprint) {
-            String password = "";
-            if (UserConfig.passcodeType == 0) {
-                password = passwordEditText2.getString();
-            } else if (UserConfig.passcodeType == 1) {
-                password = passwordEditText.getText().toString();
-            }
-            if (password.length() == 0) {
-                onPasscodeError();
-                return;
-            }
-            if (!UserConfig.checkPasscode(password)) {
-                passwordEditText.setText("");
-                passwordEditText2.eraseAllCharacters(true);
-                onPasscodeError();
-                return;
-            }
+        String password = "";
+        if (UserConfig.passcodeType == 0) {
+            password = passwordEditText2.getString();
+        } else if (UserConfig.passcodeType == 1) {
+            password = passwordEditText.getText().toString();
+        }
+        if (password.length() == 0) {
+            onPasscodeError();
+            return;
+        }
+        if (!UserConfig.checkPasscode(password)) {
+            passwordEditText.setText("");
+            passwordEditText2.eraseAllCharacters(true);
+            onPasscodeError();
+            return;
+        }
         }
         passwordEditText.clearFocus();
         AndroidUtilities.hideKeyboard(passwordEditText);
@@ -760,9 +761,9 @@ public class PasscodeView extends FrameLayout {
         AnimatorSet.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
-                setVisibility(View.GONE);
-            }
-        });
+                    setVisibility(View.GONE);
+                }
+            });
         AnimatorSet.start();
 
         UserConfig.appLocked = false;
@@ -839,7 +840,7 @@ public class PasscodeView extends FrameLayout {
     }
 
     private void checkFingerprint() {
-        Activity parentActivity = (Activity) getContext();
+            Activity parentActivity = (Activity) getContext();
         if (Build.VERSION.SDK_INT >= 23 && parentActivity != null && UserConfig.useFingerprint && !ApplicationLoader.mainInterfacePaused) {
             try {
                 if (fingerprintDialog != null && fingerprintDialog.isShowing()) {
@@ -973,13 +974,43 @@ public class PasscodeView extends FrameLayout {
         SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("mainconfig", Activity.MODE_PRIVATE);
         int selectedBackground = preferences.getInt("selectedBackground", 1000001);
         if (selectedBackground == 1000001) {
-            backgroundFrameLayout.setBackgroundColor(0xff517c9e);
+            //backgroundFrameLayout.setBackgroundColor(0xff517c9e);
+            backgroundFrameLayout.setBackgroundColor(Theme.darkColor);
         } else {
             backgroundDrawable = Theme.getCachedWallpaper();
             if (backgroundDrawable != null) {
                 backgroundFrameLayout.setBackgroundColor(0xbf000000);
+                SharedPreferences themePrefs = ApplicationLoader.applicationContext.getSharedPreferences(AndroidUtilities.THEME_PREFS, AndroidUtilities.THEME_PREFS_MODE);
+                if(Theme.chatSolidBGColorCheck){
+                    //backgroundFrameLayout.setBackgroundColor(themePrefs.getInt("chatSolidBGColor", 0xffffffff));
+                    int mainColor = themePrefs.getInt("chatSolidBGColor", 0xffffffff);
+                    int orientation = themePrefs.getInt("chatGradientBG", 0);
+                    if(orientation == 0) {
+                        backgroundFrameLayout.setBackgroundColor(mainColor);
+                    } else {
+                        GradientDrawable.Orientation go;
+                        switch(orientation) {
+                            case 2:
+                                go = GradientDrawable.Orientation.LEFT_RIGHT;
+                                break;
+                            case 3:
+                                go = GradientDrawable.Orientation.TL_BR;
+                                break;
+                            case 4:
+                                go = GradientDrawable.Orientation.BL_TR;
+                                break;
+                            default:
+                                go = GradientDrawable.Orientation.TOP_BOTTOM;
+                        }
+
+                        int gradColor = themePrefs.getInt("chatGradientBGColor", 0xffffffff);
+                        int[] colors = new int[]{mainColor, gradColor};
+                        backgroundFrameLayout.setBackgroundDrawable(new GradientDrawable(go, colors));
+                    }
+                }
             } else {
-                backgroundFrameLayout.setBackgroundColor(0xff517c9e);
+                //backgroundFrameLayout.setBackgroundColor(0xff517c9e);
+                backgroundFrameLayout.setBackgroundColor(Theme.darkColor);
             }
         }
 

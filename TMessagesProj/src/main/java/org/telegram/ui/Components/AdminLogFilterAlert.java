@@ -118,7 +118,7 @@ public class AdminLogFilterAlert extends BottomSheet {
         allAdminsRow = rowCount;
 
         shadowDrawable = context.getResources().getDrawable(R.drawable.sheet_shadow).mutate();
-        shadowDrawable.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_dialogBackground), PorterDuff.Mode.MULTIPLY));
+        shadowDrawable.setColorFilter(new PorterDuffColorFilter(Theme.usePlusTheme ? Theme.dialogColor : Theme.getColor(Theme.key_dialogBackground), PorterDuff.Mode.MULTIPLY));
 
         containerView = new FrameLayout(context) {
 
@@ -330,7 +330,7 @@ public class AdminLogFilterAlert extends BottomSheet {
         saveButton = new BottomSheet.BottomSheetCell(context, 1);
         saveButton.setBackgroundDrawable(Theme.getSelectorDrawable(false));
         saveButton.setTextAndIcon(LocaleController.getString("Save", R.string.Save).toUpperCase(), 0);
-        saveButton.setTextColor(Theme.getColor(Theme.key_dialogTextBlue2));
+        saveButton.setTextColor(Theme.usePlusTheme ? Theme.chatEditTextIconsColor == 0xffadadad ? Theme.defColor : Theme.chatEditTextIconsColor : Theme.getColor(Theme.key_dialogTextBlue2));
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -412,6 +412,9 @@ public class AdminLogFilterAlert extends BottomSheet {
                 case 0:
                     view = new CheckBoxCell(context, true);
                     view.setBackgroundDrawable(Theme.getSelectorDrawable(false));
+                    if(Theme.usePlusTheme){
+                        ((CheckBoxCell)view).setTextColor(Theme.prefTitleColor);
+                    }
                     break;
                 case 1:
                     ShadowSectionCell shadowSectionCell = new ShadowSectionCell(context);
@@ -422,6 +425,9 @@ public class AdminLogFilterAlert extends BottomSheet {
                     break;
                 case 2:
                     view = new CheckBoxUserCell(context, true);
+                    if(Theme.usePlusTheme){
+                        ((CheckBoxUserCell)view).setTextColor(Theme.prefTitleColor);
+                    }
                     break;
             }
 

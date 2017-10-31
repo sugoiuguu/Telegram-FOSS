@@ -10,8 +10,10 @@ package org.telegram.ui;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -25,6 +27,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import org.telegram.messenger.AndroidUtilities;
+import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MessagesController;
 import org.telegram.messenger.NotificationCenter;
@@ -111,20 +114,28 @@ public class SessionsActivity extends BaseFragment implements NotificationCenter
         fragmentView = new FrameLayout(context);
         FrameLayout frameLayout = (FrameLayout) fragmentView;
         frameLayout.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundGray));
-
+        SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences(AndroidUtilities.THEME_PREFS, AndroidUtilities.THEME_PREFS_MODE);
+        int bgColor = preferences.getInt("prefBGColor", 0xffffffff);
+        int summaryColor = preferences.getInt("prefSummaryColor", 0xff8a8a8a);
         emptyLayout = new LinearLayout(context);
         emptyLayout.setOrientation(LinearLayout.VERTICAL);
         emptyLayout.setGravity(Gravity.CENTER);
         emptyLayout.setBackgroundDrawable(Theme.getThemedDrawable(context, R.drawable.greydivider_bottom, Theme.key_windowBackgroundGrayShadow));
         emptyLayout.setLayoutParams(new AbsListView.LayoutParams(AbsListView.LayoutParams.MATCH_PARENT, AndroidUtilities.displaySize.y - ActionBar.getCurrentActionBarHeight()));
-
+        if(bgColor != 0xffffffff)emptyLayout.setBackgroundColor(bgColor);
         imageView = new ImageView(context);
         imageView.setImageResource(R.drawable.devices);
+        if(summaryColor != 0xff8a8a8a) {
+            Drawable devices = getParentActivity().getResources().getDrawable(R.drawable.devices);
+            devices.setColorFilter(summaryColor, PorterDuff.Mode.SRC_IN);
+            imageView.setImageDrawable(devices);
+        }
         imageView.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_sessions_devicesImage), PorterDuff.Mode.MULTIPLY));
         emptyLayout.addView(imageView, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT));
 
         textView1 = new TextView(context);
         textView1.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText2));
+        textView1.setTextColor(summaryColor);
         textView1.setGravity(Gravity.CENTER);
         textView1.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 17);
         textView1.setTypeface(AndroidUtilities.getTypeface("fonts/rmedium.ttf"));
@@ -133,6 +144,7 @@ public class SessionsActivity extends BaseFragment implements NotificationCenter
 
         textView2 = new TextView(context);
         textView2.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText2));
+        textView2.setTextColor(summaryColor);
         textView2.setGravity(Gravity.CENTER);
         textView2.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 17);
         textView2.setPadding(AndroidUtilities.dp(20), 0, AndroidUtilities.dp(20), 0);
@@ -144,6 +156,7 @@ public class SessionsActivity extends BaseFragment implements NotificationCenter
         frameLayout.addView(emptyView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT, Gravity.CENTER));
 
         listView = new RecyclerListView(context);
+        listView.setBackgroundColor(bgColor);
         listView.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false));
         listView.setVerticalScrollBarEnabled(false);
         listView.setEmptyView(emptyView);
@@ -250,6 +263,16 @@ public class SessionsActivity extends BaseFragment implements NotificationCenter
         if (listAdapter != null) {
             listAdapter.notifyDataSetChanged();
         }
+        if(Theme.usePlusTheme)updateTheme();
+    }
+
+    private void updateTheme(){
+        actionBar.setBackgroundColor(Theme.prefActionbarColor);
+        actionBar.setTitleColor(Theme.prefActionbarTitleColor);
+        Drawable back = getParentActivity().getResources().getDrawable(R.drawable.ic_ab_back);
+        back.setColorFilter(Theme.prefActionbarIconsColor, PorterDuff.Mode.MULTIPLY);
+        actionBar.setBackButtonDrawable(back);
+        actionBar.setItemsColor(Theme.prefActionbarIconsColor, false);
     }
 
     @Override
@@ -354,21 +377,21 @@ public class SessionsActivity extends BaseFragment implements NotificationCenter
             switch (viewType) {
                 case 0:
                     view = new TextSettingsCell(mContext);
-                    view.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
+                    //view.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
                     break;
                 case 1:
                     view = new TextInfoPrivacyCell(mContext);
                     break;
                 case 2:
                     view = new HeaderCell(mContext);
-                    view.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
+                    //view.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
                     break;
                 case 3:
                     view = emptyLayout;
                     break;
                 default:
                     view = new SessionCell(mContext);
-                    view.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
+                    //view.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
                     break;
             }
             return new RecyclerListView.Holder(view);

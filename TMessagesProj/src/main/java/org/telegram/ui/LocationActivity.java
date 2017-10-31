@@ -406,7 +406,7 @@ public class LocationActivity extends BaseFragment implements NotificationCenter
                 drawable = combinedDrawable;
             }
             routeButton.setBackgroundDrawable(drawable);
-            routeButton.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_chats_actionIcon), PorterDuff.Mode.MULTIPLY));
+            routeButton.setColorFilter(new PorterDuffColorFilter(Theme.usePlusTheme ? Theme.chatsFloatingPencilColor : Theme.getColor(Theme.key_chats_actionIcon), PorterDuff.Mode.MULTIPLY));
             routeButton.setImageResource(R.drawable.navigate);
             routeButton.setScaleType(ImageView.ScaleType.CENTER);
             if (Build.VERSION.SDK_INT >= 21) {

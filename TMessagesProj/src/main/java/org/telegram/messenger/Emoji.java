@@ -343,6 +343,11 @@ public class Emoji {
         } else {
             s = Spannable.Factory.getInstance().newSpannable(cs.toString());
         }
+
+        // If showAndroidEmoji is enabled don't replace anything
+        if (android.os.Build.VERSION.SDK_INT >= 19 && ApplicationLoader.SHOW_ANDROID_EMOJI) {
+            return s;
+        }
         long buf = 0;
         int emojiCount = 0;
         char c;

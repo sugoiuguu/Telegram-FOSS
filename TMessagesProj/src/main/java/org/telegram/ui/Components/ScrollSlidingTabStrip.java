@@ -9,9 +9,11 @@
 package org.telegram.ui.Components;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Paint.Style;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.util.TypedValue;
@@ -24,8 +26,10 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.telegram.messenger.AndroidUtilities;
+import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.R;
 import org.telegram.tgnet.TLRPC;
+import org.telegram.ui.ActionBar.Theme;
 
 public class ScrollSlidingTabStrip extends HorizontalScrollView {
 
@@ -120,6 +124,7 @@ public class ScrollSlidingTabStrip extends HorizontalScrollView {
         textView.setTextColor(0xffffffff);
         textView.setGravity(Gravity.CENTER);
         textView.setBackgroundResource(R.drawable.sticker_badge);
+        if(Theme.usePlusTheme)textView.getBackground().setColorFilter(Theme.lightColor, PorterDuff.Mode.SRC_IN);
         textView.setMinWidth(AndroidUtilities.dp(18));
         textView.setPadding(AndroidUtilities.dp(5), 0, AndroidUtilities.dp(5), AndroidUtilities.dp(1));
         tab.addView(textView, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, 18, Gravity.TOP | Gravity.LEFT, 26, 6, 0, 0));
@@ -242,7 +247,7 @@ public class ScrollSlidingTabStrip extends HorizontalScrollView {
         if (first == position && position > 1) {
             scrollToChild(position - 1);
         } else {
-            scrollToChild(position);
+        scrollToChild(position);
         }
         invalidate();
     }

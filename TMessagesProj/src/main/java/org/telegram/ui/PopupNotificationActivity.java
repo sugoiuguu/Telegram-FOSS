@@ -14,8 +14,10 @@ import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
@@ -286,6 +288,8 @@ public class PopupNotificationActivity extends Activity implements NotificationC
                 notifyHeightChanged();
             }
         };
+        SharedPreferences themePrefs = ApplicationLoader.applicationContext.getSharedPreferences(AndroidUtilities.THEME_PREFS, AndroidUtilities.THEME_PREFS_MODE);
+        int nameColor = themePrefs.getInt("chatNameColor", 0xffffffff);
         setContentView(contentView);
         contentView.setBackgroundColor(0x99000000);
 
@@ -294,6 +298,7 @@ public class PopupNotificationActivity extends Activity implements NotificationC
 
         popupContainer = new RelativeLayout(this);
         popupContainer.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
+        if(Theme.chatSolidBGColorCheck)popupContainer.setBackgroundColor(themePrefs.getInt("chatSolidBGColor", 0xffffffff) | 0xff000000);
         relativeLayout.addView(popupContainer, LayoutHelper.createRelative(LayoutHelper.MATCH_PARENT, 240, 12, 0, 12, 0, RelativeLayout.CENTER_IN_PARENT));
 
         if (chatActivityEnterView != null) {
@@ -390,12 +395,18 @@ public class PopupNotificationActivity extends Activity implements NotificationC
 
         messageContainer = new FrameLayoutTouch(this);
         popupContainer.addView(messageContainer, 0);
-
+        if(Theme.usePlusTheme)messageContainer.setBackgroundColor(Theme.chatLBubbleColor | 0xff000000);
         actionBar = new ActionBar(this);
         actionBar.setOccupyStatusBar(false);
         actionBar.setBackButtonImage(R.drawable.ic_close_white);
         actionBar.setBackgroundColor(Theme.getColor(Theme.key_actionBarDefault));
         actionBar.setItemsBackgroundColor(Theme.getColor(Theme.key_actionBarDefaultSelector), false);
+        if(Theme.usePlusTheme){
+        actionBar.setBackgroundColor(Theme.chatHeaderColor);
+        Drawable back = ApplicationLoader.applicationContext.getResources().getDrawable(R.drawable.ic_ab_back);
+        back.setColorFilter(Theme.chatHeaderIconsColor, PorterDuff.Mode.MULTIPLY);
+        actionBar.setBackButtonDrawable(back);
+        }
         popupContainer.addView(actionBar);
         ViewGroup.LayoutParams layoutParams = actionBar.getLayoutParams();
         layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT;
@@ -407,6 +418,7 @@ public class PopupNotificationActivity extends Activity implements NotificationC
         countText.setTextColor(Theme.getColor(Theme.key_actionBarDefaultSubtitle));
         countText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
         countText.setGravity(Gravity.CENTER);
+        if(Theme.usePlusTheme)countText.setTextColor(Theme.chatStatusColor);
         view.addView(countText, LayoutHelper.createFrame(56, LayoutHelper.MATCH_PARENT));
 
         avatarContainer = new FrameLayout(this);
@@ -421,7 +433,7 @@ public class PopupNotificationActivity extends Activity implements NotificationC
         avatarContainer.setLayoutParams(layoutParams2);
 
         avatarImageView = new BackupImageView(this);
-        avatarImageView.setRoundRadius(AndroidUtilities.dp(21));
+        avatarImageView.setRoundRadius(AndroidUtilities.dp(/*21*/themePrefs.getInt("chatHeaderAvatarRadius", 21)));
         avatarContainer.addView(avatarImageView);
         layoutParams2 = (FrameLayout.LayoutParams) avatarImageView.getLayoutParams();
         layoutParams2.width = AndroidUtilities.dp(42);
@@ -432,6 +444,8 @@ public class PopupNotificationActivity extends Activity implements NotificationC
         nameTextView = new TextView(this);
         nameTextView.setTextColor(Theme.getColor(Theme.key_actionBarDefaultTitle));
         nameTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 18);
+        if(Theme.usePlusTheme)nameTextView.setTextColor(/*0xffffffff*/nameColor);
+        nameTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, /*18*/themePrefs.getInt("chatNameSize", 18));
         nameTextView.setLines(1);
         nameTextView.setMaxLines(1);
         nameTextView.setSingleLine(true);
@@ -450,6 +464,8 @@ public class PopupNotificationActivity extends Activity implements NotificationC
         onlineTextView = new TextView(this);
         onlineTextView.setTextColor(Theme.getColor(Theme.key_actionBarDefaultSubtitle));
         onlineTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
+        if(Theme.usePlusTheme)onlineTextView.setTextColor(/*Theme.ACTION_BAR_SUBTITLE_COLOR*/Theme.chatStatusColor);
+        onlineTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, /*14*/Theme.chatStatusSize);
         onlineTextView.setLines(1);
         onlineTextView.setMaxLines(1);
         onlineTextView.setSingleLine(true);
@@ -861,6 +877,7 @@ public class PopupNotificationActivity extends Activity implements NotificationC
             TextView messageText = (TextView) view.findViewWithTag(301);
             messageText.setTextSize(TypedValue.COMPLEX_UNIT_SP, MessagesController.getInstance().fontSize);
             messageText.setText(messageObject.messageText);
+            if(Theme.usePlusTheme)messageText.setTextColor(Theme.chatLTextColor);
         }
         if (view.getParent() == null) {
             messageContainer.addView(view);

@@ -23,6 +23,8 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.telephony.TelephonyManager;
@@ -153,7 +155,11 @@ public class ChangePhoneActivity extends BaseFragment {
         });
 
         ActionBarMenu menu = actionBar.createMenu();
-        doneButton = menu.addItemWithWidth(done_button, R.drawable.ic_done, AndroidUtilities.dp(56));
+        //doneButton = menu.addItemWithWidth(done_button, R.drawable.ic_done, AndroidUtilities.dp(56));
+        SharedPreferences themePrefs = ApplicationLoader.applicationContext.getSharedPreferences(AndroidUtilities.THEME_PREFS, AndroidUtilities.THEME_PREFS_MODE);
+        Drawable done = getParentActivity().getResources().getDrawable(R.drawable.ic_done);
+        done.setColorFilter(Theme.prefActionbarIconsColor, PorterDuff.Mode.SRC_IN);
+        doneButton = menu.addItemWithWidth(done_button, done, AndroidUtilities.dp(56));
 
         fragmentView = new ScrollView(context);
         ScrollView scrollView = (ScrollView) fragmentView;
@@ -183,6 +189,16 @@ public class ChangePhoneActivity extends BaseFragment {
     public void onResume() {
         super.onResume();
         AndroidUtilities.requestAdjustResize(getParentActivity(), classGuid);
+        if(Theme.usePlusTheme)updateTheme();
+    }
+
+    private void updateTheme(){
+        actionBar.setBackgroundColor(Theme.prefActionbarColor);
+        actionBar.setTitleColor(Theme.prefActionbarTitleColor);
+        Drawable back = getParentActivity().getResources().getDrawable(R.drawable.ic_ab_back);
+        back.setColorFilter(Theme.prefActionbarIconsColor, PorterDuff.Mode.MULTIPLY);
+        actionBar.setBackButtonDrawable(back);
+        actionBar.setItemsColor(Theme.prefActionbarIconsColor, false);
     }
 
     @Override
@@ -499,8 +515,9 @@ public class ChangePhoneActivity extends BaseFragment {
             phoneField = new HintEditText(context);
             phoneField.setInputType(InputType.TYPE_CLASS_PHONE);
             phoneField.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
-            phoneField.setHintTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
+            phoneField.setHintTextColor(Theme.usePlusTheme ? Theme.prefSummaryColor : Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
             phoneField.setBackgroundDrawable(Theme.createEditTextDrawable(context, false));
+            if(Theme.usePlusTheme)phoneField.getBackground().setColorFilter(Theme.defColor, PorterDuff.Mode.SRC_IN);
             phoneField.setPadding(0, 0, 0, 0);
             AndroidUtilities.clearCursorDrawable(phoneField);
             phoneField.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 18);
@@ -885,7 +902,7 @@ public class ChangePhoneActivity extends BaseFragment {
             codeField.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
             codeField.setHint(LocaleController.getString("Code", R.string.Code));
             AndroidUtilities.clearCursorDrawable(codeField);
-            codeField.setHintTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
+            codeField.setHintTextColor(Theme.usePlusTheme ? Theme.prefSummaryColor : Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
             codeField.setBackgroundDrawable(Theme.createEditTextDrawable(context, false));
             codeField.setImeOptions(EditorInfo.IME_ACTION_NEXT | EditorInfo.IME_FLAG_NO_EXTRACT_UI);
             codeField.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 18);

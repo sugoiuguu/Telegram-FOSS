@@ -9,19 +9,26 @@
 package org.telegram.ui.Cells;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.text.Layout;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.StaticLayout;
+import android.text.TextPaint;
 import android.text.style.ClickableSpan;
 import android.text.style.URLSpan;
 import android.view.MotionEvent;
 import android.view.View;
 
 import org.telegram.messenger.AndroidUtilities;
+import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.Emoji;
+import org.telegram.messenger.FileLog;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MessageObject;
 import org.telegram.messenger.FileLog;
@@ -29,12 +36,15 @@ import org.telegram.messenger.R;
 import org.telegram.messenger.browser.Browser;
 import org.telegram.ui.Components.LinkPath;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.Components.LinkPath;
 import org.telegram.ui.Components.TypefaceSpan;
 import org.telegram.ui.Components.URLSpanNoUnderline;
 
 public class BotHelpCell extends View {
 
     private StaticLayout textLayout;
+    private TextPaint textPaint;
+    private Paint urlPaint;
     private String oldText;
 
     private int width;
@@ -53,6 +63,18 @@ public class BotHelpCell extends View {
 
     public BotHelpCell(Context context) {
         super(context);
+
+        textPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
+        textPaint.setTextSize(AndroidUtilities.dp(16));
+        //textPaint.setColor(0xff000000);
+        //textPaint.linkColor = Theme.MSG_LINK_TEXT_COLOR;
+
+        urlPaint = new Paint();
+        //urlPaint.setColor(Theme.MSG_LINK_SELECT_BACKGROUND_COLOR);
+        //plus
+        textPaint.setColor(Theme.chatLTextColor);
+        textPaint.linkColor = Theme.chatLLinkColor;
+        urlPaint.setColor(AndroidUtilities.getIntAlphaColor("chatLLinkColor", 0x33316f9f, 0.3f));
     }
 
     public void setDelegate(BotHelpCellDelegate botHelpCellDelegate) {
@@ -98,12 +120,12 @@ public class BotHelpCell extends View {
         Emoji.replaceEmoji(stringBuilder, Theme.chat_msgTextPaint.getFontMetricsInt(), AndroidUtilities.dp(20), false);
         try {
             textLayout = new StaticLayout(stringBuilder, Theme.chat_msgTextPaint, maxWidth, Layout.Alignment.ALIGN_NORMAL, 1.0f, 0.0f, false);
-            width = 0;
-            height = textLayout.getHeight() + AndroidUtilities.dp(4 + 18);
-            int count = textLayout.getLineCount();
-            for (int a = 0; a < count; a++) {
-                width = (int) Math.ceil(Math.max(width, textLayout.getLineWidth(a) + textLayout.getLineLeft(a)));
-            }
+        width = 0;
+        height = textLayout.getHeight() + AndroidUtilities.dp(4 + 18);
+        int count = textLayout.getLineCount();
+        for (int a = 0; a < count; a++) {
+            width = (int) Math.ceil(Math.max(width, textLayout.getLineWidth(a) + textLayout.getLineLeft(a)));
+        }
             if (width > maxWidth) {
                 width = maxWidth;
             }
@@ -167,8 +189,8 @@ public class BotHelpCell extends View {
                             if (pressedLink instanceof URLSpan) {
                                 Browser.openUrl(getContext(), ((URLSpan) pressedLink).getURL());
                             } else {
-                                pressedLink.onClick(this);
-                            }
+                            pressedLink.onClick(this);
+                        }
                         }
                     } catch (Exception e) {
                         FileLog.e(e);
@@ -192,12 +214,17 @@ public class BotHelpCell extends View {
     protected void onDraw(Canvas canvas) {
         int x = (canvas.getWidth() - width) / 2;
         int y = AndroidUtilities.dp(4);
+        //plus
+        if(Theme.usePlusTheme){
+            Theme.chat_msgInMediaDrawable.setColorFilter(Theme.chatLBubbleColor, PorterDuff.Mode.MULTIPLY);
+        }
+        //
         Theme.chat_msgInMediaShadowDrawable.setBounds(x, y, width + x, height + y);
         Theme.chat_msgInMediaShadowDrawable.draw(canvas);
         Theme.chat_msgInMediaDrawable.setBounds(x, y, width + x, height + y);
         Theme.chat_msgInMediaDrawable.draw(canvas);
-        Theme.chat_msgTextPaint.setColor(Theme.getColor(Theme.key_chat_messageTextIn));
-        Theme.chat_msgTextPaint.linkColor = Theme.getColor(Theme.key_chat_messageLinkIn);
+        Theme.chat_msgTextPaint.setColor(Theme.usePlusTheme ? Theme.chatLTextColor : Theme.getColor(Theme.key_chat_messageTextIn));
+        Theme.chat_msgTextPaint.linkColor = Theme.usePlusTheme ? Theme.chatLLinkColor : Theme.getColor(Theme.key_chat_messageLinkIn);
         canvas.save();
         canvas.translate(textX = AndroidUtilities.dp(2 + 9) + x, textY = AndroidUtilities.dp(2 + 9) + y);
         if (pressedLink != null) {

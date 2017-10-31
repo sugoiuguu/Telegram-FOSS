@@ -127,6 +127,7 @@ public class WebviewActivity extends BaseFragment {
         } catch (Exception e) {
             FileLog.e(e);
         }
+        AndroidUtilities.playingAGame = false;
     }
 
     @SuppressLint({"SetJavaScriptEnabled", "AddJavascriptInterface"})

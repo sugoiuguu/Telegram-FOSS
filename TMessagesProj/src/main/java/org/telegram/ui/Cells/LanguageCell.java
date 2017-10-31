@@ -41,7 +41,7 @@ public class LanguageCell extends FrameLayout {
         isDialog = dialog;
 
         textView = new TextView(context);
-        textView.setTextColor(Theme.getColor(dialog ? Theme.key_dialogTextBlack : Theme.key_windowBackgroundWhiteBlackText));
+        textView.setTextColor(Theme.usePlusTheme && !dialog ? Theme.prefTitleColor : Theme.getColor(dialog ? Theme.key_dialogTextBlack : Theme.key_windowBackgroundWhiteBlackText));
         textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);
         textView.setLines(1);
         textView.setMaxLines(1);
@@ -51,7 +51,7 @@ public class LanguageCell extends FrameLayout {
         addView(textView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT, (LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.TOP, LocaleController.isRTL ? 23 + 48 : (dialog ? 23 : 16), (isDialog ? 4 : 6), LocaleController.isRTL ? (dialog ? 23 : 16) : 23 + 48, 0));
 
         textView2 = new TextView(context);
-        textView2.setTextColor(Theme.getColor(dialog ? Theme.key_dialogTextGray3 : Theme.key_windowBackgroundWhiteGrayText3));
+        textView2.setTextColor(Theme.usePlusTheme && !dialog ? Theme.prefSummaryColor : Theme.getColor(dialog ? Theme.key_dialogTextGray3 : Theme.key_windowBackgroundWhiteGrayText3));
         textView2.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 13);
         textView2.setLines(1);
         textView2.setMaxLines(1);

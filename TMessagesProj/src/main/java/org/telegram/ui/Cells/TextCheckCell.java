@@ -29,6 +29,7 @@ public class TextCheckCell extends FrameLayout {
     private Switch checkBox;
     private boolean needDivider;
     private boolean isMultiline;
+    private boolean disabled;
 
     public TextCheckCell(Context context) {
         super(context);
@@ -69,6 +70,7 @@ public class TextCheckCell extends FrameLayout {
         } else {
             super.onMeasure(MeasureSpec.makeMeasureSpec(MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(AndroidUtilities.dp(valueTextView.getVisibility() == VISIBLE ? 64 : 48) + (needDivider ? 1 : 0), MeasureSpec.EXACTLY));
         }
+        if(Theme.usePlusTheme)setTheme();
     }
 
     public void setTextAndCheck(String text, boolean checked, boolean divider) {
@@ -137,4 +139,13 @@ public class TextCheckCell extends FrameLayout {
             canvas.drawLine(getPaddingLeft(), getHeight() - 1, getWidth() - getPaddingRight(), getHeight() - 1, Theme.dividerPaint);
         }
     }
+    
+
+    private void setTheme(){
+        setBackgroundColor(Theme.prefBGColor);
+        textView.setTextColor(Theme.prefTitleColor);
+        valueTextView.setTextColor(Theme.prefSummaryColor);
+        Theme.dividerPaint.setColor(Theme.prefDividerColor);
+    }
+
 }

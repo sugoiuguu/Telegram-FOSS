@@ -9,17 +9,25 @@
 package org.telegram.ui.Cells;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.RectF;
 import android.text.Layout;
 import android.text.Spannable;
 import android.text.StaticLayout;
+import android.text.TextPaint;
 import android.text.TextUtils;
 import android.text.style.URLSpan;
 import android.view.MotionEvent;
 import android.view.SoundEffectConstants;
 
 import org.telegram.messenger.AndroidUtilities;
+import org.telegram.messenger.ApplicationLoader;
+import org.telegram.messenger.FileLoader;
+import org.telegram.messenger.FileLog;
 import org.telegram.messenger.ImageReceiver;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MessageObject;
@@ -68,6 +76,11 @@ public class ChatActionCell extends BaseCell {
         imageReceiver = new ImageReceiver(this);
         imageReceiver.setRoundRadius(AndroidUtilities.dp(32));
         avatarDrawable = new AvatarDrawable();
+        //plus Chat Action Photo
+        imageReceiver.setRoundRadius(AndroidUtilities.dp(Theme.chatAvatarRadius));
+        avatarDrawable.setRadius(AndroidUtilities.dp(Theme.chatAvatarRadius));
+        //textPaint.setTextSize(AndroidUtilities.dp(/*MessagesController.getInstance().fontSize - 2*/Theme.chatDateSize));
+        //
     }
 
     public void setDelegate(ChatActionCellDelegate delegate) {
@@ -304,7 +317,7 @@ public class ChatActionCell extends BaseCell {
                     } else if (currentMessageObject.messageOwner.media.document instanceof TLRPC.TL_documentEmpty) {
                         text = LocaleController.getString("AttachVideoExpired", R.string.AttachVideoExpired);
                     } else {
-                        text = currentMessageObject.messageText;
+                text = currentMessageObject.messageText;
                     }
                 } else {
                     text = currentMessageObject.messageText;

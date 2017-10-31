@@ -1393,6 +1393,19 @@ public class ImageLoader {
                     } catch (Exception e) {
                         FileLog.e(e);
                     }
+				// Themes
+                        try {
+                            File themesPath = new File(telegramPath, "Themes");
+                            themesPath.mkdir();
+                            if (themesPath.isDirectory() && canMoveFiles(cachePath, themesPath, FileLoader.MEDIA_DIR_THEME)) {
+                                new File(themesPath, ".nomedia").createNewFile();
+                                mediaDirs.put(FileLoader.MEDIA_DIR_THEME, themesPath);
+                                //FileLog.e( "themes path = " + themesPath);
+                            }
+                        } catch (Exception e) {
+                            FileLog.e( e);
+                        }
+                        //	
                 }
             } else {
                 FileLog.e("this Android can't rename files");
@@ -1422,6 +1435,9 @@ public class ImageLoader {
             } else if (type == FileLoader.MEDIA_DIR_VIDEO) {
                 srcFile = new File(from, "000000000_999999_temp.mp4");
                 dstFile = new File(to, "000000000_999999.mp4");
+            } else if (type == FileLoader.MEDIA_DIR_THEME) {
+                srcFile = new File(from, "000000000_999999_temp.xml");
+                dstFile = new File(to, "000000000_999999.xml");	
             }
             byte[] buffer = new byte[1024];
             srcFile.createNewFile();
@@ -1839,7 +1855,7 @@ public class ImageLoader {
             BitmapDrawable bitmapDrawable = memCache.get(key);
             if (bitmapDrawable != null) {
                 cancelLoadingForImageReceiver(imageReceiver, 0);
-                imageReceiver.setImageBitmapByKey(bitmapDrawable, key, false, true);
+                    imageReceiver.setImageBitmapByKey(bitmapDrawable, key, false, true);
                 imageSet = true;
                 if (!imageReceiver.isForcePreview()) {
                     return;

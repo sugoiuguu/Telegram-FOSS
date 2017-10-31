@@ -18,8 +18,13 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.TextView;
 
+import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.FileLog;
+import org.telegram.messenger.R;
+import org.telegram.messenger.Utilities;
 import org.telegram.tgnet.ConnectionsManager;
 
 public class BaseFragment {
@@ -176,7 +181,10 @@ public class BaseFragment {
     }
 
     public void onResume() {
-
+		if(AndroidUtilities.needRestart){
+            AndroidUtilities.needRestart = false;
+            Utilities.restartApp();
+        }
     }
 
     public void onPause() {
@@ -333,6 +341,39 @@ public class BaseFragment {
                 }
             });
             visibleDialog.show();
+			//plus
+            if(Theme.usePlusTheme) {
+                //Log.e("BaseFragment","showDialog " + allowInTransition);
+                //Always after .show()
+                //SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences(AndroidUtilities.THEME_PREFS, AndroidUtilities.THEME_PREFS_MODE);
+                //int color = preferences.getInt("dialogColor", preferences.getInt("themeColor", AndroidUtilities.defColor));
+                int id = visibleDialog.getContext().getResources().getIdentifier("android:id/alertTitle", null, null);
+                TextView tv = (TextView) visibleDialog.findViewById(id);
+                if (tv != null) tv.setTextColor(Theme.dialogColor);
+                id = visibleDialog.getContext().getResources().getIdentifier("android:id/titleDivider", null, null);
+                View divider = visibleDialog.findViewById(id);
+                if (divider != null) divider.setBackgroundColor(Theme.dialogColor);
+
+                Button btn = (Button) visibleDialog.findViewById(android.R.id.button1);
+                if (btn != null) btn.setTextColor(Theme.dialogColor);
+                btn = (Button) visibleDialog.findViewById(android.R.id.button2);
+                if (btn != null) btn.setTextColor(Theme.dialogColor);
+                btn = (Button) visibleDialog.findViewById(android.R.id.button3);
+                if (btn != null) btn.setTextColor(Theme.dialogColor);
+                //int bgColor = preferences.getInt("prefBGColor", 0xffffffff);
+                //dialog.getWindow().setBackgroundDrawableResource(android.R.color.background_dark);
+                /*visibleDialog.getWindow().setBackgroundDrawable(new ColorDrawable(bgColor));
+                int tColor = preferences.getInt("prefTitleColor", 0xff212121);
+                tColor = 0xffff0000;
+                tv = (TextView) visibleDialog.findViewById(android.R.id.text1);
+                if(tv != null)tv.setTextColor(tColor);
+                tv = (TextView) visibleDialog.findViewById(android.R.id.text2);
+                if(tv != null)tv.setTextColor(tColor);
+                id = visibleDialog.getContext().getResources().getIdentifier("android:id/message", null, null);
+                tv = (TextView) visibleDialog.findViewById(id);
+                if(tv != null)tv.setTextColor(tColor);*/
+            }
+            //
             return visibleDialog;
         } catch (Exception e) {
             FileLog.e(e);

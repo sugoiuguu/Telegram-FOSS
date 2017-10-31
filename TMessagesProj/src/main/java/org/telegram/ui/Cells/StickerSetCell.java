@@ -80,9 +80,10 @@ public class StickerSetCell extends FrameLayout {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(MeasureSpec.makeMeasureSpec(MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(AndroidUtilities.dp(64) + (needDivider ? 1 : 0), MeasureSpec.EXACTLY));
+        if(Theme.usePlusTheme)setTheme();
     }
 
-    public void setStickersSet(TLRPC.TL_messages_stickerSet set, boolean divider) {
+     public void setStickersSet(TLRPC.TL_messages_stickerSet set, boolean divider) {
         needDivider = divider;
         stickersSet = set;
 
@@ -91,11 +92,11 @@ public class StickerSetCell extends FrameLayout {
             textView.setAlpha(0.5f);
             valueTextView.setAlpha(0.5f);
             imageView.setAlpha(0.5f);
-        } else {
+            } else {
             textView.setAlpha(1.0f);
             valueTextView.setAlpha(1.0f);
             imageView.setAlpha(1.0f);
-        }
+            }
         ArrayList<TLRPC.Document> documents = set.documents;
         if (documents != null && !documents.isEmpty()) {
             valueTextView.setText(LocaleController.formatPluralString("Stickers", documents.size()));
@@ -132,5 +133,12 @@ public class StickerSetCell extends FrameLayout {
         if (needDivider) {
             canvas.drawLine(0, getHeight() - 1, getWidth() - getPaddingRight(), getHeight() - 1, Theme.dividerPaint);
         }
+    }
+
+    private void setTheme(){
+        setBackgroundColor(Theme.prefBGColor);
+        textView.setTextColor(Theme.prefTitleColor);
+        valueTextView.setTextColor(Theme.prefSummaryColor);
+        Theme.dividerPaint.setColor(Theme.prefDividerColor);
     }
 }

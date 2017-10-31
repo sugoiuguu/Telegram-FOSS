@@ -228,8 +228,8 @@ public class NewContactActivity extends BaseFragment implements AdapterView.OnIt
 
         firstNameField = new EditText(context);
         firstNameField.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 18);
-        firstNameField.setHintTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
-        firstNameField.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
+        firstNameField.setHintTextColor(Theme.usePlusTheme ? Theme.prefSummaryColor : Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
+        firstNameField.setTextColor(Theme.usePlusTheme ? Theme.prefTitleColor : Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
         firstNameField.setMaxLines(1);
         firstNameField.setLines(1);
         firstNameField.setSingleLine(true);
@@ -271,8 +271,8 @@ public class NewContactActivity extends BaseFragment implements AdapterView.OnIt
 
         lastNameField = new EditText(context);
         lastNameField.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 18);
-        lastNameField.setHintTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
-        lastNameField.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
+        lastNameField.setHintTextColor(Theme.usePlusTheme ? Theme.prefSummaryColor : Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
+        lastNameField.setTextColor(Theme.usePlusTheme ? Theme.prefTitleColor : Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
         lastNameField.setBackgroundDrawable(Theme.createEditTextDrawable(context, false));
         lastNameField.setMaxLines(1);
         lastNameField.setLines(1);
@@ -315,7 +315,7 @@ public class NewContactActivity extends BaseFragment implements AdapterView.OnIt
         countryButton = new TextView(context);
         countryButton.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 18);
         countryButton.setPadding(AndroidUtilities.dp(6), AndroidUtilities.dp(10), AndroidUtilities.dp(6), 0);
-        countryButton.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
+        countryButton.setTextColor(Theme.usePlusTheme ? Theme.prefTitleColor : Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
         countryButton.setMaxLines(1);
         countryButton.setSingleLine(true);
         countryButton.setEllipsize(TextUtils.TruncateAt.END);
@@ -355,13 +355,13 @@ public class NewContactActivity extends BaseFragment implements AdapterView.OnIt
 
         textView = new TextView(context);
         textView.setText("+");
-        textView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
+        textView.setTextColor(Theme.usePlusTheme ? Theme.prefTitleColor : Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
         textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 18);
         linearLayout2.addView(textView, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT));
 
         codeField = new EditText(context);
         codeField.setInputType(InputType.TYPE_CLASS_PHONE);
-        codeField.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
+        codeField.setTextColor(Theme.usePlusTheme ? Theme.prefTitleColor : Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
         codeField.setBackgroundDrawable(Theme.createEditTextDrawable(context, false));
         AndroidUtilities.clearCursorDrawable(codeField);
         codeField.setPadding(AndroidUtilities.dp(10), 0, 0, 0);
@@ -463,8 +463,8 @@ public class NewContactActivity extends BaseFragment implements AdapterView.OnIt
 
         phoneField = new HintEditText(context);
         phoneField.setInputType(InputType.TYPE_CLASS_PHONE);
-        phoneField.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
-        phoneField.setHintTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
+        phoneField.setTextColor(Theme.usePlusTheme ? Theme.prefTitleColor : Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
+        phoneField.setHintTextColor(Theme.usePlusTheme ? Theme.prefSummaryColor : Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
         phoneField.setBackgroundDrawable(Theme.createEditTextDrawable(context, false));
         phoneField.setPadding(0, 0, 0, 0);
         AndroidUtilities.clearCursorDrawable(phoneField);

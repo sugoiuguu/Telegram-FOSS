@@ -8,10 +8,13 @@
 
 package org.telegram.ui.Components;
 
+import android.content.SharedPreferences;
 import android.text.TextPaint;
-import android.text.style.WrapTogetherSpan;
 
+import org.telegram.messenger.AndroidUtilities;
+import org.telegram.messenger.ApplicationLoader;
 import org.telegram.ui.ActionBar.Theme;
+
 
 public class URLSpanBotCommand extends URLSpanNoUnderline {
 
@@ -27,10 +30,14 @@ public class URLSpanBotCommand extends URLSpanNoUnderline {
     public void updateDrawState(TextPaint ds) {
         super.updateDrawState(ds);
         if (isOut) {
-            ds.setColor(Theme.getColor(enabled ? Theme.key_chat_messageLinkOut : Theme.key_chat_messageTextOut));
+            ds.setColor(Theme.usePlusTheme ? enabled ? Theme.chatRLinkColor : Theme.chatRTextColor : Theme.getColor(enabled ? Theme.key_chat_messageLinkOut : Theme.key_chat_messageTextOut));
         } else {
-            ds.setColor(Theme.getColor(enabled ? Theme.key_chat_messageLinkIn : Theme.key_chat_messageTextIn));
+            ds.setColor(Theme.usePlusTheme ? enabled ? Theme.chatLLinkColor : Theme.chatLTextColor : Theme.getColor(enabled ? Theme.key_chat_messageLinkIn : Theme.key_chat_messageTextIn));
         }
+        SharedPreferences themePrefs = ApplicationLoader.applicationContext.getSharedPreferences(AndroidUtilities.THEME_PREFS, AndroidUtilities.THEME_PREFS_MODE);
+        int def = themePrefs.getInt("chatCommandColor", themePrefs.getInt("themeColor", AndroidUtilities.defColor));
+        boolean check = themePrefs.getBoolean("chatCommandColorCheck", false);
+        if(enabled && check)ds.setColor(def);
         ds.setUnderlineText(false);
     }
 }

@@ -13,6 +13,7 @@ import android.graphics.ColorFilter;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.text.Layout;
@@ -36,13 +37,37 @@ public class AvatarDrawable extends Drawable {
     private boolean drawBrodcast;
     private boolean drawPhoto;
     private StringBuilder stringBuilder = new StringBuilder(5);
-
+	//plus
+    private int radius;
+	private static int[] arrColorsNames = {
+            0xFFF44336, //RED
+            0xFFE91E63, //PINK
+            0xFF9C27B0, //PURPLE
+            0xFF673AB7, //DEEP PURPLE
+            0xFF3F51B5, //INDIGO
+            0xFF2196F3, //BLUE
+            0xFF03A9F4, //LIGHT BLUE
+            0xFF00BCD4, //CYAN
+            0xFF009688, //TEAL
+            0xFF4CAF50, //GREEN
+            0xFF8BC34A, //LIGHT GREEN
+            0xFFCDDC39, //LIME
+            0xFFFFEB3B, //YELLOW
+            0xFFFFC107, //AMBER
+            0xFFFF9800, //ORANGE
+            0xFFFF5722, //DEEP ORANGE
+            0xFF795548, //BROWN
+            0xFF9E9E9E, //GREY
+            0xFF607D8B  //BLUE GREY
+    };
+	//
     public AvatarDrawable() {
         super();
 
         namePaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
         namePaint.setTypeface(AndroidUtilities.getTypeface("fonts/rmedium.ttf"));
         namePaint.setTextSize(AndroidUtilities.dp(18));
+		radius = 32;
     }
 
     public AvatarDrawable(TLRPC.User user) {
@@ -123,7 +148,15 @@ public class AvatarDrawable extends Drawable {
     public void setColor(int value) {
         color = value;
     }
+    //plus
+    public void setRadius(int value) {
+        radius = value;
+    }
 
+    public int getRadius() {
+        return radius;
+    }
+    //
     public void setTextSize(int size) {
         namePaint.setTextSize(size);
     }
@@ -165,13 +198,13 @@ public class AvatarDrawable extends Drawable {
                     }
                     lastch = lastName.codePointAt(a);
                 }
-                stringBuilder.append("\u200C");
+                    stringBuilder.append("\u200C");
                 stringBuilder.appendCodePoint(lastch);
             } else if (firstName != null && firstName.length() > 0) {
                 for (int a = firstName.length() - 1; a >= 0; a--) {
                     if (firstName.charAt(a) == ' ') {
                         if (a != firstName.length() - 1 && firstName.charAt(a + 1) != ' ') {
-                            stringBuilder.append("\u200C");
+                                stringBuilder.append("\u200C");
                             stringBuilder.appendCodePoint(firstName.codePointAt(a + 1));
                             break;
                         }
@@ -212,8 +245,14 @@ public class AvatarDrawable extends Drawable {
         Theme.avatar_backgroundPaint.setColor(color);
         canvas.save();
         canvas.translate(bounds.left, bounds.top);
-        canvas.drawCircle(size / 2, size / 2, size / 2, Theme.avatar_backgroundPaint);
-
+        if(!Theme.usePlusTheme) {
+            canvas.drawCircle(size / 2, size / 2, size / 2, Theme.avatar_backgroundPaint);
+        } else {
+            Rect rect = new Rect(0, 0, size, size);
+            RectF rectF = new RectF(rect);
+            int r = getRadius();
+            canvas.drawRoundRect(rectF, r, r, Theme.avatar_backgroundPaint);
+        }
         if (drawBrodcast && Theme.avatar_broadcastDrawable != null) {
             int x = (size - Theme.avatar_broadcastDrawable.getIntrinsicWidth()) / 2;
             int y = (size - Theme.avatar_broadcastDrawable.getIntrinsicHeight()) / 2;

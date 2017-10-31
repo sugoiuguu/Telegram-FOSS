@@ -16,7 +16,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.graphics.drawable.Drawable;
 import android.os.Environment;
 import android.os.StatFs;
 import android.view.MotionEvent;
@@ -32,13 +34,13 @@ import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.R;
 import org.telegram.messenger.support.widget.LinearLayoutManager;
 import org.telegram.messenger.support.widget.RecyclerView;
-import org.telegram.ui.ActionBar.AlertDialog;
-import org.telegram.ui.ActionBar.BackDrawable;
-import org.telegram.ui.ActionBar.Theme;
-import org.telegram.ui.ActionBar.ThemeDescription;
 import org.telegram.ui.ActionBar.ActionBar;
 import org.telegram.ui.ActionBar.ActionBarMenu;
+import org.telegram.ui.ActionBar.AlertDialog;
+import org.telegram.ui.ActionBar.BackDrawable;
 import org.telegram.ui.ActionBar.BaseFragment;
+import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.ActionBar.ThemeDescription;
 import org.telegram.ui.Cells.GraySectionCell;
 import org.telegram.ui.Cells.SharedDocumentCell;
 import org.telegram.ui.Components.EmptyTextProgressView;
@@ -82,6 +84,9 @@ public class DocumentSelectActivity extends BaseFragment {
     private ArrayList<ListItem> recentItems = new ArrayList<>();
 
     private final static int done = 3;
+
+    public String fileFilter = "*";
+    public String[] arrayFilter;
 
     private class ListItem {
         int icon;
@@ -138,6 +143,7 @@ public class DocumentSelectActivity extends BaseFragment {
         } catch (Exception e) {
             FileLog.e(e);
         }
+        fileFilter = "*";
         super.onFragmentDestroy();
     }
 
@@ -196,10 +202,12 @@ public class DocumentSelectActivity extends BaseFragment {
 
         final ActionBarMenu actionMode = actionBar.createActionMode();
 
+        if(Theme.usePlusTheme)actionMode.setBackgroundColor(Theme.chatHeaderColor);
+
         selectedMessagesCountTextView = new NumberTextView(actionMode.getContext());
         selectedMessagesCountTextView.setTextSize(18);
         selectedMessagesCountTextView.setTypeface(AndroidUtilities.getTypeface("fonts/rmedium.ttf"));
-        selectedMessagesCountTextView.setTextColor(Theme.getColor(Theme.key_actionBarActionModeDefaultIcon));
+        selectedMessagesCountTextView.setTextColor(Theme.usePlusTheme ? Theme.chatHeaderIconsColor : Theme.getColor(Theme.key_actionBarActionModeDefaultIcon));
         selectedMessagesCountTextView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -526,6 +534,9 @@ public class DocumentSelectActivity extends BaseFragment {
                 item.subtitle = LocaleController.getString("Folder", R.string.Folder);
             } else {
                 String fname = file.getName();
+                if (!fileFilter.equals("*") && !fname.toLowerCase().endsWith(fileFilter) && (arrayFilter != null && !fname.toLowerCase().endsWith(arrayFilter[0]))) {
+                    continue;
+                }
                 String[] sp = fname.split("\\.");
                 item.ext = sp.length > 1 ? sp[sp.length - 1] : "?";
                 item.subtitle = AndroidUtilities.formatFileSize(file.length());
@@ -668,7 +679,7 @@ public class DocumentSelectActivity extends BaseFragment {
         fs.subtitle = LocaleController.getString("GalleryInfo", R.string.GalleryInfo);
         fs.icon = R.drawable.ic_storage_gallery;
         fs.file = null;
-        items.add(fs);
+        if(fileFilter.equals("*"))items.add(fs);
 
         AndroidUtilities.clearDrawableAnimation(listView);
         scrolling = true;
@@ -736,6 +747,10 @@ public class DocumentSelectActivity extends BaseFragment {
                 case 0:
                     view = new GraySectionCell(mContext);
                     ((GraySectionCell) view).setText(LocaleController.getString("Recent", R.string.Recent).toUpperCase());
+                    if(Theme.usePlusTheme) {
+                        view.setBackgroundColor(Theme.prefShadowColor);
+                        ((GraySectionCell) view).setTextColor(Theme.prefSectionColor);
+                    }
                     break;
                 case 1:
                 default:

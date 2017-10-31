@@ -12,9 +12,11 @@ import android.animation.Animator;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.app.Activity;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.PorterDuff;
@@ -217,6 +219,8 @@ public class MediaActivity extends BaseFragment implements NotificationCenter.No
     private final static int forward = 3;
     private final static int delete = 4;
 
+    private final static int quoteforward = 33;
+
     public MediaActivity(Bundle args) {
         super(args);
     }
@@ -229,6 +233,7 @@ public class MediaActivity extends BaseFragment implements NotificationCenter.No
         NotificationCenter.getInstance().addObserver(this, NotificationCenter.didReceivedNewMessages);
         NotificationCenter.getInstance().addObserver(this, NotificationCenter.messageReceivedByServer);
         dialog_id = getArguments().getLong("dialog_id", 0);
+        selectedMode = getArguments().getInt("selected_mode", 0);
         for (int a = 0; a < sharedMediaData.length; a++) {
             sharedMediaData[a] = new SharedMediaData();
             sharedMediaData[a].max_id[0] = ((int)dialog_id) == 0 ? Integer.MIN_VALUE : Integer.MAX_VALUE;
@@ -412,10 +417,11 @@ public class MediaActivity extends BaseFragment implements NotificationCenter.No
                     });
                     builder.setNegativeButton(LocaleController.getString("Cancel", R.string.Cancel), null);
                     showDialog(builder.create());
-                } else if (id == forward) {
+                } else if (id == forward || id == quoteforward) {
                     Bundle args = new Bundle();
                     args.putBoolean("onlySelect", true);
                     args.putInt("dialogsType", 1);
+                    final boolean quoteForward = id == forward ? false : true;
                     DialogsActivity fragment = new DialogsActivity(args);
                     fragment.setDelegate(new DialogsActivity.DialogsActivityDelegate() {
                         @Override
@@ -424,6 +430,9 @@ public class MediaActivity extends BaseFragment implements NotificationCenter.No
                             if (lower_part != 0) {
                                 Bundle args = new Bundle();
                                 args.putBoolean("scrollToTopOnResume", true);
+                                //Plus
+                                args.putBoolean("quote", quoteForward);
+                                //
                                 if (lower_part > 0) {
                                     args.putInt("user_id", lower_part);
                                 } else if (lower_part < 0) {
@@ -560,11 +569,11 @@ public class MediaActivity extends BaseFragment implements NotificationCenter.No
         dropDownContainer.addView(dropDown, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER_VERTICAL, 16, 0, 0, 0));
 
         final ActionBarMenu actionMode = actionBar.createActionMode();
-
+        if(Theme.usePlusTheme)actionMode.setBackgroundColor(Theme.chatHeaderColor);
         selectedMessagesCountTextView = new NumberTextView(actionMode.getContext());
         selectedMessagesCountTextView.setTextSize(18);
         selectedMessagesCountTextView.setTypeface(AndroidUtilities.getTypeface("fonts/rmedium.ttf"));
-        selectedMessagesCountTextView.setTextColor(Theme.getColor(Theme.key_actionBarActionModeDefaultIcon));
+        selectedMessagesCountTextView.setTextColor(Theme.usePlusTheme ? Theme.chatHeaderIconsColor : Theme.getColor(Theme.key_actionBarActionModeDefaultIcon));
         selectedMessagesCountTextView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -572,12 +581,20 @@ public class MediaActivity extends BaseFragment implements NotificationCenter.No
             }
         });
         actionMode.addView(selectedMessagesCountTextView, LayoutHelper.createLinear(0, LayoutHelper.MATCH_PARENT, 1.0f, 65, 0, 0, 0));
-
+        Drawable icon;
         if ((int) dialog_id != 0) {
-            actionModeViews.add(actionMode.addItemWithWidth(forward, R.drawable.ic_ab_forward, AndroidUtilities.dp(54)));
+            //actionModeViews.add(actionMode.addItemWithWidth(forward, R.drawable.ic_ab_forward, AndroidUtilities.dp(54)));
+            icon = getParentActivity().getResources().getDrawable(R.drawable.ic_ab_fwd_quoteforward);
+            icon.setColorFilter(Theme.chatHeaderIconsColor, PorterDuff.Mode.SRC_IN);
+            actionModeViews.add(actionMode.addItem(quoteforward, 0, Theme.chatHeaderColor, icon, AndroidUtilities.dp(54)));
+            icon = getParentActivity().getResources().getDrawable(R.drawable.ic_ab_forward);
+            icon.setColorFilter(Theme.chatHeaderIconsColor, PorterDuff.Mode.SRC_IN);
+            actionModeViews.add(actionMode.addItem(forward, 0, Theme.chatHeaderColor, icon, AndroidUtilities.dp(54)));
         }
-        actionModeViews.add(actionMode.addItemWithWidth(delete, R.drawable.ic_ab_delete, AndroidUtilities.dp(54)));
-
+        //actionModeViews.add(actionMode.addItemWithWidth(delete, R.drawable.ic_ab_delete, AndroidUtilities.dp(54)));
+        icon = getParentActivity().getResources().getDrawable(R.drawable.ic_ab_delete);
+        icon.setColorFilter(Theme.chatHeaderIconsColor, PorterDuff.Mode.SRC_IN);
+        actionModeViews.add(actionMode.addItem(delete, 0, Theme.chatHeaderColor, icon, AndroidUtilities.dp(54)));
         photoVideoAdapter = new SharedPhotoVideoAdapter(context);
         documentsAdapter = new SharedDocumentsAdapter(context, 1);
         audioAdapter = new SharedDocumentsAdapter(context, 4);
@@ -688,7 +705,7 @@ public class MediaActivity extends BaseFragment implements NotificationCenter.No
         emptyView.setOrientation(LinearLayout.VERTICAL);
         emptyView.setGravity(Gravity.CENTER);
         emptyView.setVisibility(View.GONE);
-        emptyView.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundGray));
+        emptyView.setBackgroundColor(Theme.usePlusTheme ? Theme.prefBGColor : Theme.getColor(Theme.key_windowBackgroundGray));
         frameLayout.addView(emptyView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT));
         emptyView.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -711,7 +728,7 @@ public class MediaActivity extends BaseFragment implements NotificationCenter.No
         progressView.setGravity(Gravity.CENTER);
         progressView.setOrientation(LinearLayout.VERTICAL);
         progressView.setVisibility(View.GONE);
-        progressView.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundGray));
+        progressView.setBackgroundColor(Theme.usePlusTheme ? Theme.prefBGColor : Theme.getColor(Theme.key_windowBackgroundGray));
         frameLayout.addView(progressView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT));
 
         progressBar = new RadialProgressView(context);
@@ -1172,119 +1189,290 @@ public class MediaActivity extends BaseFragment implements NotificationCenter.No
                 ((SharedLinkCell) view).setChecked(selectedFiles[loadIndex].containsKey(message.getId()), true);
             }
         } else {
-            if (selectedMode == 0) {
-                PhotoViewer.getInstance().setParentActivity(getParentActivity());
-                PhotoViewer.getInstance().openPhoto(sharedMediaData[selectedMode].messages, index, dialog_id, mergeDialogId, this);
-            } else if (selectedMode == 1 || selectedMode == 4) {
-                if (view instanceof SharedDocumentCell) {
-                    SharedDocumentCell cell = (SharedDocumentCell) view;
-                    if (cell.isLoaded()) {
-                        if (message.isMusic()) {
-                            if (MediaController.getInstance().setPlaylist(sharedMediaData[selectedMode].messages, message)) {
-                                return;
-                            }
+            if(Theme.plusProfileEnableGoToMsg){
+                //
+                AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
+                String title = LocaleController.getString("Message", R.string.Message);
+                ArrayList<CharSequence> items = new ArrayList<>();
+                if(selectedMode == 0 || selectedMode == 3){
+                    items.add(LocaleController.getString("Open", R.string.Open));
+                    title = selectedMode == 0 ? LocaleController.getString("SharedMedia", R.string.SharedMedia) : LocaleController.getString("ChannelLinkTitle", R.string.ChannelLinkTitle);
+                } else if (selectedMode == 1 || selectedMode == 4) {
+                    if (view instanceof SharedDocumentCell) {
+                        SharedDocumentCell cell = (SharedDocumentCell) view;
+                        if (cell.isLoaded()) {
+                            items.add(LocaleController.getString("Open", R.string.Open));
+                        } else if (!cell.isLoading()) {
+                            items.add(LocaleController.getString("Download", R.string.Download));
+                        } else {
+                            items.add(LocaleController.getString("Cancel", R.string.Cancel));
                         }
-                        File f = null;
-                        String fileName = message.messageOwner.media != null ? FileLoader.getAttachFileName(message.getDocument()) : "";
-                        if (message.messageOwner.attachPath != null && message.messageOwner.attachPath.length() != 0) {
-                            f = new File(message.messageOwner.attachPath);
-                        }
-                        if (f == null || f != null && !f.exists()) {
-                            f = FileLoader.getPathToMessage(message.messageOwner);
-                        }
-                        if (f != null && f.exists()) {
-                            if (f.getName().endsWith("attheme")) {
-                                Theme.ThemeInfo themeInfo = Theme.applyThemeFile(f, message.getDocumentName(), true);
-                                if (themeInfo != null) {
-                                    presentFragment(new ThemePreviewActivity(f, themeInfo));
-                                } else {
-                                    AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
-                                    builder.setTitle(LocaleController.getString("AppName", R.string.AppName));
-                                    builder.setMessage(LocaleController.getString("IncorrectTheme", R.string.IncorrectTheme));
-                                    builder.setPositiveButton(LocaleController.getString("OK", R.string.OK), null);
-                                    showDialog(builder.create());
-                                }
-                            } else {
-                                String realMimeType = null;
-                                try {
-                                    Intent intent = new Intent(Intent.ACTION_VIEW);
-                                    intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                                    MimeTypeMap myMime = MimeTypeMap.getSingleton();
-                                    int idx = fileName.lastIndexOf('.');
-                                    if (idx != -1) {
-                                        String ext = fileName.substring(idx + 1);
-                                        realMimeType = myMime.getMimeTypeFromExtension(ext.toLowerCase());
-                                        if (realMimeType == null) {
-                                            realMimeType = message.getDocument().mime_type;
-                                            if (realMimeType == null || realMimeType.length() == 0) {
-                                                realMimeType = null;
-                                            }
-                                        }
-                                    }
-                                    if (Build.VERSION.SDK_INT >= 24) {
-                                        intent.setDataAndType(FileProvider.getUriForFile(getParentActivity(), BuildConfig.APPLICATION_ID + ".provider", f), realMimeType != null ? realMimeType : "text/plain");
-                                    } else {
-                                        intent.setDataAndType(Uri.fromFile(f), realMimeType != null ? realMimeType : "text/plain");
-                                    }
-                                    if (realMimeType != null) {
-                                        try {
-                                            getParentActivity().startActivityForResult(intent, 500);
-                                        } catch (Exception e) {
-                                            if (Build.VERSION.SDK_INT >= 24) {
-                                                intent.setDataAndType(FileProvider.getUriForFile(getParentActivity(), BuildConfig.APPLICATION_ID + ".provider", f), "text/plain");
-                                            } else {
-                                                intent.setDataAndType(Uri.fromFile(f), "text/plain");
-                                            }
-                                            getParentActivity().startActivityForResult(intent, 500);
-                                        }
-                                    } else {
-                                        getParentActivity().startActivityForResult(intent, 500);
-                                    }
-                                } catch (Exception e) {
-                                    if (getParentActivity() == null) {
-                                        return;
-                                    }
-                                    AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
-                                    builder.setTitle(LocaleController.getString("AppName", R.string.AppName));
-                                    builder.setPositiveButton(LocaleController.getString("OK", R.string.OK), null);
-                                    builder.setMessage(LocaleController.formatString("NoHandleAppInstalled", R.string.NoHandleAppInstalled, message.getDocument().mime_type));
-                                    showDialog(builder.create());
-                                }
-                            }
-                        }
-                    } else if (!cell.isLoading()) {
-                        FileLoader.getInstance().loadFile(cell.getMessage().getDocument(), false, 0);
-                        cell.updateFileExistIcon();
-                    } else {
-                        FileLoader.getInstance().cancelLoadFile(cell.getMessage().getDocument());
-                        cell.updateFileExistIcon();
                     }
                 }
-            } else if (selectedMode == 3) {
-                try {
-                    TLRPC.WebPage webPage = message.messageOwner.media.webpage;
-                    String link = null;
-                    if (webPage != null && !(webPage instanceof TLRPC.TL_webPageEmpty)) {
-                        if (webPage.embed_url != null && webPage.embed_url.length() != 0) {
-                            openWebView(webPage);
-                            return;
-                        } else {
-                            link = webPage.url;
+
+                items.add(LocaleController.getString("GoToMessage", R.string.GoToMessage));
+                final View v = view;
+                final MessageObject msg = message;
+                final int indx = index;
+                final int id = message.getId();
+                final CharSequence[] finalItems = items.toArray(new CharSequence[items.size()]);
+                builder.setItems(finalItems, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int which) {
+                        if (which == 0) {
+                            processClick(indx, v, msg);
+                        } else if (which == 1) {
+                            goToMessage(id);
                         }
                     }
-                    if (link == null) {
-                        link = ((SharedLinkCell) view).getLink(0);
+                });
+
+                if(message.messageOwner.media != null && message.type != 13) {
+                    String name = FileLoader.getDocumentFileName(message.messageOwner.media.document).replace("\n", " ");
+                    if (name.length() > 1) {
+                        if(name.length() > 20)name = name.substring(0, 20) + "..." + name.substring(name.length() - 3, name.length());
+                        title = name;
                     }
-                    if (link != null) {
-                        Browser.openUrl(getParentActivity(), link);
+                }
+                if (message.isFromUser()) {
+                    TLRPC.User user = MessagesController.getInstance().getUser(message.messageOwner.from_id);
+                    if (user != null) {
+                        title = title + "  [" + UserObject.getUserName(user) + "]";
                     }
-                } catch (Exception e) {
-                    FileLog.e(e);
+                }
+                builder.setTitle(title);
+                Dialog dlg = showDialog(builder.create());
+            } else {
+                if (selectedMode == 0) {
+                    PhotoViewer.getInstance().setParentActivity(getParentActivity());
+                    PhotoViewer.getInstance().openPhoto(sharedMediaData[selectedMode].messages, index, dialog_id, mergeDialogId, this);
+                } else if (selectedMode == 1 || selectedMode == 4) {
+                    if (view instanceof SharedDocumentCell) {
+                        SharedDocumentCell cell = (SharedDocumentCell) view;
+                        if (cell.isLoaded()) {
+                            if (message.isMusic()) {
+                                if (MediaController.getInstance().setPlaylist(sharedMediaData[selectedMode].messages, message)) {
+                                    return;
+                                }
+                            }
+                            File f = null;
+                            String fileName = message.messageOwner.media != null ? FileLoader.getAttachFileName(message.getDocument()) : "";
+                            if (message.messageOwner.attachPath != null && message.messageOwner.attachPath.length() != 0) {
+                                f = new File(message.messageOwner.attachPath);
+                            }
+                            if (f == null || f != null && !f.exists()) {
+                                f = FileLoader.getPathToMessage(message.messageOwner);
+                            }
+                            if (f != null && f.exists()) {
+                                if (f.getName().endsWith("attheme")) {
+                                    Theme.ThemeInfo themeInfo = Theme.applyThemeFile(f, message.getDocumentName(), true);
+                                    if (themeInfo != null) {
+                                        presentFragment(new ThemePreviewActivity(f, themeInfo));
+                                    } else {
+                                        AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
+                                        builder.setTitle(LocaleController.getString("AppName", R.string.AppName));
+                                        builder.setMessage(LocaleController.getString("IncorrectTheme", R.string.IncorrectTheme));
+                                        builder.setPositiveButton(LocaleController.getString("OK", R.string.OK), null);
+                                        showDialog(builder.create());
+                                    }
+                                } else {
+                                    String realMimeType = null;
+                                    try {
+                                        Intent intent = new Intent(Intent.ACTION_VIEW);
+                                        intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                                        MimeTypeMap myMime = MimeTypeMap.getSingleton();
+                                        int idx = fileName.lastIndexOf('.');
+                                        if (idx != -1) {
+                                            String ext = fileName.substring(idx + 1);
+                                            realMimeType = myMime.getMimeTypeFromExtension(ext.toLowerCase());
+                                            if (realMimeType == null) {
+                                                realMimeType = message.getDocument().mime_type;
+                                                if (realMimeType == null || realMimeType.length() == 0) {
+                                                    realMimeType = null;
+                                                }
+                                            }
+                                        }
+                                        if (Build.VERSION.SDK_INT >= 24) {
+                                            intent.setDataAndType(FileProvider.getUriForFile(getParentActivity(), BuildConfig.APPLICATION_ID + ".provider", f), realMimeType != null ? realMimeType : "text/plain");
+                                        } else {
+                                            intent.setDataAndType(Uri.fromFile(f), realMimeType != null ? realMimeType : "text/plain");
+                                        }
+                                        if (realMimeType != null) {
+                                            try {
+                                                getParentActivity().startActivityForResult(intent, 500);
+                                            } catch (Exception e) {
+                                                if (Build.VERSION.SDK_INT >= 24) {
+                                                    intent.setDataAndType(FileProvider.getUriForFile(getParentActivity(), BuildConfig.APPLICATION_ID + ".provider", f), "text/plain");
+                                                } else {
+                                                    intent.setDataAndType(Uri.fromFile(f), "text/plain");
+                                                }
+                                                getParentActivity().startActivityForResult(intent, 500);
+                                            }
+                                        } else {
+                                            getParentActivity().startActivityForResult(intent, 500);
+                                        }
+                                    } catch (Exception e) {
+                                        if (getParentActivity() == null) {
+                                            return;
+                                        }
+                                        AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
+                                        builder.setTitle(LocaleController.getString("AppName", R.string.AppName));
+                                        builder.setPositiveButton(LocaleController.getString("OK", R.string.OK), null);
+                                        builder.setMessage(LocaleController.formatString("NoHandleAppInstalled", R.string.NoHandleAppInstalled, message.getDocument().mime_type));
+                                        showDialog(builder.create());
+                                    }
+                                }
+                            }
+                        } else if (!cell.isLoading()) {
+                            FileLoader.getInstance().loadFile(cell.getMessage().getDocument(), false, 0);
+                            cell.updateFileExistIcon();
+                        } else {
+                            FileLoader.getInstance().cancelLoadFile(cell.getMessage().getDocument());
+                            cell.updateFileExistIcon();
+                        }
+                    }
+                } else if (selectedMode == 3) {
+                    try {
+                        TLRPC.WebPage webPage = message.messageOwner.media.webpage;
+                        String link = null;
+                        if (webPage != null && !(webPage instanceof TLRPC.TL_webPageEmpty)) {
+                        if (webPage.embed_url != null && webPage.embed_url.length() != 0) {
+                                openWebView(webPage);
+                                return;
+                            } else {
+                                link = webPage.url;
+                            }
+                        }
+                        if (link == null) {
+                            link = ((SharedLinkCell) view).getLink(0);
+                        }
+                        if (link != null) {
+                            Browser.openUrl(getParentActivity(), link);
+                        }
+                    } catch (Exception e) {
+                        FileLog.e(e);
+                    }
                 }
             }
         }
     }
+//plus
+    private void goToMessage(int id){
+        Bundle args = new Bundle();
+        int lower_part = (int) dialog_id;
+        if (lower_part != 0) {
+            if (lower_part > 0) {
+                args.putInt("user_id", lower_part);
+            } else if (lower_part < 0) {
+                args.putInt("chat_id", -lower_part);
+            }
+        } else {
+            args.putInt("enc_id", (int) (dialog_id >> 32));
+        }
+        args.putInt("message_id", id);
+        presentFragment(new ChatActivity(args));
+    }
 
+    private void processClick(int index, View view, MessageObject message){
+        if (selectedMode == 0) {
+            PhotoViewer.getInstance().setParentActivity(getParentActivity());
+            PhotoViewer.getInstance().openPhoto(sharedMediaData[selectedMode].messages, index, dialog_id, mergeDialogId, this);
+        } else if (selectedMode == 1 || selectedMode == 4) {
+            if (view instanceof SharedDocumentCell) {
+                SharedDocumentCell cell = (SharedDocumentCell) view;
+                if (cell.isLoaded()) {
+                    if (message.isMusic()) {
+                        if (MediaController.getInstance().setPlaylist(sharedMediaData[selectedMode].messages, message)) {
+                            return;
+                        }
+                    }
+                    File f = null;
+                    String fileName = message.messageOwner.media != null ? FileLoader.getAttachFileName(message.getDocument()) : "";
+                    if (message.messageOwner.attachPath != null && message.messageOwner.attachPath.length() != 0) {
+                        f = new File(message.messageOwner.attachPath);
+                    }
+                    if (f == null || f != null && !f.exists()) {
+                        f = FileLoader.getPathToMessage(message.messageOwner);
+                    }
+                    if (f != null && f.exists()) {
+                        String realMimeType = null;
+                        try {
+                            Intent intent = new Intent(Intent.ACTION_VIEW);
+                            intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                            MimeTypeMap myMime = MimeTypeMap.getSingleton();
+                            int idx = fileName.lastIndexOf('.');
+                            if (idx != -1) {
+                                String ext = fileName.substring(idx + 1);
+                                realMimeType = myMime.getMimeTypeFromExtension(ext.toLowerCase());
+                                if (realMimeType == null) {
+                                    realMimeType = message.getDocument().mime_type;
+                                    if (realMimeType == null || realMimeType.length() == 0) {
+                                        realMimeType = null;
+                                    }
+                                }
+                            }
+                            if (Build.VERSION.SDK_INT >= 24) {
+                                intent.setDataAndType(FileProvider.getUriForFile(getParentActivity(), BuildConfig.APPLICATION_ID + ".provider", f), realMimeType != null ? realMimeType : "text/plain");
+                            } else {
+                                intent.setDataAndType(Uri.fromFile(f), realMimeType != null ? realMimeType : "text/plain");
+                            }
+                            if (realMimeType != null) {
+                                try {
+                                    getParentActivity().startActivityForResult(intent, 500);
+                                } catch (Exception e) {
+                                    if (Build.VERSION.SDK_INT >= 24) {
+                                        intent.setDataAndType(FileProvider.getUriForFile(getParentActivity(), BuildConfig.APPLICATION_ID + ".provider", f), "text/plain");
+                                    } else {
+                                        intent.setDataAndType(Uri.fromFile(f), "text/plain");
+                                    }
+                                    getParentActivity().startActivityForResult(intent, 500);
+                                }
+                            } else {
+                                getParentActivity().startActivityForResult(intent, 500);
+                            }
+                        } catch (Exception e) {
+                            if (getParentActivity() == null) {
+                                return;
+                            }
+                            AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
+                            builder.setTitle(LocaleController.getString("AppName", R.string.AppName));
+                            builder.setPositiveButton(LocaleController.getString("OK", R.string.OK), null);
+                            builder.setMessage(LocaleController.formatString("NoHandleAppInstalled", R.string.NoHandleAppInstalled, message.getDocument().mime_type));
+                            showDialog(builder.create());
+                        }
+                    }
+                } else if (!cell.isLoading()) {
+                    FileLoader.getInstance().loadFile(cell.getMessage().getDocument(), false, 0);
+                    cell.updateFileExistIcon();
+                } else {
+                    FileLoader.getInstance().cancelLoadFile(cell.getMessage().getDocument());
+                    cell.updateFileExistIcon();
+                }
+            }
+        } else if (selectedMode == 3) {
+            try {
+                TLRPC.WebPage webPage = message.messageOwner.media.webpage;
+                String link = null;
+                if (webPage != null && !(webPage instanceof TLRPC.TL_webPageEmpty)) {
+                    if (Build.VERSION.SDK_INT >= 16 && webPage.embed_url != null && webPage.embed_url.length() != 0) {
+                        openWebView(webPage);
+                        return;
+                    } else {
+                        link = webPage.url;
+                    }
+                }
+                if (link == null) {
+                    link = ((SharedLinkCell) view).getLink(0);
+                }
+                if (link != null) {
+                    Browser.openUrl(getParentActivity(), link);
+                }
+            } catch (Exception e) {
+                FileLog.e("tmessages", e);
+            }
+        }
+    }
+    //
     private void openWebView(TLRPC.WebPage webPage) {
         EmbedBottomSheet.show(getParentActivity(), webPage.site_name, webPage.description, webPage.url, webPage.embed_url, webPage.embed_width, webPage.embed_height);
     }
@@ -1366,6 +1554,10 @@ public class MediaActivity extends BaseFragment implements NotificationCenter.No
         public View getSectionHeaderView(int section, View view) {
             if (view == null) {
                 view = new GraySectionCell(mContext);
+                if(Theme.usePlusTheme) {
+                    view.setBackgroundColor(Theme.prefShadowColor);
+                    //((GraySectionCell) view).setTextColor(Theme.prefSectionColor);
+                }
             }
             if (section < sharedMediaData[3].sections.size()) {
                 String name = sharedMediaData[3].sections.get(section);
@@ -1414,6 +1606,10 @@ public class MediaActivity extends BaseFragment implements NotificationCenter.No
                     case 0: {
                         MessageObject messageObject = messageObjects.get(0);
                         ((GraySectionCell) holder.itemView).setText(LocaleController.getInstance().formatterMonthYear.format((long) messageObject.messageOwner.date * 1000).toUpperCase());
+                        if(Theme.usePlusTheme) {
+                            holder.itemView.setBackgroundColor(Theme.prefShadowColor);
+                            ((GraySectionCell) holder.itemView).setTextColor(Theme.prefSectionColor);
+                        }
                         break;
                     }
                     case 1: {
@@ -1491,6 +1687,10 @@ public class MediaActivity extends BaseFragment implements NotificationCenter.No
         public View getSectionHeaderView(int section, View view) {
             if (view == null) {
                 view = new GraySectionCell(mContext);
+                if(Theme.usePlusTheme) {
+                    view.setBackgroundColor(Theme.prefShadowColor);
+                    //((GraySectionCell) view).setTextColor(Theme.prefSectionColor);
+                }
             }
             if (section < sharedMediaData[currentType].sections.size()) {
                 String name = sharedMediaData[currentType].sections.get(section);
@@ -1528,6 +1728,10 @@ public class MediaActivity extends BaseFragment implements NotificationCenter.No
                     case 0: {
                         MessageObject messageObject = messageObjects.get(0);
                         ((GraySectionCell) holder.itemView).setText(LocaleController.getInstance().formatterMonthYear.format((long) messageObject.messageOwner.date * 1000).toUpperCase());
+                        if(Theme.usePlusTheme) {
+                            holder.itemView.setBackgroundColor(Theme.prefShadowColor);
+                            ((GraySectionCell) holder.itemView).setTextColor(Theme.prefSectionColor);
+                        }
                         break;
                     }
                     case 1: {
@@ -1603,7 +1807,7 @@ public class MediaActivity extends BaseFragment implements NotificationCenter.No
         public View getSectionHeaderView(int section, View view) {
             if (view == null) {
                 view = new SharedMediaSectionCell(mContext);
-                view.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
+                view.setBackgroundColor(Theme.usePlusTheme ? Theme.prefShadowColor : Theme.getColor(Theme.key_windowBackgroundWhite));
             }
             if (section < sharedMediaData[0].sections.size()) {
                 String name = sharedMediaData[0].sections.get(section);

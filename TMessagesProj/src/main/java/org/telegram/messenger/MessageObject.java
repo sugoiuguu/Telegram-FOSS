@@ -83,7 +83,7 @@ public class MessageObject {
     public int textHeight;
     public boolean hasRtl;
     public float textXOffset;
-
+	protected int leftBound = 52;//52
     private boolean layoutCreated;
     private int generatedWithMinSize;
 
@@ -1788,9 +1788,12 @@ public class MessageObject {
         }
 
         int maxWidth;
-        boolean needShare = eventId == 0 && messageOwner.from_id > 0 && (messageOwner.to_id.channel_id != 0 || messageOwner.to_id.chat_id != 0 || messageOwner.media instanceof TLRPC.TL_messageMediaGame || messageOwner.media instanceof TLRPC.TL_messageMediaInvoice) && !isOut();
+        boolean needShare = eventId == 0 && messageOwner.from_id > 0 && (messageOwner.to_id.channel_id != 0 || messageOwner.to_id.chat_id != 0 || messageOwner.media instanceof TLRPC.TL_messageMediaGame || messageOwner.media instanceof TLRPC.TL_messageMediaInvoice) && !isOut()|| messageOwner.from_id > 0 && Theme.chatShowOwnAvatar && isOut()
+                            || (messageOwner.to_id.chat_id > 0 || messageOwner.to_id.channel_id > 0) && Theme.chatShowOwnAvatarGroup && isOut()
+                            || messageOwner.from_id > 0 && Theme.chatShowContactAvatar && !isOutOwner();
+
         generatedWithMinSize = AndroidUtilities.isTablet() ? AndroidUtilities.getMinTabletSide() : AndroidUtilities.displaySize.x;
-        maxWidth = generatedWithMinSize - AndroidUtilities.dp(needShare || eventId != 0 ? 122 : 80);
+        maxWidth = generatedWithMinSize - AndroidUtilities.dp(needShare || eventId != 0 ? /*122*/leftBound + 70 : 80);
         if (fromUser != null && fromUser.bot || (isMegagroup() || messageOwner.fwd_from != null && messageOwner.fwd_from.channel_id != 0) && !isOut()) {
             maxWidth -= AndroidUtilities.dp(20);
         }

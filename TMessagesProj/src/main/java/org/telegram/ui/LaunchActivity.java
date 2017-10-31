@@ -14,19 +14,25 @@ import android.content.ContentResolver;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.Point;
 import android.graphics.Shader;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.provider.ContactsContract;
+import android.provider.Settings;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
+import android.util.TypedValue;
 import android.view.ActionMode;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MotionEvent;
@@ -38,27 +44,32 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
-import org.telegram.messenger.AndroidUtilities;
+import net.hockeyapp.android.LoginManager;
+
 import org.telegram.PhoneFormat.PhoneFormat;
+import org.telegram.messenger.AndroidUtilities;
+import org.telegram.messenger.ApplicationLoader;
+import org.telegram.messenger.BuildConfig;
 import org.telegram.messenger.BuildVars;
 import org.telegram.messenger.ChatObject;
 import org.telegram.messenger.ContactsController;
+import org.telegram.messenger.FileLog;
 import org.telegram.messenger.ImageLoader;
+import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MediaController;
 import org.telegram.messenger.MessageObject;
 import org.telegram.messenger.MessagesController;
 import org.telegram.messenger.MessagesStorage;
 import org.telegram.messenger.NativeCrashManager;
-import org.telegram.messenger.SendMessagesHelper;
-import org.telegram.messenger.UserObject;
-import org.telegram.messenger.Utilities;
-import org.telegram.messenger.ApplicationLoader;
-import org.telegram.messenger.FileLog;
-import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.NotificationCenter;
 import org.telegram.messenger.R;
+import org.telegram.messenger.SendMessagesHelper;
+import org.telegram.messenger.UserConfig;
+import org.telegram.messenger.UserObject;
+import org.telegram.messenger.Utilities;
 import org.telegram.messenger.browser.Browser;
 import org.telegram.messenger.camera.CameraController;
 import org.telegram.messenger.query.DraftQuery;
@@ -67,21 +78,22 @@ import org.telegram.tgnet.ConnectionsManager;
 import org.telegram.tgnet.RequestDelegate;
 import org.telegram.tgnet.TLObject;
 import org.telegram.tgnet.TLRPC;
-import org.telegram.messenger.UserConfig;
-import org.telegram.ui.ActionBar.AlertDialog;
-import org.telegram.ui.Adapters.DrawerLayoutAdapter;
 import org.telegram.ui.ActionBar.ActionBarLayout;
+import org.telegram.ui.ActionBar.AlertDialog;
 import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.ActionBar.DrawerLayoutContainer;
+import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.Adapters.DrawerLayoutAdapter;
 import org.telegram.ui.Cells.LanguageCell;
 import org.telegram.ui.Components.EmbedBottomSheet;
+import org.telegram.ui.Components.Favorite;
+import org.telegram.ui.Components.Glow;
 import org.telegram.ui.Components.JoinGroupAlert;
 import org.telegram.ui.Components.LayoutHelper;
 import org.telegram.ui.Components.PasscodeView;
 import org.telegram.ui.Components.PipRoundVideoView;
 import org.telegram.ui.Components.RecyclerListView;
 import org.telegram.ui.Components.StickersAlert;
-import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.Components.ThemeEditorView;
 
 import java.io.BufferedReader;
@@ -89,7 +101,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public class LaunchActivity extends Activity implements ActionBarLayout.ActionBarLayoutDelegate, NotificationCenter.NotificationCenterDelegate, DialogsActivity.DialogsActivityDelegate {
@@ -133,7 +147,26 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
     private boolean tabletFullSize;
 
     private Runnable lockRunnable;
-
+    //
+    private int contactsRow = 6;
+    private static final int themesRow = 7;
+    private static final int themingRow = 8;
+    private static final int settingsRow = 9;
+    private static final int callsRow = 10;
+    private static final int plusSettingsRow = 11;
+    private static final int channelRow = 12;
+    private static final int communityRow = 13;
+    private static final int chatsStatsRow = 14;
+    private static final int versionRow = 15;
+    private static final int faqRow = 16;
+    private static final int inviteFriendsRow = 17;
+    private boolean pass;
+    private Toast mToast;
+    private String msg, msg1;
+    private long time;
+    private int id;
+    private int stat;
+    //
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         ApplicationLoader.postInitApplication();
@@ -335,6 +368,9 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
         }
 
         sideMenu = new RecyclerListView(this);
+        //plus
+        Glow.setEdgeGlowColor(sideMenu, Theme.chatsHeaderColor);
+        //
         sideMenu.setBackgroundColor(Theme.getColor(Theme.key_chats_menuBackground));
         sideMenu.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         sideMenu.setAdapter(drawerLayoutAdapter = new DrawerLayoutAdapter(this));
@@ -381,10 +417,10 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                         preferences.edit().putBoolean("channel_intro", true).commit();
                     }
                     drawerLayoutContainer.closeDrawer(false);
-                } else if (id == 6) {
+                } else if (id == /*6*/contactsRow) {
                     presentFragment(new ContactsActivity(null));
                     drawerLayoutContainer.closeDrawer(false);
-                } else if (id == 7) {
+                } else if (id == /*8*/inviteFriendsRow) {
                     if (BuildVars.DEBUG_PRIVATE_VERSION) {
                         /*AlertDialog.Builder builder = new AlertDialog.Builder(LaunchActivity.this);
                         builder.setTopImage(R.drawable.permissions_contacts, 0xff35a8e0);
@@ -399,26 +435,83 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                         showAlertDialog(builder);*/
                         showLanguageAlert(true);
                     } else {
-                        try {
-                            Intent intent = new Intent(Intent.ACTION_SEND);
-                            intent.setType("text/plain");
-                            intent.putExtra(Intent.EXTRA_TEXT, ContactsController.getInstance().getInviteText());
-                            startActivityForResult(Intent.createChooser(intent, LocaleController.getString("InviteFriends", R.string.InviteFriends)), 500);
-                        } catch (Exception e) {
-                            FileLog.e(e);
-                        }
-                        drawerLayoutContainer.closeDrawer(false);
+                    try {
+                        Intent intent = new Intent(Intent.ACTION_SEND);
+                        intent.setType("text/plain");
+                        intent.putExtra(Intent.EXTRA_TEXT, ContactsController.getInstance().getInviteText());
+                        startActivityForResult(Intent.createChooser(intent, LocaleController.getString("InviteFriends", R.string.InviteFriends)), 500);
+                    } catch (Exception e) {
+                        FileLog.e(e);
                     }
-                } else if (id == 8) {
+                    drawerLayoutContainer.closeDrawer(false);
+                }
+                } else if (id == /*8*/settingsRow) {
                     presentFragment(new SettingsActivity());
                     drawerLayoutContainer.closeDrawer(false);
-                } else if (id == 9) {
+                } else if (id == /*9*/faqRow) {
                     Browser.openUrl(LaunchActivity.this, LocaleController.getString("TelegramFaqUrl", R.string.TelegramFaqUrl));
                     drawerLayoutContainer.closeDrawer(false);
-                } else if (id == 10) {
+                } else if (id == /*10*/callsRow) {
                     presentFragment(new CallLogActivity());
                     drawerLayoutContainer.closeDrawer(false);
                 }
+                //
+                else if (id == themesRow) {
+                    try {
+                        String packageName = "es.rafalense.themes";
+                        if(BuildConfig.DEBUG)packageName = "es.rafalense.themes.beta";
+                        Intent intent = getPackageManager().getLaunchIntentForPackage(packageName);
+                        if(intent == null) {
+                            intent = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id="+packageName));
+                            if(BuildConfig.DEBUG)intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://rink.hockeyapp.net/apps/b5860b775ca122d3335685f39917e68f"));
+                        }
+                        //Toast.makeText(getApplicationContext(), intent.toString(), Toast.LENGTH_SHORT).show();
+                        startActivityForResult(intent, 503);
+                    } catch (Exception e) {
+                        Intent in = new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=es.rafalense.themes"));
+                        startActivityForResult(in, 503);
+                        FileLog.e("tmessages", e);
+                    }
+                    drawerLayoutContainer.closeDrawer(false);
+                } else if (id == themingRow) {
+                    presentFragment(new ThemingActivity());
+                    drawerLayoutContainer.closeDrawer(false);
+                } else if (id == plusSettingsRow) {
+                    presentFragment(new PlusSettingsActivity());
+                    drawerLayoutContainer.closeDrawer(false);
+                } else if (id == channelRow) {
+                    try {
+                        String link = LocaleController.getString("ChannelLink", R.string.ChannelLink);
+                        startActivityForResult(new Intent(Intent.ACTION_VIEW, Uri.parse(link)), 504);
+                    } catch (Exception e) {
+                        FileLog.e("tmessages", e);
+                    }
+                    drawerLayoutContainer.closeDrawer(false);
+                } else if (id == communityRow) {
+                    try {
+                        String link = "https://plus.google.com/u/0/communities/106927015963860485525";//https://plus.google.com/101839105638971401281/posts"
+                        String lg = Locale.getDefault().getLanguage();
+                        if(lg.contains("es") || lg.contains("gl") || lg.contains("ca")){
+                            link = "https://plus.google.com/u/0/communities/111922519175849600270";
+                        }
+                        startActivityForResult(new Intent(Intent.ACTION_VIEW, Uri.parse(link)), 501);
+                    } catch (Exception e) {
+                        FileLog.e("tmessages", e);
+                    }
+                    drawerLayoutContainer.closeDrawer(false);
+                } else if (id == versionRow) {
+                    try {
+                        Intent pickIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=org.telegram.plus"));
+                        startActivityForResult(pickIntent, 502);
+                    } catch (Exception e) {
+                        FileLog.e("tmessages", e);
+                    }
+                    drawerLayoutContainer.closeDrawer(false);
+                } else if (id == chatsStatsRow) {
+                    presentFragment(new PlusChatsStatsActivity());
+                    drawerLayoutContainer.closeDrawer(false);
+                }
+                //
             }
         });
 
@@ -445,7 +538,9 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
         NotificationCenter.getInstance().addObserver(this, NotificationCenter.didSetPasscode);
         NotificationCenter.getInstance().addObserver(this, NotificationCenter.reloadInterface);
         NotificationCenter.getInstance().addObserver(this, NotificationCenter.suggestedLangpack);
-
+        //plus
+        NotificationCenter.getInstance().addObserver(this, NotificationCenter.showStatusNotifications);
+        //
         if (actionBarLayout.fragmentsStack.isEmpty()) {
             if (!UserConfig.isClientActivated()) {
                 actionBarLayout.addFragmentToStack(new LoginActivity());
@@ -626,7 +721,48 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
             backgroundTablet.setVisibility(!actionBarLayout.fragmentsStack.isEmpty() ? View.GONE : View.VISIBLE);
         }
     }
+    //plus
+    private void verifyLogin(SharedPreferences prefs){
+        String id = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+        int code = 0;
+        try{
+            PackageInfo pInfo = ApplicationLoader.applicationContext.getPackageManager().getPackageInfo(ApplicationLoader.applicationContext.getPackageName(), 0);
+            code = pInfo.versionCode / 10;
+        } catch (Exception e) {
+            FileLog.e("tmessages", e);
+        }
+        int version = prefs.getInt("code", -1);
+        String did = prefs.getString("did", null);
 
+        int currentMode = prefs.getInt("mode", -1);
+        String auid = prefs.getString("auid", null);
+        //Log.e("verifyLogin ", "id " + id + " did " + did + " currentMode " + currentMode + " auid " + auid + " code " + code + " version " + version);
+        if (currentMode == -1 || currentMode >= 1 && auid == null || !id.equals(did) /*|| version != code*/) {
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.remove("auid");
+            editor.remove("iuid");
+            editor.remove("mode");
+            if (!id.equals(did)) {
+                editor.putString("did", id);
+            }
+            if (version != code) {
+                editor.putInt("code", code);
+            }
+            editor.apply();
+            //LoginManager.register(this, BuildVars.HOCKEY_APP_HASH_DEBUG, BuildVars.HOCKEY_APP_HASH_DEBUG_SECRET, LoginManager.LOGIN_MODE_EMAIL_PASSWORD, this.getClass());
+            LoginManager.register(this, BuildVars.HOCKEY_APP_HASH_DEBUG, BuildVars.HOCKEY_APP_HASH_DEBUG_SECRET, LoginManager.LOGIN_MODE_VALIDATE, this.getClass());
+            LoginManager.verifyLogin(this, getIntent());
+            //Log.e("verifyLogin ", "2 id " + id + " did " + did + " currentMode " + currentMode + " auid " + auid);
+        }
+
+        if (currentMode == 2 && id.equals(did) && auid != null) {
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putBoolean("pass", true);
+            editor.putInt("code", code);
+            editor.apply();
+            pass = true;
+        }
+    }
     private void showPasscodeActivity() {
         if (passcodeView == null) {
             return;
@@ -1115,7 +1251,7 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                                 }
                             }
                         }
-                    } else if (intent.getAction().equals("org.telegram.messenger.OPEN_ACCOUNT")) {
+                    } else if (intent.getAction().equals(/*"org.telegram.messenger.OPEN_ACCOUNT"*/"org.telegram.plus.OPEN_ACCOUNT")) {
                         open_settings = 1;
                     } else if (intent.getAction().equals("new_dialog")) {
                         open_new_dialog = 1;
@@ -1380,6 +1516,9 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                                                     NotificationCenter.getInstance().postNotificationName(NotificationCenter.closeChats);
                                                     actionBarLayout.presentFragment(new ChatActivity(args), true, false, true);
                                                 }
+                                                // plus
+                                                AndroidUtilities.checkForThemes(fragment.getParentActivity());
+                                                //
                                             }
                                         });
                                         boolean removeLast;
@@ -1729,28 +1868,28 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
             ChatActivity fragment = new ChatActivity(args);
 
             if (videoPath != null) {
-                if (AndroidUtilities.isTablet()) {
-                    if (tabletFullSize) {
-                        actionBarLayout.presentFragment(fragment, false, true, false);
+                    if (AndroidUtilities.isTablet()) {
+                        if (tabletFullSize) {
+                            actionBarLayout.presentFragment(fragment, false, true, false);
+                        } else {
+                            rightActionBarLayout.removeAllFragments();
+                            rightActionBarLayout.addFragmentToStack(fragment);
+                            rightActionBarLayout.setVisibility(View.VISIBLE);
+                            rightActionBarLayout.showLastFragment();
+                        }
                     } else {
-                        rightActionBarLayout.removeAllFragments();
-                        rightActionBarLayout.addFragmentToStack(fragment);
-                        rightActionBarLayout.setVisibility(View.VISIBLE);
-                        rightActionBarLayout.showLastFragment();
+                        actionBarLayout.addFragmentToStack(fragment, dialogsFragment != null ? actionBarLayout.fragmentsStack.size() - 1 : actionBarLayout.fragmentsStack.size());
+                    }
+
+                    if (!fragment.openVideoEditor(videoPath, dialogsFragment != null, false) && !AndroidUtilities.isTablet()) {
+                        if (dialogsFragment != null) {
+                            dialogsFragment.finishFragment(true);
+                        } else {
+                            actionBarLayout.showLastFragment();
+                        }
                     }
                 } else {
-                    actionBarLayout.addFragmentToStack(fragment, dialogsFragment != null ? actionBarLayout.fragmentsStack.size() - 1 : actionBarLayout.fragmentsStack.size());
-                }
-
-                if (!fragment.openVideoEditor(videoPath, dialogsFragment != null, false) && !AndroidUtilities.isTablet()) {
-                    if (dialogsFragment != null) {
-                        dialogsFragment.finishFragment(true);
-                    } else {
-                        actionBarLayout.showLastFragment();
-                    }
-                }
-            } else {
-                actionBarLayout.presentFragment(fragment, dialogsFragment != null, dialogsFragment == null, true);
+                    actionBarLayout.presentFragment(fragment, dialogsFragment != null, dialogsFragment == null, true);
 
                 if (photoPathsArray != null) {
                     ArrayList<String> captions = null;
@@ -1804,6 +1943,9 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
         NotificationCenter.getInstance().removeObserver(this, NotificationCenter.didSetPasscode);
         NotificationCenter.getInstance().removeObserver(this, NotificationCenter.reloadInterface);
         NotificationCenter.getInstance().removeObserver(this, NotificationCenter.suggestedLangpack);
+        //plus
+        NotificationCenter.getInstance().removeObserver(this, NotificationCenter.showStatusNotifications);
+        //
     }
 
     public void presentFragment(BaseFragment fragment) {
@@ -1993,10 +2135,13 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
         try {
             if (onGlobalLayoutListener != null) {
                 final View view = getWindow().getDecorView().getRootView();
-                view.getViewTreeObserver().removeOnGlobalLayoutListener(onGlobalLayoutListener);
-            }
+                    view.getViewTreeObserver().removeOnGlobalLayoutListener(onGlobalLayoutListener);
+                }
         } catch (Exception e) {
             FileLog.e(e);
+        }
+        if(mToast != null){
+            mToast = null;
         }
         super.onDestroy();
         onFinish();
@@ -2029,8 +2174,18 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
             }
             passcodeView.onResume();
         }
-        AndroidUtilities.checkForCrashes(this);
-        AndroidUtilities.checkForUpdates(this);
+        if(getPackageName().contains("org.telegram.plus.beta")) {
+            AndroidUtilities.checkForCrashes(this);
+            AndroidUtilities.checkForUpdates(this);
+        }
+        if(BuildConfig.DEBUG){
+            SharedPreferences prefs = ApplicationLoader.applicationContext.getSharedPreferences("net.hockeyapp.android.login", 0);
+            pass = prefs.getBoolean("pass", false);
+            //pass = true;
+            if(!pass){
+                verifyLogin(prefs);
+            }
+        }
         ConnectionsManager.getInstance().setAppPaused(false, false);
         updateCurrentConnectionState();
         if (PhotoViewer.getInstance().isVisible()) {
@@ -2192,8 +2347,187 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
         } else if (id == NotificationCenter.suggestedLangpack) {
             showLanguageAlert(false);
         }
+        //plus
+        else if (id == NotificationCenter.showStatusNotifications) {
+            if((Boolean) args[1]){
+                mToast = null;
+            } else{
+                showToast((int) args[0]);
+            }
+        }
+        //
+    }
+    //plus
+    private void showToast(int uid){
+        try{
+            String cs;
+            stat = 0;
+            if(uid == 0) {
+                Iterator<Map.Entry<Long, CharSequence>> it = MessagesController.getInstance().printingStrings.entrySet().iterator();
+                if(!it.hasNext()) {
+                    return;
+                }
+                String title = "";
+                Map.Entry entry = it.next();
+                long key = (long) entry.getKey();
+                title = getTitle(key);
+                cs = title + ": " + entry.getValue();
+                stat = 1;
+                if(MessagesController.getInstance().printingStrings.size() > 1){
+                    entry = it.next();
+                    key = (long) entry.getKey();
+                    title = getTitle(key);
+                    cs = cs + "\n" + title + ": " + entry.getValue();
+                } else{
+                    if(msg1 != null && msg1.equals(cs)){
+                        return;
+                    }
+                    msg1 = cs;
+                    if(msg != null && !msg.contains("\n") && !msg.equals(cs)){
+                        cs = msg + "\n" + cs;
+                    }
+                }
+            } else{
+                stat = 2;
+                TLRPC.User user = MessagesController.getInstance().getUser(uid);
+                if(user == null){
+                    return;
+                }
+
+                if(MessagesController.getInstance().blockedUsers.contains(user.id))return;
+                if(Theme.plusShowOnlyIfContactFav) {
+                    if(!UserObject.isContact(user) && !Favorite.getInstance().isFavorite((long)uid))return;
+                }
+                CharSequence c;
+                CharSequence name[] = UserObject.getUserName(user).split("\\s");
+                c = name.length < 2 ? name[0] : name[0] + " " + name[1];
+                if(c.length() > 26)c = c.subSequence(0, 26) + "...";
+                long t = ConnectionsManager.getInstance().getCurrentTime() - user.status.expires;
+                //Log.e("LaunchActivity","showToast " + user.status.toString() + " " + t + " expires " + " " + c + " CONT " + UserObject.isContact(user) + " FAV " + Favorite.isFavorite((long)uid));
+                //if(Theme.plusShowOnlyIfContactFav) {
+                //    if(!UserObject.isContact(user) && !Favorite.isFavorite((long)uid))return;
+                //}
+                //Log.e("LaunchActivity","showToast " + user.status.toString() + " IN " + t + " expires " + user.status.expires + " " + c);
+
+                if(user.status instanceof TLRPC.TL_userStatusOffline && Theme.plusShowOfflineToast){
+                    cs = c + " " + LocaleController.getString("Offline", R.string.Offline);
+                } else if(( (user.status instanceof TLRPC.TL_userStatusOnline && t <= -300) || (BuildConfig.DEBUG && user.status instanceof TLRPC.TL_userStatusRecently && (!Theme.plusShowOnlyIfContactFav || (Theme.plusShowOnlyIfContactFav && Favorite.getInstance().isFavorite((long)uid)))) ) && Theme.plusShowOnlineToast){
+                    cs = c + " " + LocaleController.getString("Online", R.string.Online);
+                } else{
+                    return;
+                }
+                if(msg != null && !msg.contains("\n") && id != uid){
+                    cs = msg + "\n" + cs;
+                }
+                id = uid;
+            }
+            if (msg != null) {
+                if(msg.equals(cs)){
+                    return;
+                }
+            }
+            //Log.e("LaunchActivity","time " + time + " stat " + stat + " msg " + msg + " cs " + cs);
+            //stat = 3;
+            msg = cs;
+
+            if(mToast == null){
+                //mTv = new TextView(ApplicationLoader.applicationContext);
+                mToast = Toast.makeText(ApplicationLoader.applicationContext, msg, Toast.LENGTH_LONG);
+                int TB = Theme.plusToastNotificationToBottom ? Gravity.BOTTOM : Gravity.TOP;
+                int LCR = Theme.plusToastNotificationPosition == 0 ? Gravity.LEFT : Theme.plusToastNotificationPosition == 1 ? Gravity.CENTER : Gravity.RIGHT;
+                mToast.setGravity(TB | LCR, 0, AndroidUtilities.dp(Theme.plusToastNotificationPadding));
+                ViewGroup group = (ViewGroup) mToast.getView();
+                group.setBackgroundColor(0x00000000);
+                group.setPadding(AndroidUtilities.dp(1), 0, AndroidUtilities.dp(1), 0);
+                if(group.getChildAt(0) instanceof TextView) {
+                    TextView tv = (TextView) group.getChildAt(0);
+                    tv.setTextSize(TypedValue.COMPLEX_UNIT_DIP, Theme.plusToastNotificationSize);
+                    tv.setBackgroundColor(0x00000000);
+                    tv.setPadding(AndroidUtilities.dp(1), 0, AndroidUtilities.dp(1), 0);
+                }
+                //mTv = tv;
+                //mTv.setTextColor(0xffff0000);
+                GradientDrawable shape = new GradientDrawable();
+                shape.setCornerRadius(AndroidUtilities.dp(4));
+                shape.setColor(0x88000000);
+                group.setBackgroundDrawable(shape);
+            }
+
+            if(msg != null) {
+                mToast.setText(msg);
+                //mTv.setText(msg);
+                mToast.show();
+                //mTv.setVisibility(View.VISIBLE);
+                //stat = 4;
+                time = System.currentTimeMillis();
+                AndroidUtilities.runOnUIThread(new Runnable() {
+                    //Handler handler = new Handler();
+                    //handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        //Log.e("MessagesController","time " + time + " / " + (System.currentTimeMillis() - time));
+                        if (mToast != null && (System.currentTimeMillis() - time) >= 3000) {
+                            //Log.e("LaunchActivity","CANCEL IN" + (System.currentTimeMillis() - time) + " stat " + stat + " msg " + msg);
+                            mToast.cancel();
+                            //mTv.setVisibility(View.INVISIBLE);
+                            if(stat == 2)msg = null;
+                            AndroidUtilities.runOnUIThread(new Runnable() {
+                                //Handler handler = new Handler();
+                                //handler.postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    //Log.e("LaunchActivity","RESET " + (System.currentTimeMillis() - time) + " stat " + stat + " msg " + msg);
+                                    if ((System.currentTimeMillis() - time) >= 6000) {
+                                        //Log.e("LaunchActivity","RESET IN " + (System.currentTimeMillis() - time) + " stat " + stat + " msg " + msg);
+                                        msg = null;
+                                        msg1 = null;
+                                        id = 0;
+                                    }
+                                }
+                            }, 3000);
+                        }
+                    }
+                }, 3000);
+            }
+        } catch (Exception e) {
+            FileLog.e("tmessages", e);
+            //Toast.makeText(ApplicationLoader.applicationContext, e.toString(), Toast.LENGTH_LONG).show();
+        }
     }
 
+    private String getTitle(long key){
+        int lower_id = (int) key;
+        if (key > 0) {
+            TLRPC.User user = MessagesController.getInstance().getUser(lower_id);
+            if (user != null) {
+                return getName(user);
+            }
+        } else {
+            TLRPC.Chat chat = MessagesController.getInstance().getChat(lower_id);
+            if (chat != null) {
+                return chat.title;
+            } else {
+                chat = MessagesController.getInstance().getChat(-lower_id);
+                if (chat != null) {
+                    return chat.title;
+                }
+            }
+        }
+        return "";
+    }
+
+    private String getName(TLRPC.User user) {
+        if (user == null) {
+            return "";
+        }
+        if (user.first_name != null && user.first_name.length() > 0) {
+            return user.first_name;
+        } else if (user.last_name != null && user.last_name.length() > 0) {
+            return user.last_name;
+        }
+        return "";
+    }
+    //
     private String getStringForLanguageAlert(HashMap<String, String> map, String key, int intKey) {
         String value = map.get(key);
         if (value == null) {
@@ -2849,5 +3183,5 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
             }
         }
         drawerLayoutAdapter.notifyDataSetChanged();
-    }
+        }
 }
